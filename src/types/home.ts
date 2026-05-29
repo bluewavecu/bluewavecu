@@ -1,0 +1,13 @@
+import type { LucideIcon } from "lucide-react";
+
+export type FeatureCard = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+export type BankingProduct = {
+  title: string;
+  description: string;
+  accent: string;
+};
