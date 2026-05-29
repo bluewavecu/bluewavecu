@@ -3,13 +3,15 @@
 import { ArrowRight, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { buttonVariants } from "@/components/ui/Button";
+import { postJson } from "@/lib/clientApi";
+import type { AuthResponse } from "@/types/banking";
 
 const fields = [
   {
     label: "Full name",
-    name: "name",
+    name: "fullName",
     type: "text",
     autoComplete: "name",
     placeholder: "Avery Morgan",
@@ -51,10 +53,43 @@ const fields = [
 
 export function RegisterForm() {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
+
+    const formData = new FormData(event.currentTarget);
+    const fullName = String(formData.get("fullName") ?? "");
+    const email = String(formData.get("email") ?? "");
+    const phone = String(formData.get("phone") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+    if (password !== confirmPassword) {
+      setError("Passwords must match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const result = await postJson<AuthResponse>("/api/auth/register", {
+      fullName,
+      email,
+      phone,
+      password,
+    });
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -74,6 +109,8 @@ export function RegisterForm() {
                 name={field.name}
                 autoComplete={field.autoComplete}
                 placeholder={field.placeholder}
+                required
+                minLength={field.type === "password" ? 8 : undefined}
                 className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
               />
             </span>
@@ -81,8 +118,23 @@ export function RegisterForm() {
         );
       })}
 
-      <button type="submit" className={buttonVariants({ className: "w-full" })}>
-        Create Account
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-100"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className={buttonVariants({
+          className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
+        })}
+      >
+        {isSubmitting ? "Creating Account..." : "Create Account"}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
 

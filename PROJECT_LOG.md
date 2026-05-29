@@ -184,3 +184,45 @@ Status: Completed
 ### Pending Next Step
 
 - Connect UI forms to API and seed demo data.
+
+## Step 4: Auth API Wiring And Demo Seed Data
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `README.md`
+- `PROJECT_LOG.md`
+- `package.json`
+- `package-lock.json`
+- `prisma/seed.ts`
+- `src/app/login/page.tsx`
+- `src/app/register/page.tsx`
+- `src/components/auth/LoginForm.tsx`
+- `src/components/auth/RegisterForm.tsx`
+- `src/components/layout/AppHeader.tsx`
+- `src/components/layout/AppUserBadge.tsx`
+- `src/lib/clientApi.ts`
+- `src/types/banking.ts`
+
+### Features Added
+
+- Added a repeatable Prisma seed workflow with `npm run db:seed`.
+- Seed script creates a demo member, demo admin, checking account, savings account, credit account, demo transactions, cards, a loan preview, support tickets, and an admin audit log.
+- Connected `/login` form submission to `/api/auth/login`.
+- Connected `/register` form submission to `/api/auth/register`.
+- Added loading, disabled, required, and error states to auth forms.
+- Added a client API helper for typed JSON GET and POST requests.
+- Added an app header user badge that reads `/api/auth/me` when a session cookie exists and falls back to the existing mock profile otherwise.
+- Updated auth page copy from static-only language to API-foundation language.
+
+### What Should Not Be Rebuilt
+
+- Preserve the Step 1 marketing foundation, Step 2 app shell, and Step 3 API contracts.
+- Extend the seed script instead of creating separate one-off demo data scripts.
+- Keep generated Prisma client files out of Git.
+- Keep auth form API response handling consistent with `{ success, data, error }`.
+
+### Pending Next Step
+
+- Connect dashboard account, transaction, card, loan, transfer, and support screens to live API data and add route protection.

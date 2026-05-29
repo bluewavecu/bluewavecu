@@ -3,15 +3,39 @@
 import { ArrowRight, Eye, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { buttonVariants } from "@/components/ui/Button";
+import { postJson } from "@/lib/clientApi";
+import type { AuthResponse } from "@/types/banking";
 
 export function LoginForm() {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+
+    const result = await postJson<AuthResponse>("/api/auth/login", {
+      email,
+      password,
+    });
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -25,6 +49,7 @@ export function LoginForm() {
             name="email"
             autoComplete="email"
             placeholder="member@bluewavecu.com"
+            required
             className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
           />
         </span>
@@ -41,6 +66,7 @@ export function LoginForm() {
             name="password"
             autoComplete="current-password"
             placeholder="Enter password"
+            required
             className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
           />
           <Eye size={18} aria-hidden="true" />
@@ -61,8 +87,23 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <button type="submit" className={buttonVariants({ className: "w-full" })}>
-        Sign In
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-100"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className={buttonVariants({
+          className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
+        })}
+      >
+        {isSubmitting ? "Signing In..." : "Sign In"}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
 

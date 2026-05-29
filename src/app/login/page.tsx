@@ -32,13 +32,13 @@ export default function LoginPage() {
                 Secure banking access, built for clarity.
               </h1>
               <p className="mt-5 text-lg leading-8 text-white/[0.70]">
-                This authentication screen is a UI foundation only. Real sign-in,
-                verification, and account protection will be added later.
+                This sign-in flow now connects to the Bluewave API foundation while
+                remaining a demo environment for local validation.
               </p>
             </div>
 
             <div className="grid max-w-xl gap-4 sm:grid-cols-2">
-              {["Secure form shell", "No live auth yet"].map((item) => (
+              {["API-backed sign in", "Demo access only"].map((item) => (
                 <div key={item} className="rounded-lg border border-white/[0.12] bg-white/[0.08] p-4 backdrop-blur-xl">
                   <ShieldCheck size={20} className="text-light-blue" aria-hidden="true" />
                   <p className="mt-3 text-sm font-semibold">{item}</p>
@@ -70,7 +70,11 @@ export default function LoginPage() {
                   Welcome back
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-                  Sign in button routes to the dashboard preview.
+                  Use the seeded demo account after configuring PostgreSQL and running
+                  the seed command.
+                </p>
+                <p className="mt-3 rounded-lg bg-ocean-blue/[0.10] px-3 py-2 text-xs font-semibold leading-5 text-royal-blue dark:text-light-blue">
+                  Demo: avery.morgan@bluewavecu.test
                 </p>
               </div>
               <LoginForm />

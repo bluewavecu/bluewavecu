@@ -39,6 +39,11 @@ export type AuthTokenPayload = {
   role: UserRole;
 };
 
+export type AuthResponse = {
+  user: SafeUser;
+  token: string;
+};
+
 export type SerializedAccount = {
   id: string;
   userId: string;

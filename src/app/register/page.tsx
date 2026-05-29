@@ -29,8 +29,8 @@ export default function RegisterPage() {
                   Create your access profile
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-                  This is a static account creation foundation. No real account is
-                  created in this step.
+                  Create an API-backed profile record for the local banking foundation.
+                  New profiles remain pending until admin approval flows are built.
                 </p>
               </div>
               <RegisterForm />
@@ -50,13 +50,13 @@ export default function RegisterPage() {
                 Start clean, then connect verified services later.
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/[0.70]">
-                The registration flow is intentionally presentation-only until auth,
-                database, and compliance requirements are defined.
+                The registration flow now stores secure profile records while deeper
+                verification and approval controls remain pending.
               </p>
             </div>
 
             <div className="grid max-w-xl gap-4 sm:grid-cols-2">
-              {["Member profile fields", "Backend pending"].map((item) => (
+              {["Member profile fields", "Pending review state"].map((item) => (
                 <div key={item} className="rounded-lg border border-white/[0.12] bg-white/[0.08] p-4 backdrop-blur-xl">
                   <ShieldCheck size={20} className="text-light-blue" aria-hidden="true" />
                   <p className="mt-3 text-sm font-semibold">{item}</p>

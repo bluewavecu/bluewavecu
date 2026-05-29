@@ -1,5 +1,5 @@
 import { Bell, Search, ShieldCheck } from "lucide-react";
-import { userProfile } from "@/data/mockBanking";
+import { AppUserBadge } from "@/components/layout/AppUserBadge";
 
 type AppHeaderProps = {
   title: string;
@@ -45,19 +45,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
             <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-ocean-blue" />
           </button>
 
-          <div className="flex items-center gap-3 rounded-full border border-primary-navy/[0.08] bg-white py-1 pl-1 pr-4 shadow-[0_12px_34px_rgba(10,42,94,0.07)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-navy text-sm font-semibold text-white">
-              {userProfile.avatarInitials}
-            </span>
-            <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-primary-navy dark:text-white">
-                {userProfile.name}
-              </p>
-              <p className="text-xs text-bluewave-gray dark:text-white/[0.52]">
-                {userProfile.membershipId}
-              </p>
-            </div>
-          </div>
+          <AppUserBadge />
         </div>
       </div>
     </header>
