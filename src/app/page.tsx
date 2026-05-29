@@ -10,6 +10,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { ButtonLink } from "@/components/ui/Button";
 import {
@@ -23,6 +24,7 @@ import {
 export default function Home() {
   return (
     <main className="overflow-hidden">
+      <Navbar />
       <section className="relative isolate min-h-[76svh] overflow-hidden bg-[#061222] text-white">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[linear-gradient(120deg,#061222_0%,#0A2A5E_48%,#0D47A1_100%)]" />

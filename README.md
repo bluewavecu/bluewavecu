@@ -44,6 +44,8 @@ npm start
 src/
   app/
   components/
+    auth/
+    dashboard/
     layout/
     ui/
     home/
@@ -75,3 +77,12 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 ## Completed Work Log
 
 - Step 1: Initial Bluewave Credit Union foundation setup.
+- Step 2: Authentication pages and protected banking app shell foundation.
+
+## Step 2 Notes
+
+- Added static `/login` and `/register` pages with premium auth UI only.
+- Added protected app layout foundation with sidebar, mobile navigation, app header, and dashboard routes.
+- Added mocked banking data for profile, accounts, card, transactions, loan offer, and support messages.
+- No real authentication, database, or banking API integration exists yet.
+- Pending next step: database schema and backend API foundation.
