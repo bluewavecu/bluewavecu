@@ -94,3 +94,38 @@ Status: Completed
 ### Pending Next Step
 
 - Database schema and backend API foundation.
+
+## Step 2 Follow-Up: Public Copy, Testimonials, And Mobile App Page
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `README.md`
+- `PROJECT_LOG.md`
+- `src/app/page.tsx`
+- `src/app/mobile-app/page.tsx`
+- `src/app/support/page.tsx`
+- `src/components/layout/Footer.tsx`
+- `src/components/layout/Navbar.tsx`
+- `src/components/home/TestimonialsCarousel.tsx`
+- `src/data/home.ts`
+- `src/types/home.ts`
+
+### Features Added
+
+- Replaced the footer description under the logo with updated Bluewave digital banking copy.
+- Replaced the footer safety note with the requested NCUA, membership eligibility, and Equal Housing Opportunity copy.
+- Added the Dallas address and phone number to the footer.
+- Updated public navbar login and open-account buttons to route to `/login` and `/register`.
+- Updated the support page phone contact to use the provided phone number.
+- Updated footer links so Mobile App routes to `/mobile-app` and homepage section links work from public pages.
+- Made the homepage CTA login action clearer by linking to `/login` as `Member Login`.
+- Added a responsive testimonial carousel below the CTA with 30 sample member testimonials, rotating every five seconds.
+- Added a `/mobile-app` coming-soon page explaining that the app page is undergoing maintenance and will return soon.
+
+### What Should Not Be Rebuilt
+
+- Preserve the existing Step 1 homepage structure and Step 2 app shell.
+- Extend `TestimonialsCarousel` and `testimonials` data instead of replacing the homepage section.
+- Keep `/mobile-app` as the public mobile app status page until a real app launch flow is introduced.

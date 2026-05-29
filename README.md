@@ -78,6 +78,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 
 - Step 1: Initial Bluewave Credit Union foundation setup.
 - Step 2: Authentication pages and protected banking app shell foundation.
+- Step 2 follow-up: Footer copy/contact updates, mobile app coming-soon page, and homepage testimonial carousel.
 
 ## Step 2 Notes
 
@@ -86,3 +87,12 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Added mocked banking data for profile, accounts, card, transactions, loan offer, and support messages.
 - No real authentication, database, or banking API integration exists yet.
 - Pending next step: database schema and backend API foundation.
+
+## Current Public Content Updates
+
+- Footer contact address: `2000 McKinney Ave, Dallas, TX 75201`
+- Footer phone number: `(646) 776-4480`
+- Footer insurance note now states: `Bluewave Credit Union is federally insured by the NCUA. Membership eligibility applies. Equal Housing Opportunity.`
+- `/mobile-app` is a coming-soon maintenance page.
+- Homepage CTA now links clearly to member login and account registration.
+- Homepage testimonials are sample member feedback for layout and content presentation.

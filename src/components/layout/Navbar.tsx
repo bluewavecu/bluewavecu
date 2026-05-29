@@ -56,7 +56,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <Link
-            href="#login"
+            href="/login"
             className={cn(
               buttonVariants({ variant: "secondary", size: "sm" }),
               "border-white/[0.18] bg-white/[0.08]",
@@ -65,7 +65,7 @@ export function Navbar() {
             <LogIn size={16} aria-hidden="true" />
             Login
           </Link>
-          <Link href="#open-account" className={buttonVariants({ size: "sm" })}>
+          <Link href="/register" className={buttonVariants({ size: "sm" })}>
             <UserPlus size={16} aria-hidden="true" />
             Open Account
           </Link>
@@ -101,7 +101,7 @@ export function Navbar() {
           ))}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Link
-              href="#login"
+              href="/login"
               onClick={() => setOpen(false)}
               className={buttonVariants({
                 variant: "secondary",
@@ -112,7 +112,7 @@ export function Navbar() {
               Login
             </Link>
             <Link
-              href="#open-account"
+              href="/register"
               onClick={() => setOpen(false)}
               className={buttonVariants({ className: "w-full" })}
             >

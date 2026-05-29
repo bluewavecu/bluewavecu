@@ -6,28 +6,28 @@ const footerLinks = [
   {
     title: "Banking",
     links: [
-      { label: "Personal", href: "#products" },
-      { label: "Business", href: "#products" },
-      { label: "Savings", href: "#products" },
-      { label: "Loans", href: "#products" },
+      { label: "Personal", href: "/#products" },
+      { label: "Business", href: "/#products" },
+      { label: "Savings", href: "/#products" },
+      { label: "Loans", href: "/#products" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Support", href: "#support" },
-      { label: "Security", href: "#security" },
-      { label: "Mobile App", href: "#features" },
-      { label: "Rates", href: "#products" },
+      { label: "Support", href: "/#support" },
+      { label: "Security", href: "/#security" },
+      { label: "Mobile App", href: "/mobile-app" },
+      { label: "Rates", href: "/#products" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "#features" },
-      { label: "Careers", href: "#support" },
-      { label: "Newsroom", href: "#support" },
-      { label: "Contact", href: "#support" },
+      { label: "About", href: "/#features" },
+      { label: "Careers", href: "/#support" },
+      { label: "Newsroom", href: "/#support" },
+      { label: "Contact", href: "/#support" },
     ],
   },
 ];
@@ -50,18 +50,19 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">
-              A premium digital banking interface foundation for secure account access,
-              product discovery, and modern financial management.
+              Your secure gateway to modern digital banking. Access your accounts,
+              discover competitive products, and manage your financial future with
+              Bluewave Credit Union.
             </p>
 
             <div className="mt-7 grid gap-3 text-sm text-white/[0.72]">
               <span className="flex items-center gap-3">
                 <MapPin size={17} className="text-light-blue" aria-hidden="true" />
-                Headquarters placeholder
+                2000 McKinney Ave, Dallas, TX 75201
               </span>
               <span className="flex items-center gap-3">
                 <Phone size={17} className="text-light-blue" aria-hidden="true" />
-                Phone placeholder
+                (646) 776-4480
               </span>
               <span className="flex items-center gap-3">
                 <Mail size={17} className="text-light-blue" aria-hidden="true" />
@@ -104,9 +105,8 @@ export function Footer() {
                 aria-hidden="true"
               />
               <span>
-                Bluewave Credit Union is a digital banking platform interface. Do not
-                claim FDIC, NCUA, insured deposits, or licensed banking approval unless
-                legally verified.
+                Bluewave Credit Union is federally insured by the NCUA. Membership
+                eligibility applies. Equal Housing Opportunity.
               </span>
             </p>
           </div>

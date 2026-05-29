@@ -12,6 +12,7 @@ import {
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { MotionReveal } from "@/components/home/MotionReveal";
+import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
 import { ButtonLink } from "@/components/ui/Button";
 import {
   features,
@@ -293,12 +294,12 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <ButtonLink href="#login" variant="light" size="lg">
-                  Login
+                <ButtonLink href="/login" variant="light" size="lg">
+                  Member Login
                   <Fingerprint size={18} aria-hidden="true" />
                 </ButtonLink>
-                <ButtonLink href="#products" variant="secondary" size="lg">
-                  View Products
+                <ButtonLink href="/register" variant="secondary" size="lg">
+                  Open Account
                   <ArrowRight size={18} aria-hidden="true" />
                 </ButtonLink>
               </div>
@@ -306,6 +307,8 @@ export default function Home() {
           </MotionReveal>
         </div>
       </section>
+
+      <TestimonialsCarousel />
 
       <Footer />
     </main>

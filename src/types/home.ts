@@ -11,3 +11,10 @@ export type BankingProduct = {
   description: string;
   accent: string;
 };
+
+export type HomeTestimonial = {
+  id: string;
+  name: string;
+  location: string;
+  quote: string;
+};

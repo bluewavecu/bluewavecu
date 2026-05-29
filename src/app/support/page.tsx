@@ -48,7 +48,7 @@ export default function SupportPage() {
 
           {[
             { label: "support@bluewavecu.com", icon: Mail },
-            { label: "Phone placeholder", icon: Phone },
+            { label: "(646) 776-4480", icon: Phone },
             { label: "Secure message center pending", icon: MessageSquareText },
           ].map((item) => {
             const Icon = item.icon;
