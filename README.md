@@ -143,6 +143,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 2 follow-up: Footer copy/contact updates, mobile app coming-soon page, and homepage testimonial carousel.
 - Step 3: PostgreSQL Prisma schema and API foundation.
 - Step 4: Auth form API wiring and demo seed data.
+- Step 5: Authenticated dashboard API data connection.
 
 ## Step 2 Notes
 
@@ -177,5 +178,16 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Connected `/login` to `/api/auth/login`.
 - Connected `/register` to `/api/auth/register`.
 - Added client API helpers for typed JSON requests.
-- Updated the app header user badge to read `/api/auth/me` when an auth cookie exists, with the existing mock member display as a fallback.
+- Updated the app header user badge to read `/api/auth/me` when an auth cookie exists.
 - Pending next step: connect dashboard account, transaction, card, loan, transfer, and support screens to live API data and add route protection.
+
+## Step 5 Notes
+
+- Added protected `/api/dashboard` for authenticated dashboard data.
+- The dashboard API reads the JWT/cookie session, returns `401 Unauthorized` when invalid, and never returns `passwordHash`.
+- Dashboard API data includes the user profile, masked accounts, recent transactions, cards, loans, and support ticket summary.
+- Added `useDashboardData` for client-side loading, error, refetch, and unauthorized redirect behavior.
+- Added shared `LoadingState`, `ErrorState`, and `EmptyState` UI components.
+- Dashboard widgets now accept live props while preserving `mockBanking.ts` as fallback/reference data.
+- Dashboard, accounts, transactions, cards, loans, and support screens now use API-ready authenticated client fetch patterns.
+- Pending next step: full page APIs for accounts, transactions, cards, loans, support, and stricter route protection.

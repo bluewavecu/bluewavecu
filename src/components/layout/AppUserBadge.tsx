@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { userProfile } from "@/data/mockBanking";
 import { getJson } from "@/lib/clientApi";
 import type { SafeUser } from "@/types/banking";
 
@@ -41,14 +40,14 @@ export function AppUserBadge() {
     };
   }, []);
 
-  const displayName = user?.fullName ?? userProfile.name;
-  const displayMeta = user?.email ?? userProfile.membershipId;
+  const displayName = user?.fullName ?? "Member session";
+  const displayMeta = user?.email ?? "Sign in required";
   const initials = getInitials(displayName);
 
   return (
     <div className="flex items-center gap-3 rounded-full border border-primary-navy/[0.08] bg-white py-1 pl-1 pr-4 shadow-[0_12px_34px_rgba(10,42,94,0.07)] dark:border-white/[0.08] dark:bg-white/[0.06]">
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-navy text-sm font-semibold text-white">
-        {initials || userProfile.avatarInitials}
+        {initials || "BW"}
       </span>
       <div className="hidden sm:block">
         <p className="text-sm font-semibold text-primary-navy dark:text-white">{displayName}</p>

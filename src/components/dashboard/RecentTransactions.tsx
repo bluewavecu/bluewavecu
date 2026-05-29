@@ -1,6 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Repeat2 } from "lucide-react";
-import { formatCurrency, recentTransactions } from "@/data/mockBanking";
+import { formatCurrency, recentTransactions as fallbackTransactions } from "@/data/mockBanking";
 import { cn } from "@/lib/utils";
+import type { DashboardTransaction, TransactionType } from "@/types/banking";
 
 const transactionIcons = {
   credit: ArrowDownLeft,
@@ -8,7 +9,82 @@ const transactionIcons = {
   transfer: Repeat2,
 };
 
-export function RecentTransactions() {
+type RecentTransactionsProps = {
+  transactions?: DashboardTransaction[];
+  description?: string;
+};
+
+type DisplayTransaction = {
+  id: string;
+  date: string;
+  merchant: string;
+  description: string;
+  amount: number;
+  type: keyof typeof transactionIcons;
+  status: string;
+};
+
+function formatTransactionDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function getTransactionKind(type: TransactionType, amount: number): keyof typeof transactionIcons {
+  if (type === "TRANSFER") {
+    return "transfer";
+  }
+
+  if (amount > 0 || type === "DEPOSIT" || type === "REFUND") {
+    return "credit";
+  }
+
+  return "debit";
+}
+
+function getStatusLabel(status: string) {
+  return status
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function mapDashboardTransaction(transaction: DashboardTransaction): DisplayTransaction {
+  return {
+    id: transaction.id,
+    date: formatTransactionDate(transaction.createdAt),
+    merchant: transaction.merchant ?? transaction.description,
+    description: transaction.description,
+    amount: transaction.amount,
+    type: getTransactionKind(transaction.type, transaction.amount),
+    status: getStatusLabel(transaction.status),
+  };
+}
+
+function mapFallbackTransaction(
+  transaction: (typeof fallbackTransactions)[number],
+): DisplayTransaction {
+  return {
+    id: transaction.id,
+    date: transaction.date,
+    merchant: transaction.merchant,
+    description: transaction.description,
+    amount: transaction.amount,
+    type: transaction.type as keyof typeof transactionIcons,
+    status: transaction.status,
+  };
+}
+
+export function RecentTransactions({
+  transactions,
+  description = "Recent authenticated account activity.",
+}: RecentTransactionsProps) {
+  const displayTransactions =
+    transactions !== undefined
+      ? transactions.map(mapDashboardTransaction)
+      : fallbackTransactions.map(mapFallbackTransaction);
+
   return (
     <section
       aria-labelledby="recent-transactions"
@@ -23,14 +99,14 @@ export function RecentTransactions() {
             Recent transactions
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Mock activity for layout validation.
+            {description}
           </p>
         </div>
       </div>
 
       <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
-        {recentTransactions.map((transaction) => {
-          const Icon = transactionIcons[transaction.type as keyof typeof transactionIcons];
+        {displayTransactions.map((transaction) => {
+          const Icon = transactionIcons[transaction.type];
           const positive = transaction.amount > 0;
 
           return (

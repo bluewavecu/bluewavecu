@@ -1,7 +1,102 @@
 import { BadgeCheck, Landmark, ShieldCheck } from "lucide-react";
-import { accounts, formatCurrency, loanOffer } from "@/data/mockBanking";
+import { accounts as fallbackAccounts, formatCurrency, loanOffer } from "@/data/mockBanking";
+import type { AccountType, DashboardAccount, DashboardLoan } from "@/types/banking";
 
-export function AccountOverview() {
+type AccountOverviewProps = {
+  accounts?: DashboardAccount[];
+  loans?: DashboardLoan[];
+};
+
+type DisplayAccount = {
+  id: string;
+  type: string;
+  name: string;
+  number: string;
+  available: number;
+  status: string;
+  accent: string;
+};
+
+type DisplayLoan = {
+  title: string;
+  amount: string;
+  rateLabel: string;
+  description: string;
+};
+
+const accountMeta: Record<AccountType, { type: string; accent: string }> = {
+  CHECKING: {
+    type: "Checking",
+    accent: "from-ocean-blue to-light-blue",
+  },
+  SAVINGS: {
+    type: "Savings",
+    accent: "from-royal-blue to-ocean-blue",
+  },
+  CREDIT: {
+    type: "Credit Card",
+    accent: "from-primary-navy to-royal-blue",
+  },
+};
+
+function getStatusLabel(status: string) {
+  return status
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
+  const meta = accountMeta[account.accountType];
+
+  return {
+    id: account.id,
+    type: meta.type,
+    name: account.displayName,
+    number: account.maskedAccountNumber,
+    available: account.availableBalance,
+    status: getStatusLabel(account.status),
+    accent: meta.accent,
+  };
+}
+
+function mapFallbackAccount(account: (typeof fallbackAccounts)[number]): DisplayAccount {
+  return {
+    id: account.id,
+    type: account.type,
+    name: account.name,
+    number: account.number,
+    available: account.available,
+    status: account.status,
+    accent: account.accent,
+  };
+}
+
+function getLoanDisplay(loans?: DashboardLoan[]): DisplayLoan {
+  const loan = loans?.[0];
+
+  if (!loan) {
+    return loanOffer;
+  }
+
+  return {
+    title: `${loan.loanType} preview`,
+    amount: formatCurrency(loan.principal),
+    rateLabel:
+      loan.interestRate > 0
+        ? `${loan.interestRate.toFixed(2)}% rate placeholder`
+        : "Rate placeholder",
+    description: `${getStatusLabel(loan.status)} lending record prepared for future eligibility, documents, and servicing workflows.`,
+  };
+}
+
+export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
+  const displayAccounts =
+    accounts !== undefined
+      ? accounts.map(mapDashboardAccount)
+      : fallbackAccounts.map(mapFallbackAccount);
+  const displayLoan = getLoanDisplay(loans);
+
   return (
     <section
       aria-labelledby="account-overview"
@@ -20,7 +115,7 @@ export function AccountOverview() {
       </div>
 
       <div className="mt-5 space-y-4">
-        {accounts.map((account) => (
+        {displayAccounts.map((account) => (
           <div key={account.id} className="rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -51,10 +146,10 @@ export function AccountOverview() {
             <Landmark size={20} aria-hidden="true" />
           </span>
           <div>
-            <p className="text-sm font-semibold">{loanOffer.title}</p>
-            <p className="mt-2 text-2xl font-semibold">{loanOffer.amount}</p>
-            <p className="mt-1 text-xs text-white/[0.58]">{loanOffer.rateLabel}</p>
-            <p className="mt-3 text-sm leading-6 text-white/[0.68]">{loanOffer.description}</p>
+            <p className="text-sm font-semibold">{displayLoan.title}</p>
+            <p className="mt-2 text-2xl font-semibold">{displayLoan.amount}</p>
+            <p className="mt-1 text-xs text-white/[0.58]">{displayLoan.rateLabel}</p>
+            <p className="mt-3 text-sm leading-6 text-white/[0.68]">{displayLoan.description}</p>
             <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-light-blue">
               <BadgeCheck size={16} aria-hidden="true" />
               Preview only

@@ -226,3 +226,58 @@ Status: Completed
 ### Pending Next Step
 
 - Connect dashboard account, transaction, card, loan, transfer, and support screens to live API data and add route protection.
+
+## Step 5: Authenticated Dashboard API Data
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `README.md`
+- `PROJECT_LOG.md`
+- `src/app/api/dashboard/route.ts`
+- `src/app/dashboard/page.tsx`
+- `src/app/accounts/page.tsx`
+- `src/app/transactions/page.tsx`
+- `src/app/cards/page.tsx`
+- `src/app/loans/page.tsx`
+- `src/app/support/page.tsx`
+- `src/hooks/useDashboardData.ts`
+- `src/components/dashboard/DashboardClient.tsx`
+- `src/components/dashboard/AccountsClient.tsx`
+- `src/components/dashboard/TransactionsClient.tsx`
+- `src/components/dashboard/CardsClient.tsx`
+- `src/components/dashboard/LoansClient.tsx`
+- `src/components/dashboard/SupportClient.tsx`
+- `src/components/dashboard/BalanceCards.tsx`
+- `src/components/dashboard/AccountOverview.tsx`
+- `src/components/dashboard/RecentTransactions.tsx`
+- `src/components/layout/AppUserBadge.tsx`
+- `src/components/ui/LoadingState.tsx`
+- `src/components/ui/ErrorState.tsx`
+- `src/components/ui/EmptyState.tsx`
+- `src/types/banking.ts`
+
+### Features Added
+
+- Added protected `/api/dashboard` aggregate endpoint.
+- Dashboard API reads the current user from the existing JWT/cookie auth helper.
+- Dashboard API returns `401 Unauthorized` with `{ success: false, error: "Unauthorized" }` when no valid user is present.
+- Dashboard API returns safe user profile data, masked account data, recent transactions, cards, loans, and support ticket summary without exposing `passwordHash`.
+- Added `useDashboardData` for client-side dashboard fetch, loading state, error state, data state, refetch, and unauthorized redirect to `/login`.
+- Added reusable loading, error, and empty UI states.
+- Added `DashboardClient` so `/dashboard` renders authenticated API data inside the existing `AppShell`.
+- Refactored `BalanceCards`, `AccountOverview`, and `RecentTransactions` to accept live props while preserving fallback behavior.
+- Updated accounts, transactions, cards, loans, and support pages to use authenticated API-ready client fetch patterns from the dashboard aggregate endpoint.
+- Updated app header user badge so unauthenticated views do not show mock member identity.
+
+### What Should Not Be Rebuilt
+
+- Preserve the Step 1 marketing site, Step 2 app shell, Step 3 Prisma/API foundation, and Step 4 auth form wiring.
+- Keep `mockBanking.ts` as fallback/reference data only.
+- Extend `/api/dashboard` or add dedicated page APIs instead of returning to static page data.
+- Do not implement real money movement from dashboard or transfer UI.
+
+### Pending Next Step
+
+- Full page APIs for accounts, transactions, cards, loans, support, and stricter protected-route middleware.

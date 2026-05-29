@@ -1,15 +1,85 @@
 import { CreditCard, TrendingUp, WalletCards } from "lucide-react";
-import { accounts, formatCurrency } from "@/data/mockBanking";
+import { accounts as fallbackAccounts, formatCurrency } from "@/data/mockBanking";
+import type { AccountType, DashboardAccount } from "@/types/banking";
 
-export function BalanceCards() {
+type BalanceCardsProps = {
+  accounts?: DashboardAccount[];
+};
+
+type DisplayAccount = {
+  id: string;
+  type: string;
+  name: string;
+  number: string;
+  balance: number;
+  available: number;
+  status: string;
+  trend: string;
+  accent: string;
+  isCredit: boolean;
+};
+
+const accountMeta: Record<AccountType, { type: string; accent: string; trend: string }> = {
+  CHECKING: {
+    type: "Checking",
+    accent: "from-ocean-blue to-light-blue",
+    trend: "Active",
+  },
+  SAVINGS: {
+    type: "Savings",
+    accent: "from-royal-blue to-ocean-blue",
+    trend: "Funded",
+  },
+  CREDIT: {
+    type: "Credit Card",
+    accent: "from-primary-navy to-royal-blue",
+    trend: "Ready",
+  },
+};
+
+function getStatusLabel(status: string) {
+  return status
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
+  const meta = accountMeta[account.accountType];
+
+  return {
+    id: account.id,
+    type: meta.type,
+    name: account.displayName,
+    number: account.maskedAccountNumber,
+    balance: account.balance,
+    available: account.availableBalance,
+    status: getStatusLabel(account.status),
+    trend: meta.trend,
+    accent: meta.accent,
+    isCredit: account.accountType === "CREDIT",
+  };
+}
+
+function mapFallbackAccount(account: (typeof fallbackAccounts)[number]): DisplayAccount {
+  return {
+    ...account,
+    isCredit: account.id === "credit-card",
+  };
+}
+
+export function BalanceCards({ accounts }: BalanceCardsProps) {
+  const displayAccounts =
+    accounts !== undefined
+      ? accounts.map(mapDashboardAccount)
+      : fallbackAccounts.map(mapFallbackAccount);
+
   return (
     <section aria-labelledby="balance-cards" className="grid gap-4 lg:grid-cols-3">
       <h2 id="balance-cards" className="sr-only">
         Balance Cards
       </h2>
-      {accounts.map((account) => {
-        const isCredit = account.id === "credit-card";
-
+      {displayAccounts.map((account) => {
         return (
           <article
             key={account.id}
@@ -27,7 +97,7 @@ export function BalanceCards() {
                   </h3>
                 </div>
                 <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
-                  {isCredit ? (
+                  {account.isCredit ? (
                     <CreditCard size={21} aria-hidden="true" />
                   ) : (
                     <WalletCards size={21} aria-hidden="true" />
@@ -37,10 +107,10 @@ export function BalanceCards() {
 
               <div className="mt-7">
                 <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
-                  {isCredit ? "Current balance" : "Available balance"}
+                  {account.isCredit ? "Current balance" : "Available balance"}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-primary-navy dark:text-white">
-                  {formatCurrency(isCredit ? account.balance : account.available)}
+                  {formatCurrency(account.isCredit ? account.balance : account.available)}
                 </p>
               </div>
 
