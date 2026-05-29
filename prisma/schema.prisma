@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  PAYMENT
+  CARD
+  FEE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum CardType {
+  DEBIT
+  CREDIT
+}
+
+enum CardStatus {
+  ACTIVE
+  LOCKED
+  CANCELLED
+  EXPIRED
+}
+
+enum LoanStatus {
+  PENDING
+  ACTIVE
+  PAID_OFF
+  DEFAULTED
+  DENIED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model User {
+  id             String          @id @default(cuid())
+  fullName       String
+  email          String          @unique
+  phone          String
+  passwordHash   String
+  role           UserRole        @default(USER)
+  status         UserStatus      @default(PENDING)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  accounts       Account[]
+  transactions   Transaction[]
+  cards          Card[]
+  loans          Loan[]
+  supportTickets SupportTicket[]
+  adminAuditLogs AdminAuditLog[] @relation("AdminAuditLogs")
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+model Account {
+  id               String        @id @default(cuid())
+  userId           String
+  accountType      AccountType
+  accountNumber    String        @unique
+  routingNumber    String
+  balance          Decimal       @default(0) @db.Decimal(14, 2)
+  availableBalance Decimal       @default(0) @db.Decimal(14, 2)
+  currency         String        @default("USD")
+  status           AccountStatus @default(ACTIVE)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     Transaction[]
+  cards            Card[]
+
+  @@index([userId])
+  @@index([accountType])
+  @@index([status])
+}
+
+model Transaction {
+  id          String            @id @default(cuid())
+  userId      String
+  accountId   String
+  type        TransactionType
+  amount      Decimal           @db.Decimal(14, 2)
+  description String
+  merchant    String?
+  reference   String            @unique
+  status      TransactionStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Card {
+  id             String     @id @default(cuid())
+  userId         String
+  accountId      String
+  cardType       CardType
+  last4          String
+  cardholderName String
+  status         CardStatus @default(ACTIVE)
+  spendingLimit  Decimal    @default(0) @db.Decimal(14, 2)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account        Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([cardType])
+  @@index([status])
+}
+
+model Loan {
+  id             String     @id @default(cuid())
+  userId         String
+  loanType       String
+  principal      Decimal    @db.Decimal(14, 2)
+  balance        Decimal    @db.Decimal(14, 2)
+  interestRate   Decimal    @db.Decimal(5, 2)
+  termMonths     Int
+  monthlyPayment Decimal    @db.Decimal(14, 2)
+  status         LoanStatus @default(PENDING)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([loanType])
+  @@index([status])
+}
+
+model SupportTicket {
+  id        String                @id @default(cuid())
+  userId    String
+  subject   String
+  message   String
+  status    SupportTicketStatus   @default(OPEN)
+  priority  SupportTicketPriority @default(NORMAL)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+}

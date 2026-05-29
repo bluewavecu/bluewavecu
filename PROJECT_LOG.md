@@ -129,3 +129,58 @@ Status: Completed
 - Preserve the existing Step 1 homepage structure and Step 2 app shell.
 - Extend `TestimonialsCarousel` and `testimonials` data instead of replacing the homepage section.
 - Keep `/mobile-app` as the public mobile app status page until a real app launch flow is introduced.
+
+## Step 3: Database Schema And API Foundation
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `README.md`
+- `PROJECT_LOG.md`
+- `.env.example`
+- `.gitignore`
+- `package.json`
+- `package-lock.json`
+- `prisma.config.ts`
+- `prisma/schema.prisma`
+- `src/lib/api.ts`
+- `src/lib/auth.ts`
+- `src/lib/prisma.ts`
+- `src/lib/validators.ts`
+- `src/types/banking.ts`
+- `src/app/api/auth/register/route.ts`
+- `src/app/api/auth/login/route.ts`
+- `src/app/api/auth/me/route.ts`
+- `src/app/api/accounts/route.ts`
+- `src/app/api/transactions/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/cards/route.ts`
+- `src/app/api/loans/route.ts`
+- `src/app/api/support/route.ts`
+- `src/app/api/admin/users/route.ts`
+
+### Features Added
+
+- Added Prisma ORM and PostgreSQL schema foundation.
+- Added the official Prisma PostgreSQL driver adapter required by the Prisma 7 generated client.
+- Created models for users, accounts, transactions, cards, loans, support tickets, and admin audit logs.
+- Added zod validation schemas for registration, login, transfers, and support tickets.
+- Added bcrypt password hashing helpers and JWT token helpers.
+- Added a lazy Prisma client getter for server-side database access.
+- Added consistent API response helpers for `{ success, data, error }` responses.
+- Added auth API foundations for register, login, and current user lookup without exposing `passwordHash`.
+- Added member data API foundations for accounts, transactions, cards, loans, and support tickets.
+- Added transfers API foundation that only creates pending transaction records and does not move real money.
+- Added admin users API foundation guarded by JWT role checks.
+
+### What Should Not Be Rebuilt
+
+- Keep the Step 1 marketing pages and Step 2 app shell intact.
+- Extend the Prisma schema through migrations rather than replacing it.
+- Keep generated Prisma client files out of Git and regenerate them with `npx prisma generate`.
+- Do not implement real money movement until ledger, approval, and audit requirements are defined.
+
+### Pending Next Step
+
+- Connect UI forms to API and seed demo data.
