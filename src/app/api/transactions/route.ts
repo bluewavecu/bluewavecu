@@ -76,6 +76,11 @@ export async function GET(request: NextRequest) {
             accountNumber: true,
           },
         },
+        _count: {
+          select: {
+            ledgerEntries: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -96,6 +101,13 @@ export async function GET(request: NextRequest) {
         reference: transaction.reference,
         status: transaction.status,
         createdAt: transaction.createdAt.toISOString(),
+        postedAt: transaction.postedAt?.toISOString() ?? null,
+        reviewedAt: transaction.reviewedAt?.toISOString() ?? null,
+        reviewNote: transaction.reviewNote,
+        ledgerSummary: {
+          entryCount: transaction._count.ledgerEntries,
+          posted: Boolean(transaction.postedAt),
+        },
       };
     });
 

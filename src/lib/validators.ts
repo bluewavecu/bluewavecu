@@ -39,6 +39,7 @@ export const adminUpdateUserStatusSchema = z.object({
 export const adminUpdateTransactionStatusSchema = z.object({
   transactionId: z.string().min(1, "Transaction ID is required"),
   status: z.enum(["COMPLETED", "FAILED", "REVERSED"]),
+  reviewNote: z.string().trim().max(500).optional(),
 });
 
 export const adminUpdateSupportTicketStatusSchema = z.object({

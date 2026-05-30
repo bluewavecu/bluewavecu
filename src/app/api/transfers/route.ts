@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         merchant,
         reference: `TRF-${randomUUID()}`,
         status: "PENDING",
+        destinationAccountNumber: input.toAccountNumber?.trim() || null,
       },
     });
 

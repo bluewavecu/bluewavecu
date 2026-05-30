@@ -83,6 +83,18 @@ const DEMO_TRANSACTIONS = [
     description: "Transfer to Account ending 5799: Rent payment",
     merchant: "Jordan Parker",
     status: "PENDING" as const,
+    destinationAccountNumber: "1048225799",
+  },
+  {
+    reference: "DEMO-TXN-1007",
+    accountNumber: "1048225701",
+    type: "TRANSFER" as const,
+    amount: "-100.00",
+    description: "Transfer to Savings: Posted demo transfer",
+    merchant: "Bluewave Transfer",
+    status: "COMPLETED" as const,
+    destinationAccountNumber: "1048225702",
+    seedPosted: true,
   },
 ];
 
@@ -225,6 +237,10 @@ async function main() {
           description: transaction.description,
           merchant: transaction.merchant,
           status: transaction.status,
+          destinationAccountNumber:
+            "destinationAccountNumber" in transaction
+              ? transaction.destinationAccountNumber
+              : null,
         },
         create: {
           userId: demoUser.id,
@@ -235,11 +251,72 @@ async function main() {
           merchant: transaction.merchant,
           reference: transaction.reference,
           status: transaction.status,
+          destinationAccountNumber:
+            "destinationAccountNumber" in transaction
+              ? transaction.destinationAccountNumber
+              : null,
         },
       });
     }
 
     logStep(`Ensured ${DEMO_TRANSACTIONS.length} demo transactions.`);
+
+    const postedDemoReference = "DEMO-TXN-1007";
+    const postedDemoTransaction = await prisma.transaction.findUnique({
+      where: { reference: postedDemoReference },
+    });
+
+    if (postedDemoTransaction) {
+      const existingLedgerCount = await prisma.ledgerEntry.count({
+        where: { transactionId: postedDemoTransaction.id },
+      });
+
+      if (existingLedgerCount === 0) {
+        const sourceAccountId = accountIds.get("1048225701")!;
+        const destinationAccountId = accountIds.get("1048225702")!;
+        const transferAmount = "100.00";
+        const reviewedAt = new Date("2026-05-01T12:00:00.000Z");
+
+        await prisma.transaction.update({
+          where: { id: postedDemoTransaction.id },
+          data: {
+            postedAt: reviewedAt,
+            reviewedAt,
+            reviewedBy: adminUser.id,
+            reviewNote: "Demo posted internal transfer",
+          },
+        });
+
+        await prisma.ledgerEntry.createMany({
+          data: [
+            {
+              transactionId: postedDemoTransaction.id,
+              accountId: sourceAccountId,
+              userId: demoUser.id,
+              direction: "DEBIT",
+              amount: transferAmount,
+              currency: "USD",
+              balanceBefore: "18520.72",
+              balanceAfter: "18420.72",
+              description: postedDemoTransaction.description,
+            },
+            {
+              transactionId: postedDemoTransaction.id,
+              accountId: destinationAccountId,
+              userId: demoUser.id,
+              direction: "CREDIT",
+              amount: transferAmount,
+              currency: "USD",
+              balanceBefore: "42010.50",
+              balanceAfter: "42110.50",
+              description: `Transfer credit from ${postedDemoReference}`,
+            },
+          ],
+        });
+
+        logStep("Seeded posted demo transfer ledger entries.");
+      }
+    }
 
     await prisma.card.deleteMany({ where: { userId: demoUser.id } });
     await prisma.card.createMany({

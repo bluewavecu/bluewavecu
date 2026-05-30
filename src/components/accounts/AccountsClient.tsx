@@ -68,7 +68,8 @@ export function AccountsClient() {
           </p>
           <p className="mt-3 text-4xl font-semibold">{formatCurrency(totalAvailable)}</p>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            Across {data.accounts.length} authenticated Bluewave accounts.
+            Across {data.accounts.length} authenticated Bluewave accounts. Only approved and
+            posted transactions affect balances.
           </p>
         </article>
 

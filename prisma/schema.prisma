@@ -81,6 +81,11 @@ enum SupportTicketPriority {
   URGENT
 }
 
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
 model User {
   id             String          @id @default(cuid())
   fullName       String
@@ -98,6 +103,7 @@ model User {
   loans          Loan[]
   supportTickets SupportTicket[]
   adminAuditLogs AdminAuditLog[] @relation("AdminAuditLogs")
+  ledgerEntries  LedgerEntry[]
 
   @@index([email])
   @@index([role])
@@ -120,6 +126,7 @@ model Account {
   user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions     Transaction[]
   cards            Card[]
+  ledgerEntries    LedgerEntry[]
 
   @@index([userId])
   @@index([accountType])
@@ -127,25 +134,32 @@ model Account {
 }
 
 model Transaction {
-  id          String            @id @default(cuid())
-  userId      String
-  accountId   String
-  type        TransactionType
-  amount      Decimal           @db.Decimal(14, 2)
-  description String
-  merchant    String?
-  reference   String            @unique
-  status      TransactionStatus @default(PENDING)
-  createdAt   DateTime          @default(now())
+  id                       String            @id @default(cuid())
+  userId                   String
+  accountId                String
+  type                     TransactionType
+  amount                   Decimal           @db.Decimal(14, 2)
+  description              String
+  merchant                 String?
+  reference                String            @unique
+  status                   TransactionStatus @default(PENDING)
+  destinationAccountNumber String?
+  postedAt                 DateTime?
+  reviewedAt               DateTime?
+  reviewedBy               String?
+  reviewNote               String?
+  createdAt                DateTime          @default(now())
 
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account     Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account        Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  ledgerEntries  LedgerEntry[]
 
   @@index([userId])
   @@index([accountId])
   @@index([type])
   @@index([status])
   @@index([createdAt])
+  @@index([postedAt])
 }
 
 model Card {
@@ -220,5 +234,29 @@ model AdminAuditLog {
   @@index([adminId])
   @@index([entityType])
   @@index([entityId])
+  @@index([createdAt])
+}
+
+model LedgerEntry {
+  id            String          @id @default(cuid())
+  transactionId String
+  accountId     String
+  userId        String
+  direction     LedgerDirection
+  amount        Decimal         @db.Decimal(14, 2)
+  currency      String          @default("USD")
+  balanceBefore Decimal         @db.Decimal(14, 2)
+  balanceAfter  Decimal         @db.Decimal(14, 2)
+  description   String
+  createdAt     DateTime        @default(now())
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  account     Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionId, accountId, direction])
+  @@index([transactionId])
+  @@index([accountId])
+  @@index([userId])
   @@index([createdAt])
 }

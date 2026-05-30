@@ -6,6 +6,7 @@ import {
   sendAdminAlertEmail,
   sendTransferStatusEmail,
 } from "@/lib/email";
+import { failReviewedTransferTransaction, LedgerError, postApprovedTransferTransaction } from "@/lib/ledger";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateTransactionStatusSchema } from "@/lib/validators";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
@@ -38,8 +39,14 @@ function serializeTransaction(transaction: {
   reference: string;
   status: TransactionStatus;
   createdAt: Date;
+  postedAt: Date | null;
+  reviewedAt: Date | null;
+  reviewedBy: string | null;
+  reviewNote: string | null;
+  destinationAccountNumber: string | null;
   user: { id: string; fullName: string; email: string };
   account: { id: string; accountType: AdminTransactionRecord["account"]["accountType"]; accountNumber: string };
+  _count?: { ledgerEntries: number };
 }): AdminTransactionRecord {
   const masked = maskAccountNumber(transaction.account.accountNumber);
 
@@ -52,6 +59,12 @@ function serializeTransaction(transaction: {
     reference: transaction.reference,
     status: transaction.status,
     createdAt: transaction.createdAt.toISOString(),
+    postedAt: transaction.postedAt?.toISOString() ?? null,
+    reviewedAt: transaction.reviewedAt?.toISOString() ?? null,
+    reviewedBy: transaction.reviewedBy,
+    reviewNote: transaction.reviewNote,
+    destinationAccountNumber: transaction.destinationAccountNumber,
+    ledgerEntryCount: transaction._count?.ledgerEntries,
     user: transaction.user,
     account: {
       id: transaction.account.id,
@@ -59,6 +72,18 @@ function serializeTransaction(transaction: {
       maskedAccountNumber: masked.masked,
     },
   };
+}
+
+function handleLedgerError(error: LedgerError) {
+  if (error.code === "NOT_FOUND") {
+    return apiError(error.message, 404);
+  }
+
+  if (error.code === "INSUFFICIENT_FUNDS") {
+    return apiError(error.message, 400);
+  }
+
+  return apiError(error.message, 400);
 }
 
 export async function GET(request: NextRequest) {
@@ -90,6 +115,7 @@ export async function GET(request: NextRequest) {
       include: {
         user: { select: { id: true, fullName: true, email: true } },
         account: { select: { id: true, accountType: true, accountNumber: true } },
+        _count: { select: { ledgerEntries: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -119,6 +145,7 @@ export async function PATCH(request: NextRequest) {
       include: {
         user: { select: { id: true, fullName: true, email: true } },
         account: { select: { id: true, accountType: true, accountNumber: true } },
+        _count: { select: { ledgerEntries: true } },
       },
     });
 
@@ -126,60 +153,83 @@ export async function PATCH(request: NextRequest) {
       return apiError("Transaction not found", 404);
     }
 
-    if (existing.status !== "PENDING") {
-      return apiError("Only pending transactions can be updated", 400);
-    }
-
-    const reviewStatuses: Array<Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">> = [
-      "COMPLETED",
-      "FAILED",
-      "REVERSED",
-    ];
-
-    if (!reviewStatuses.includes(input.status)) {
-      return apiError("Invalid review status for pending transaction", 400);
-    }
-
     if (existing.type !== "TRANSFER") {
       return apiError("Only pending transfer transactions can be reviewed", 400);
     }
 
-    const updated = await prisma.transaction.update({
-      where: { id: input.transactionId },
-      data: { status: input.status },
-      include: {
-        user: { select: { id: true, fullName: true, email: true } },
-        account: { select: { id: true, accountType: true, accountNumber: true } },
-      },
-    });
+    let ledgerResult;
+
+    if (input.status === "COMPLETED") {
+      try {
+        ledgerResult = await postApprovedTransferTransaction({
+          transactionId: input.transactionId,
+          adminId: auth.admin.id,
+          reviewNote: input.reviewNote,
+        });
+      } catch (error) {
+        if (error instanceof LedgerError) {
+          return handleLedgerError(error);
+        }
+        throw error;
+      }
+    } else {
+      try {
+        ledgerResult = await failReviewedTransferTransaction({
+          transactionId: input.transactionId,
+          adminId: auth.admin.id,
+          status: input.status,
+          reviewNote: input.reviewNote,
+        });
+      } catch (error) {
+        if (error instanceof LedgerError) {
+          return handleLedgerError(error);
+        }
+        throw error;
+      }
+    }
 
     await logAdminAction({
       adminId: auth.admin.id,
-      action: "UPDATE_TRANSACTION_STATUS",
+      action: input.status === "COMPLETED" ? "POST_TRANSFER_LEDGER" : "UPDATE_TRANSACTION_STATUS",
       entityType: "Transaction",
-      entityId: updated.id,
+      entityId: ledgerResult.id,
       details: {
         previousStatus: existing.status,
-        nextStatus: updated.status,
-        reference: updated.reference,
-        userEmail: updated.user.email,
+        nextStatus: ledgerResult.status,
+        reference: ledgerResult.reference,
+        userEmail: existing.user.email,
+        reviewNote: input.reviewNote ?? null,
+        ledgerEntryCount: ledgerResult.ledgerEntries.length,
       },
     });
 
+    const updated = await prisma.transaction.findUnique({
+      where: { id: ledgerResult.id },
+      include: {
+        user: { select: { id: true, fullName: true, email: true } },
+        account: { select: { id: true, accountType: true, accountNumber: true } },
+        _count: { select: { ledgerEntries: true } },
+      },
+    });
+
+    if (!updated) {
+      return apiError("Transaction not found after review", 404);
+    }
+
     void sendTransferStatusEmail({
-      email: updated.user.email,
-      fullName: updated.user.fullName,
-      amount: updated.amount.toNumber(),
-      reference: updated.reference,
-      description: updated.description,
-      status: updated.status as "COMPLETED" | "FAILED" | "REVERSED",
+      email: existing.user.email,
+      fullName: existing.user.fullName,
+      amount: ledgerResult.amount,
+      reference: ledgerResult.reference,
+      description: ledgerResult.description,
+      status: ledgerResult.status as "COMPLETED" | "FAILED" | "REVERSED",
     });
 
     if (input.status === "COMPLETED" || input.status === "FAILED") {
       void sendAdminAlertEmail({
-        subject: `Transfer review ${input.status === "COMPLETED" ? "approved" : "declined"}`,
-        message: `${updated.user.fullName}'s transfer ${updated.reference} was marked ${input.status}.`,
-        idempotencyKey: `admin-alert/transfer-review/${updated.reference}/${input.status}`,
+        subject: `Transfer review ${input.status === "COMPLETED" ? "approved and posted" : "declined"}`,
+        message: `${existing.user.fullName}'s transfer ${ledgerResult.reference} was marked ${input.status}.`,
+        idempotencyKey: `admin-alert/transfer-review/${ledgerResult.reference}/${input.status}`,
       });
     }
 

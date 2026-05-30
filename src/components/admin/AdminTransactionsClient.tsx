@@ -33,17 +33,18 @@ const reviewActions: Array<{
   {
     status: "COMPLETED",
     label: "Approve",
-    confirm: "Approve this pending transfer? Balances will not change in the current workflow.",
+    confirm:
+      "Approving this transfer will post ledger entries and update balances. Continue?",
   },
   {
     status: "FAILED",
     label: "Fail",
-    confirm: "Mark this pending transfer as failed?",
+    confirm: "Mark this pending transfer as failed? Balances will not change.",
   },
   {
     status: "REVERSED",
     label: "Reverse",
-    confirm: "Reverse this pending transfer review decision?",
+    confirm: "Reverse this pending transfer review? Balances will not change.",
   },
 ];
 
@@ -52,6 +53,20 @@ function getStatusLabel(status: string) {
     .toLowerCase()
     .replace(/_/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatReviewDate(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function getStatusBadgeClass(status: TransactionStatus) {
@@ -83,7 +98,10 @@ function TransactionReviewCard({
     confirmMessage: string,
   ) => void;
 }) {
-  const canReview = transaction.status === "PENDING" && transaction.type === "TRANSFER";
+  const canReview =
+    transaction.status === "PENDING" &&
+    transaction.type === "TRANSFER" &&
+    !transaction.postedAt;
 
   return (
     <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
@@ -98,6 +116,21 @@ function TransactionReviewCard({
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
             {getStatusLabel(transaction.type)} | {transaction.reference}
           </p>
+          {transaction.postedAt ? (
+            <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+              Posted {formatReviewDate(transaction.postedAt)}
+            </p>
+          ) : null}
+          {transaction.reviewedAt ? (
+            <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.48]">
+              Reviewed {formatReviewDate(transaction.reviewedAt)}
+            </p>
+          ) : null}
+          {transaction.reviewNote ? (
+            <p className="mt-2 text-sm text-bluewave-gray dark:text-white/[0.58]">
+              Review note: {transaction.reviewNote}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col items-start gap-2 lg:items-end">
           <p className="text-lg font-semibold text-primary-navy dark:text-white">
@@ -120,7 +153,7 @@ function TransactionReviewCard({
             <button
               key={`${transaction.id}-${action.status}`}
               type="button"
-              disabled={isUpdating}
+              disabled={isUpdating || Boolean(transaction.postedAt)}
               onClick={() => onReview(transaction.id, action.status, action.confirm)}
               className="rounded-full border border-primary-navy/[0.08] px-3 py-1.5 text-xs font-semibold transition hover:border-ocean-blue disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.08]"
             >
@@ -130,7 +163,9 @@ function TransactionReviewCard({
         </div>
       ) : (
         <p className="mt-4 text-xs font-medium text-bluewave-gray dark:text-white/[0.48]">
-          Review actions are available only for pending transfer requests.
+          {transaction.postedAt
+            ? "This transfer has already been posted to the ledger."
+            : "Review actions are available only for pending transfer requests."}
         </p>
       )}
     </article>
@@ -172,10 +207,20 @@ export function AdminTransactionsClient() {
       return;
     }
 
-    const success = await updateTransactionStatus(transactionId, status);
+    const reviewNote = window.prompt("Optional review note (leave blank to skip):")?.trim();
+
+    const success = await updateTransactionStatus(
+      transactionId,
+      status,
+      reviewNote || undefined,
+    );
 
     if (success) {
-      setSuccessMessage(`Transfer marked as ${getStatusLabel(status).toLowerCase()}.`);
+      setSuccessMessage(
+        status === "COMPLETED"
+          ? "Transfer approved and posted to the ledger."
+          : `Transfer marked as ${getStatusLabel(status).toLowerCase()}.`,
+      );
       await refetch();
     }
   }
@@ -265,7 +310,8 @@ export function AdminTransactionsClient() {
               Pending Transfer Review
             </h2>
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-              Review transfer requests before completion. Balances are not updated in this workflow.
+              Review transfer requests before posting. Approving a transfer posts ledger entries
+              and updates balances.
             </p>
           </div>
 

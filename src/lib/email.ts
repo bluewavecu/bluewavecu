@@ -214,17 +214,22 @@ export async function sendTransferStatusEmail(params: {
         ? "declined"
         : "reversed";
 
+  const balanceMessage =
+    params.status === "COMPLETED"
+      ? "Balances have been updated after ledger posting."
+      : "Account balances were not changed.";
+
   return safeSendEmail(
     {
       to: params.email,
       subject: `Transfer request ${statusLabel}`,
-      text: `Hi ${params.fullName}, your transfer ${params.reference} was ${statusLabel}.`,
+      text: `Hi ${params.fullName}, your transfer ${params.reference} was ${statusLabel}. ${balanceMessage}`,
       html: buildEmailHtml(
         `Transfer request ${statusLabel}`,
         `<p>Hi ${escapeHtml(params.fullName)},</p>
          <p>Your transfer request <strong>${escapeHtml(params.reference)}</strong> for <strong>$${Math.abs(params.amount).toFixed(2)}</strong> has been <strong>${statusLabel}</strong>.</p>
          <p><strong>Details:</strong> ${escapeHtml(params.description)}</p>
-         <p>Balances are not moved automatically in the current review workflow.</p>`,
+         <p>${balanceMessage}</p>`,
       ),
       idempotencyKey: `transfer-status/${params.reference}/${params.status}`,
     },

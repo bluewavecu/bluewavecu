@@ -213,8 +213,28 @@ Transfer review workflow:
 
 - Member transfer POST creates a `PENDING` transfer transaction (no balance movement).
 - Admin reviews pending transfers at `/admin/transactions` with Approve / Fail / Reverse actions.
+- **Approve** posts ledger entries and updates balances through the ledger service.
+- **Fail / Reverse** update review status only — no balance changes.
 - Status updates write audit logs and trigger email notifications.
-- Balances remain unchanged until Step 10 ledger work.
+
+### Ledger System
+
+Bluewave uses a `LedgerEntry` model for admin-approved transfer posting:
+
+- User-created transfers never directly update balances.
+- Only admin **Approve** (`COMPLETED`) on pending `TRANSFER` transactions posts ledger entries.
+- Posting runs inside a Prisma database transaction with double-posting prevention.
+- CHECKING/SAVINGS accounts reject approval when funds are insufficient.
+- CREDIT accounts may go negative per current rules.
+- Internal transfers credit a destination Bluewave account when `destinationAccountNumber` matches.
+- External transfers debit the source account only (simulation).
+
+Apply the ledger migration when PostgreSQL is available:
+
+```bash
+npx prisma migrate dev --name add_ledger_entries
+npm run db:seed
+```
 
 ### Deployment Troubleshooting
 
@@ -245,6 +265,15 @@ Transfer review workflow:
 - Admin transactions UI includes a dedicated pending transfer review section with confirm actions.
 - Balances are not updated — transfer review remains notification and status only.
 
+## Step 10 Notes
+
+- Added `LedgerEntry` model and transaction review/posting metadata (`postedAt`, `reviewedAt`, `reviewedBy`, `reviewNote`).
+- Added `src/lib/ledger.ts` for admin-approved transfer posting and failed/reversed review handling.
+- Admin approve posts debit/credit ledger entries inside a database transaction.
+- Double-posting is blocked via `postedAt`, ledger row checks, and unique ledger constraints.
+- Insufficient funds on CHECKING/SAVINGS blocks approval with a readable API error.
+- Pending Step 11: notifications center, statement export, account activity timeline, production audit/event logs.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -261,6 +290,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 7: Admin dashboard, role guard, and audit logs.
 - Step 8: Deployment hardening, Render config, middleware protection, and production safeguards.
 - Step 9: Email notifications and admin transfer review workflow.
+- Step 10: Balance ledger and admin-approved transfer posting.
 
 ## Step 2 Notes
 

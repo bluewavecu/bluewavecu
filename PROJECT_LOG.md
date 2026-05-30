@@ -494,3 +494,43 @@ Status: Completed
 ### Pending Next Step
 
 - Balance ledger system, transaction double-entry safety, admin approval balance posting, and webhook/event log foundation.
+
+## Step 10: Balance Ledger And Safe Admin Posting Engine
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `src/lib/ledger.ts`
+- `src/lib/validators.ts`
+- `src/types/banking.ts`
+- `src/app/api/admin/transactions/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/transactions/route.ts`
+- `src/hooks/useAdminTransactions.ts`
+- `src/components/admin/AdminTransactionsClient.tsx`
+- `src/components/transactions/TransactionsClient.tsx`
+- `src/components/accounts/AccountsClient.tsx`
+- `src/lib/email.ts`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- `LedgerEntry` model with DEBIT/CREDIT directions and balance before/after snapshots.
+- Transaction posting metadata and destination account number for transfer routing.
+- Ledger posting service with Prisma transaction safety and duplicate prevention.
+- Admin approve posts balances; fail/reverse review without balance movement.
+- Insufficient funds guard for CHECKING/SAVINGS source accounts.
+- Ledger-aware transaction APIs and admin/member UI updates.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–9 auth, email, middleware, admin dashboard, and review flows.
+- Do not allow user transfer POST to post ledger entries directly.
+
+### Pending Next Step
+
+- Notifications center, statement export, account activity timeline, and production audit/event logs.

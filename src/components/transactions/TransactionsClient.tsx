@@ -45,6 +45,31 @@ function getStatusLabel(status: string, type?: TransactionType) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function getDisplayStatus(transaction: {
+  status: TransactionStatus;
+  type: TransactionType;
+  postedAt?: string | null;
+  ledgerSummary?: { posted: boolean };
+}) {
+  if (transaction.status === "COMPLETED" && transaction.type === "TRANSFER" && transaction.ledgerSummary?.posted) {
+    return "Posted";
+  }
+
+  return getStatusLabel(transaction.status, transaction.type);
+}
+
+function formatReviewDate(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function formatTransactionDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -67,7 +92,7 @@ function getTransactionKind(type: TransactionType, amount: number) {
 
 function getStatusBadgeClass(status: TransactionStatus) {
   if (status === "COMPLETED") {
-    return "bg-ocean-blue/[0.10] text-royal-blue dark:text-light-blue";
+    return "bg-emerald-500/[0.12] text-emerald-700 dark:text-emerald-300";
   }
 
   if (status === "PENDING") {
@@ -224,6 +249,16 @@ export function TransactionsClient() {
                           {formatTransactionDate(transaction.createdAt)} |{" "}
                           {transaction.description} | {transaction.maskedAccountNumber}
                         </p>
+                        {transaction.postedAt ? (
+                          <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
+                            Posted {formatReviewDate(transaction.postedAt)}
+                          </p>
+                        ) : null}
+                        {transaction.reviewNote ? (
+                          <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.48]">
+                            Review note: {transaction.reviewNote}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-col items-start gap-2 sm:items-end">
                         <p
@@ -243,7 +278,7 @@ export function TransactionsClient() {
                             getStatusBadgeClass(transaction.status),
                           )}
                         >
-                          {getStatusLabel(transaction.status, transaction.type)}
+                          {getDisplayStatus(transaction)}
                         </span>
                       </div>
                     </div>

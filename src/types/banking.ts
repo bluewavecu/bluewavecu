@@ -200,6 +200,13 @@ export type PageTransaction = {
   reference: string;
   status: TransactionStatus;
   createdAt: string;
+  postedAt?: string | null;
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
+  ledgerSummary?: {
+    entryCount: number;
+    posted: boolean;
+  };
 };
 
 export type TransactionsData = {
@@ -299,6 +306,12 @@ export type AdminTransactionRecord = {
   reference: string;
   status: TransactionStatus;
   createdAt: string;
+  postedAt?: string | null;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  reviewNote?: string | null;
+  destinationAccountNumber?: string | null;
+  ledgerEntryCount?: number;
   user: {
     id: string;
     fullName: string;

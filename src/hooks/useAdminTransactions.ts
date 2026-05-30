@@ -22,6 +22,7 @@ type AdminTransactionsState = {
   updateTransactionStatus: (
     transactionId: string,
     status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
+    reviewNote?: string,
   ) => Promise<boolean>;
 };
 
@@ -112,13 +113,14 @@ export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTr
     async (
       transactionId: string,
       status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
+      reviewNote?: string,
     ) => {
       setIsUpdating(true);
       setUpdateError(null);
 
       const result = await patchJson<{ transaction: AdminTransactionRecord }>(
         "/api/admin/transactions",
-        { transactionId, status },
+        { transactionId, status, ...(reviewNote ? { reviewNote } : {}) },
       );
 
       if (!result.success) {
