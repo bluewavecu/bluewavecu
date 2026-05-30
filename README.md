@@ -97,7 +97,8 @@ Demo credentials created by the seed script:
 
 ```text
 Member: avery.morgan@bluewavecu.test / BluewaveDemo2026!
-Admin: admin@bluewavecu.test / BluewaveDemo2026!
+Pending member: casey.reed@bluewavecu.test / BluewaveDemo2026!
+Admin: admin@bluewavecu.test / BluewaveAdmin2026!
 ```
 
 ## App Folder Structure
@@ -145,6 +146,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 4: Auth form API wiring and demo seed data.
 - Step 5: Authenticated dashboard API data connection.
 - Step 6: Full banking page data and transaction workflows.
+- Step 7: Admin dashboard, role guard, and audit logs.
 
 ## Step 2 Notes
 
@@ -225,3 +227,37 @@ After seeding demo data and signing in, these member routes load live API data:
 6. Verify authenticated pages load data and handle unauthorized access by redirecting to `/login`.
 7. On `/transfers`, submit a transfer and confirm the pending success message without balance changes.
 8. On `/support`, create a ticket and confirm it appears in the ticket list.
+
+## Admin Routes
+
+After signing in with the demo admin account, these role-guarded routes are available:
+
+- `/admin`
+- `/admin/users`
+- `/admin/accounts`
+- `/admin/transactions`
+- `/admin/support`
+- `/admin/audit-logs`
+
+## Step 7 Notes
+
+- Added `requireAdmin` role guard returning `401 Unauthorized` or `403 Forbidden`.
+- Added admin overview, users, accounts, transactions, support, and audit log APIs with PATCH workflows where applicable.
+- Admin PATCH actions write to `AdminAuditLog` without exposing `passwordHash`.
+- Pending transfer review can mark PENDING transactions as COMPLETED, FAILED, or REVERSED without changing balances.
+- Support ticket admin updates use schema statuses (`PENDING` displays as in progress in the UI).
+- Pending next step: deployment hardening, Render configuration, environment validation, and production safety.
+
+## Local Testing (Step 7)
+
+1. Complete Step 6 setup (`DATABASE_URL`, `JWT_SECRET`, `npx prisma generate`, `npm run db:seed`).
+2. Start the app with `npm run dev`.
+3. Sign in at `/login` with the demo admin account:
+   - Admin: `admin@bluewavecu.test` / `BluewaveAdmin2026!`
+4. Open `/admin` and verify overview metrics load.
+5. On `/admin/users`, activate the pending member `casey.reed@bluewavecu.test`.
+6. On `/admin/transactions`, review the pending transfer and update its status.
+7. On `/admin/support`, update a ticket status and confirm it persists.
+8. On `/admin/audit-logs`, confirm new admin actions appear after PATCH operations.
+9. Sign in as the demo member and confirm `/api/admin/overview` returns `403 Forbidden`.
+10. Sign out or use a private window and confirm admin APIs return `401 Unauthorized`.

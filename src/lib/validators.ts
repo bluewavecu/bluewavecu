@@ -31,7 +31,25 @@ export const supportTicketSchema = z.object({
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
 });
 
+export const adminUpdateUserStatusSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  status: z.enum(["PENDING", "ACTIVE", "SUSPENDED"]),
+});
+
+export const adminUpdateTransactionStatusSchema = z.object({
+  transactionId: z.string().min(1, "Transaction ID is required"),
+  status: z.enum(["COMPLETED", "FAILED", "REVERSED"]),
+});
+
+export const adminUpdateSupportTicketStatusSchema = z.object({
+  ticketId: z.string().min(1, "Ticket ID is required"),
+  status: z.enum(["OPEN", "PENDING", "RESOLVED", "CLOSED"]),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
+export type AdminUpdateUserStatusInput = z.infer<typeof adminUpdateUserStatusSchema>;
+export type AdminUpdateTransactionStatusInput = z.infer<typeof adminUpdateTransactionStatusSchema>;
+export type AdminUpdateSupportTicketStatusInput = z.infer<typeof adminUpdateSupportTicketStatusSchema>;

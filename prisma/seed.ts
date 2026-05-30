@@ -3,8 +3,10 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 
 const DEMO_USER_EMAIL = "avery.morgan@bluewavecu.test";
+const DEMO_PENDING_USER_EMAIL = "casey.reed@bluewavecu.test";
 const DEMO_ADMIN_EMAIL = "admin@bluewavecu.test";
-const DEMO_PASSWORD = "BluewaveDemo2026!";
+const DEMO_MEMBER_PASSWORD = "BluewaveDemo2026!";
+const DEMO_ADMIN_PASSWORD = "BluewaveAdmin2026!";
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -19,7 +21,8 @@ function createPrismaClient() {
 
 async function main() {
   const prisma = createPrismaClient();
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const memberPasswordHash = await bcrypt.hash(DEMO_MEMBER_PASSWORD, 12);
+  const adminPasswordHash = await bcrypt.hash(DEMO_ADMIN_PASSWORD, 12);
 
   try {
     const demoUser = await prisma.user.upsert({
@@ -27,7 +30,7 @@ async function main() {
       update: {
         fullName: "Avery Morgan",
         phone: "(555) 014-2084",
-        passwordHash,
+        passwordHash: memberPasswordHash,
         role: "USER",
         status: "ACTIVE",
       },
@@ -35,9 +38,28 @@ async function main() {
         fullName: "Avery Morgan",
         email: DEMO_USER_EMAIL,
         phone: "(555) 014-2084",
-        passwordHash,
+        passwordHash: memberPasswordHash,
         role: "USER",
         status: "ACTIVE",
+      },
+    });
+
+    const pendingUser = await prisma.user.upsert({
+      where: { email: DEMO_PENDING_USER_EMAIL },
+      update: {
+        fullName: "Casey Reed",
+        phone: "(555) 014-7712",
+        passwordHash: memberPasswordHash,
+        role: "USER",
+        status: "PENDING",
+      },
+      create: {
+        fullName: "Casey Reed",
+        email: DEMO_PENDING_USER_EMAIL,
+        phone: "(555) 014-7712",
+        passwordHash: memberPasswordHash,
+        role: "USER",
+        status: "PENDING",
       },
     });
 
@@ -46,7 +68,7 @@ async function main() {
       update: {
         fullName: "Jordan Parker",
         phone: "(555) 019-4402",
-        passwordHash,
+        passwordHash: adminPasswordHash,
         role: "ADMIN",
         status: "ACTIVE",
       },
@@ -54,13 +76,15 @@ async function main() {
         fullName: "Jordan Parker",
         email: DEMO_ADMIN_EMAIL,
         phone: "(555) 019-4402",
-        passwordHash,
+        passwordHash: adminPasswordHash,
         role: "ADMIN",
         status: "ACTIVE",
       },
     });
 
-    await prisma.supportTicket.deleteMany({ where: { userId: demoUser.id } });
+    await prisma.supportTicket.deleteMany({
+      where: { userId: { in: [demoUser.id, pendingUser.id] } },
+    });
     await prisma.loan.deleteMany({ where: { userId: demoUser.id } });
     await prisma.card.deleteMany({ where: { userId: demoUser.id } });
     await prisma.transaction.deleteMany({ where: { userId: demoUser.id } });
@@ -158,6 +182,16 @@ async function main() {
           reference: "DEMO-TXN-1005",
           status: "COMPLETED",
         },
+        {
+          userId: demoUser.id,
+          accountId: checking.id,
+          type: "TRANSFER",
+          amount: "-250.00",
+          description: "Transfer to Account ending 5799: Rent payment",
+          merchant: "Jordan Parker",
+          reference: "DEMO-TXN-1006",
+          status: "PENDING",
+        },
       ],
     });
 
@@ -213,25 +247,55 @@ async function main() {
           status: "PENDING",
           priority: "HIGH",
         },
+        {
+          userId: pendingUser.id,
+          subject: "New membership onboarding",
+          message: "Pending member account awaiting admin activation review.",
+          status: "OPEN",
+          priority: "URGENT",
+        },
       ],
     });
 
-    await prisma.adminAuditLog.create({
-      data: {
-        adminId: adminUser.id,
-        action: "SEED_DEMO_DATA",
-        entityType: "User",
-        entityId: demoUser.id,
-        details: {
-          email: DEMO_USER_EMAIL,
-          purpose: "Local demo account bootstrap",
+    await prisma.adminAuditLog.createMany({
+      data: [
+        {
+          adminId: adminUser.id,
+          action: "SEED_DEMO_DATA",
+          entityType: "User",
+          entityId: demoUser.id,
+          details: {
+            email: DEMO_USER_EMAIL,
+            purpose: "Local demo account bootstrap",
+          },
         },
-      },
+        {
+          adminId: adminUser.id,
+          action: "REVIEW_PENDING_MEMBER",
+          entityType: "User",
+          entityId: pendingUser.id,
+          details: {
+            email: DEMO_PENDING_USER_EMAIL,
+            status: "PENDING",
+          },
+        },
+        {
+          adminId: adminUser.id,
+          action: "QUEUE_TRANSFER_REVIEW",
+          entityType: "Transaction",
+          entityId: "DEMO-TXN-1006",
+          details: {
+            reference: "DEMO-TXN-1006",
+            status: "PENDING",
+          },
+        },
+      ],
     });
 
     console.log("Seeded Bluewave demo banking data.");
-    console.log(`Demo member: ${DEMO_USER_EMAIL} / ${DEMO_PASSWORD}`);
-    console.log(`Demo admin: ${DEMO_ADMIN_EMAIL} / ${DEMO_PASSWORD}`);
+    console.log(`Demo member: ${DEMO_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
+    console.log(`Demo pending member: ${DEMO_PENDING_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
+    console.log(`Demo admin: ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`);
   } finally {
     await prisma.$disconnect();
   }

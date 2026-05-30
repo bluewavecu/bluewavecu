@@ -278,3 +278,135 @@ export type TransactionFilters = {
   type?: TransactionType;
   limit?: number;
 };
+
+export type AdminUserSummary = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminTransactionRecord = {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  merchant: string | null;
+  reference: string;
+  status: TransactionStatus;
+  createdAt: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  account: {
+    id: string;
+    accountType: AccountType;
+    maskedAccountNumber: string;
+  };
+};
+
+export type AdminSupportTicketRecord = {
+  id: string;
+  subject: string;
+  message: string;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+};
+
+export type AdminOverviewCounts = {
+  users: number;
+  activeUsers: number;
+  pendingUsers: number;
+  accounts: number;
+  transactions: number;
+  pendingTransfers: number;
+  supportTickets: number;
+};
+
+export type AdminOverviewData = {
+  counts: AdminOverviewCounts;
+  recentUsers: AdminUserSummary[];
+  recentTransactions: AdminTransactionRecord[];
+  recentSupportTickets: AdminSupportTicketRecord[];
+};
+
+export type AdminUsersData = {
+  users: AdminUserSummary[];
+};
+
+export type AdminUserFilters = {
+  status?: UserStatus;
+  role?: UserRole;
+  search?: string;
+};
+
+export type AdminAccountRecord = {
+  id: string;
+  accountType: AccountType;
+  displayName: string;
+  maskedAccountNumber: string;
+  balance: number;
+  availableBalance: number;
+  currency: string;
+  status: AccountStatus;
+  createdAt: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    status: UserStatus;
+  };
+};
+
+export type AdminAccountsData = {
+  accounts: AdminAccountRecord[];
+};
+
+export type AdminTransactionsData = {
+  transactions: AdminTransactionRecord[];
+};
+
+export type AdminTransactionFilters = {
+  status?: TransactionStatus;
+  type?: TransactionType;
+};
+
+export type AdminSupportData = {
+  tickets: AdminSupportTicketRecord[];
+};
+
+export type AdminSupportFilters = {
+  status?: SupportTicketStatus;
+  priority?: SupportTicketPriority;
+};
+
+export type AdminAuditLogRecord = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details: Record<string, unknown> | null;
+  createdAt: string;
+  admin: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+};
+
+export type AdminAuditLogsData = {
+  logs: AdminAuditLogRecord[];
+};
