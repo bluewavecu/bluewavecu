@@ -7,13 +7,17 @@ import {
   Send,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  MEMBER_LOANS_PATH,
+  MEMBER_SUPPORT_PATH,
+} from "@/lib/memberRoutes";
 
 const quickActions = [
   { label: "Transfer", href: "/transfers", icon: Send },
   { label: "Pay Card", href: "/cards", icon: CreditCard },
   { label: "View Activity", href: "/transactions", icon: ReceiptText },
-  { label: "Loan Center", href: "/loans", icon: Landmark },
-  { label: "Support", href: "/support", icon: CircleHelp },
+  { label: "Loan Center", href: MEMBER_LOANS_PATH, icon: Landmark },
+  { label: "Support", href: MEMBER_SUPPORT_PATH, icon: CircleHelp },
   { label: "Move Money", href: "/transfers", icon: ArrowLeftRight },
 ];
 

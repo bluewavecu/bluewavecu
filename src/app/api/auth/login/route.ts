@@ -3,6 +3,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@/lib/auth";
 import { sendLoginAlertEmail } from "@/lib/email";
 import { writeSecurityEvent } from "@/lib/eventLog";
+import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { getClientIp, getUserAgent } from "@/lib/requestContext";
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       title: "New sign-in detected",
       message: `A sign-in was recorded from ${session.deviceName}.`,
       metadata: {
-        href: "/security",
+        href: MEMBER_SECURITY_PATH,
         sessionId: session.id,
         deviceName: session.deviceName,
       },

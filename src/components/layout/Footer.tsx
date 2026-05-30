@@ -6,35 +6,35 @@ const footerLinks = [
   {
     title: "Banking",
     links: [
-      { label: "Personal", href: "/#products" },
-      { label: "Business", href: "/#products" },
-      { label: "Savings", href: "/#products" },
-      { label: "Loans", href: "/#products" },
+      { label: "Personal", href: "/personal" },
+      { label: "Business", href: "/business" },
+      { label: "Savings", href: "/savings" },
+      { label: "Loans", href: "/loans" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Support", href: "/#support" },
-      { label: "Security", href: "/#security" },
+      { label: "Support", href: "/support" },
+      { label: "Security", href: "/security" },
       { label: "Mobile App", href: "/mobile-app" },
-      { label: "Rates", href: "/#products" },
+      { label: "Rates", href: "/rates" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "/#features" },
-      { label: "Careers", href: "/#support" },
-      { label: "Newsroom", href: "/#support" },
-      { label: "Contact", href: "/#support" },
+      { label: "About", href: "/about" },
+      { label: "Careers", href: "/careers" },
+      { label: "Newsroom", href: "/newsroom" },
+      { label: "Contact", href: "/contact" },
     ],
   },
 ];
 
 export function Footer() {
   return (
-    <footer id="support" className="bg-[#061222] text-white">
+    <footer id="support" className="bg-brand-navy text-white">
       <div className="section-shell py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1.45fr]">
           <div>

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
+import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
 import { getPrisma } from "@/lib/prisma";
 import type { ActivityTimelineData, ActivityTimelineItem } from "@/types/banking";
 
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
         description: ticket.message.slice(0, 120),
         status: ticket.status,
         createdAt: ticket.updatedAt.toISOString(),
-        href: "/support",
+        href: MEMBER_SUPPORT_PATH,
       });
     }
 

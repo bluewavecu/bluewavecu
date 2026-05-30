@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { mfaToggleSchema } from "@/lib/validators";
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       message: input.enabled
         ? "Email verification MFA foundation is enabled. OTP delivery will activate in a later step."
         : "Email verification MFA was disabled on your account.",
-      metadata: { href: "/security", method: input.method },
+      metadata: { href: MEMBER_SECURITY_PATH, method: input.method },
     });
 
     return apiSuccess({

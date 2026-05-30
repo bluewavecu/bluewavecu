@@ -1,4 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
+import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
 import { getPrisma } from "@/lib/prisma";
 
 export type NotificationTypeValue =
@@ -150,7 +151,7 @@ export async function createSupportNotification(params: {
     metadata: {
       ticketId: params.ticketId,
       status: params.status,
-      href: "/support",
+      href: MEMBER_SUPPORT_PATH,
     },
   });
 }

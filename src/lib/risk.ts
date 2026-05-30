@@ -1,5 +1,6 @@
 import type { Prisma, RiskSeverity } from "@/generated/prisma/client";
 import { getUserKycStatus } from "@/lib/customerProfile";
+import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { sendAdminAlertEmail } from "@/lib/email";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
@@ -88,7 +89,7 @@ async function handleHighRisk(params: {
     metadata: {
       eventType: params.assessment.eventType,
       severity: params.assessment.severity,
-      href: "/security",
+      href: MEMBER_SECURITY_PATH,
     },
   });
 

@@ -20,6 +20,12 @@ import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { cn } from "@/lib/utils";
 
+import {
+  MEMBER_LOANS_PATH,
+  MEMBER_SECURITY_PATH,
+  MEMBER_SUPPORT_PATH,
+} from "@/lib/memberRoutes";
+
 const appRoutes = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Accounts", href: "/accounts", icon: WalletCards },
@@ -28,10 +34,10 @@ const appRoutes = [
   { label: "Transactions", href: "/transactions", icon: ReceiptText },
   { label: "Disputes", href: "/disputes", icon: Scale },
   { label: "Cards", href: "/cards", icon: CreditCard },
-  { label: "Loans", href: "/loans", icon: Landmark },
-  { label: "Support", href: "/support", icon: CircleHelp },
+  { label: "Loans", href: MEMBER_LOANS_PATH, icon: Landmark },
+  { label: "Support", href: MEMBER_SUPPORT_PATH, icon: CircleHelp },
   { label: "Profile", href: "/profile", icon: UserRound },
-  { label: "Security", href: "/security", icon: Shield },
+  { label: "Security", href: MEMBER_SECURITY_PATH, icon: Shield },
 ];
 
 export function AppSidebar() {

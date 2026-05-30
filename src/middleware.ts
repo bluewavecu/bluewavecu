@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME, decodeAuthTokenPayload } from "@/lib/auth";
 import { buildLoginUrl } from "@/lib/authSession";
+import {
+  MEMBER_LOANS_PATH,
+  MEMBER_SECURITY_PATH,
+  MEMBER_SUPPORT_PATH,
+} from "@/lib/memberRoutes";
 
 const memberRoutes = [
   "/dashboard",
@@ -11,10 +16,10 @@ const memberRoutes = [
   "/bill-pay",
   "/disputes",
   "/cards",
-  "/loans",
-  "/support",
+  MEMBER_LOANS_PATH,
+  MEMBER_SUPPORT_PATH,
   "/profile",
-  "/security",
+  MEMBER_SECURITY_PATH,
 ];
 
 function isProtectedMemberRoute(pathname: string) {
@@ -58,10 +63,8 @@ export const config = {
     "/bill-pay/:path*",
     "/disputes/:path*",
     "/cards/:path*",
-    "/loans/:path*",
-    "/support/:path*",
+    "/member/:path*",
     "/profile/:path*",
-    "/security/:path*",
     "/admin/:path*",
   ],
 };

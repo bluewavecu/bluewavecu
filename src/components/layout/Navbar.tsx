@@ -19,7 +19,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.14] bg-primary-navy/[0.88] text-white shadow-[0_12px_40px_rgba(7,21,38,0.16)] backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-navy text-white shadow-[0_12px_40px_rgba(20,35,60,0.18)]">
       <nav
         aria-label="Main navigation"
         className="section-shell flex h-20 items-center justify-between gap-6"
@@ -68,7 +68,7 @@ export function Navbar() {
 
       <div
         className={cn(
-          "overflow-hidden border-t border-white/[0.12] bg-primary-navy/[0.96] backdrop-blur-2xl transition-[max-height,opacity] duration-300 lg:hidden",
+          "overflow-hidden border-t border-white/10 bg-brand-navy transition-[max-height,opacity] duration-300 lg:hidden",
           open ? "max-h-[480px] opacity-100" : "max-h-0 opacity-0",
         )}
       >

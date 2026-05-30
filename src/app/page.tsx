@@ -9,6 +9,7 @@ import {
   Sparkles,
   WalletCards,
 } from "lucide-react";
+import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { MotionReveal } from "@/components/home/MotionReveal";
@@ -224,13 +225,19 @@ export default function Home() {
                   <p className="mt-3 text-sm leading-6 text-bluewave-gray">
                     {product.description}
                   </p>
-                  <a
-                    href="#open-account"
+                  <Link
+                    href={
+                      product.title === "Personal Banking"
+                        ? "/personal"
+                        : product.title === "Business Banking"
+                          ? "/business"
+                          : "/loans"
+                    }
                     className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue transition hover:text-ocean-blue"
                   >
                     Explore
                     <ArrowRight size={16} aria-hidden="true" />
-                  </a>
+                  </Link>
                 </div>
               </MotionReveal>
             ))}

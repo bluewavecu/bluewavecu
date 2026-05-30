@@ -165,6 +165,14 @@ export const adminKycUpdateSchema = z
     path: ["reviewNote"],
   });
 
+export const contactFormSchema = z.object({
+  fullName: z.string().trim().min(2).max(120),
+  email: z.string().trim().toLowerCase().email(),
+  phone: z.string().trim().max(32).optional(),
+  topic: z.string().trim().min(2).max(80),
+  message: z.string().trim().min(10).max(4000),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;
 export type PayeeUpdateInput = z.infer<typeof payeeUpdateSchema>;

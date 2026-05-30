@@ -46,23 +46,10 @@ export function TestimonialsCarousel() {
   );
 
   return (
-    <section className="bg-background pb-16 sm:pb-20" aria-labelledby="member-stories">
+    <section className="bg-background pb-16 sm:pb-20" aria-label="Member stories">
       <div className="section-shell">
-        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase text-ocean-blue">
-              Member stories
-            </p>
-            <h2
-              id="member-stories"
-              className="mt-3 text-3xl font-semibold text-primary-navy sm:text-4xl"
-            >
-              Banking feedback from across the United States
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-6 text-bluewave-gray">
-            Sample member feedback for the Bluewave digital banking experience.
-          </p>
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase text-ocean-blue">Member stories</p>
         </div>
 
         <div className="overflow-hidden">
@@ -80,14 +67,9 @@ export function TestimonialsCarousel() {
                   key={testimonial.id}
                   className="min-h-72 rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_20px_70px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue">
-                      <Quote size={21} aria-hidden="true" />
-                    </span>
-                    <span className="rounded-full bg-primary-navy/[0.06] px-3 py-1 text-xs font-semibold text-primary-navy">
-                      {testimonial.id.replace("testimonial-", "Story ")}
-                    </span>
-                  </div>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue">
+                    <Quote size={21} aria-hidden="true" />
+                  </span>
                   <p className="mt-6 text-base leading-7 text-primary-navy">
                     &quot;{testimonial.quote}&quot;
                   </p>
