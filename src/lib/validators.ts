@@ -109,6 +109,35 @@ export const adminBillPaymentReviewSchema = z.object({
   reviewNote: z.string().trim().max(500).optional(),
 });
 
+export const disputeCreateSchema = z.object({
+  transactionId: z.string().min(1),
+  reason: z.string().trim().min(3).max(160),
+  description: z.string().trim().min(10).max(4000),
+});
+
+export const disputeUpdateSchema = z.object({
+  action: z.enum(["close"]),
+});
+
+export const adminDisputeUpdateSchema = z.object({
+  disputeId: z.string().min(1),
+  status: z.enum(["UNDER_REVIEW", "RESOLVED", "REJECTED", "CLOSED"]),
+  resolutionNote: z.string().trim().max(2000).optional(),
+});
+
+export const adjustmentCreateSchema = z.object({
+  accountId: z.string().min(1),
+  amount: z.coerce.number().positive(),
+  direction: z.enum(["DEBIT", "CREDIT"]),
+  reason: z.string().trim().min(5).max(500),
+});
+
+export const adminAdjustmentActionSchema = z.object({
+  adjustmentId: z.string().min(1),
+  action: z.enum(["APPROVE", "REJECT", "POST"]),
+  reviewNote: z.string().trim().max(500).optional(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;
 export type PayeeUpdateInput = z.infer<typeof payeeUpdateSchema>;

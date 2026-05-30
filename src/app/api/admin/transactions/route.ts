@@ -7,6 +7,7 @@ import {
   sendTransferStatusEmail,
 } from "@/lib/email";
 import { failReviewedTransferTransaction, LedgerError, postApprovedTransferTransaction } from "@/lib/ledger";
+import { writeLedgerEvent } from "@/lib/eventLog";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { applyRiskAssessment, scoreAdminReviewRisk } from "@/lib/risk";
@@ -260,6 +261,20 @@ export async function PATCH(request: NextRequest) {
         assessment: reviewAssessment,
       });
     }
+
+    void writeLedgerEvent({
+      eventType:
+        input.status === "COMPLETED"
+          ? "TRANSFER_POSTED"
+          : input.status === "REVERSED"
+            ? "TRANSFER_REVERSED"
+            : "TRANSFER_FAILED",
+      actorId: auth.admin.id,
+      entityId: ledgerResult.id,
+      message: `Transfer ${ledgerResult.reference} marked ${ledgerResult.status}.`,
+      severity: input.status === "COMPLETED" ? "INFO" : "WARNING",
+      metadata: { reference: ledgerResult.reference, status: ledgerResult.status },
+    });
 
     return apiSuccess({ transaction: serializeTransaction(updated) });
   } catch (error) {

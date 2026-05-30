@@ -4,6 +4,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sanitizeUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { createAccountNotification } from "@/lib/notifications";
+import { writeAdminEvent } from "@/lib/eventLog";
 import { adminUpdateUserStatusSchema } from "@/lib/validators";
 import type { AdminUserSummary, UserRole, UserStatus } from "@/types/banking";
 
@@ -113,6 +114,14 @@ export async function PATCH(request: NextRequest) {
         status: updated.status,
         href: "/dashboard",
       },
+    });
+
+    void writeAdminEvent({
+      eventType: "USER_STATUS_UPDATED",
+      actorId: auth.admin.id,
+      entityId: updated.id,
+      message: `User status changed from ${existing.status} to ${updated.status}.`,
+      metadata: { previousStatus: existing.status, nextStatus: updated.status },
     });
 
     return apiSuccess({ user: sanitizeUser(updated) });

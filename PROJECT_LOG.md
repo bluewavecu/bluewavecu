@@ -746,3 +746,43 @@ Status: Completed
 
 - Controlled adjustment workflow, dispute handling, webhook/event log, production cron setup.
 
+## Step 15: Controlled Adjustments, Disputes, And Event Logs
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma`
+- `src/lib/eventLog.ts`
+- `src/lib/adjustments.ts`
+- `src/lib/disputes.ts`
+- `src/app/api/disputes/*`
+- `src/app/api/admin/disputes/route.ts`
+- `src/app/api/admin/adjustments/route.ts`
+- `src/app/api/admin/event-logs/route.ts`
+- `src/app/disputes/page.tsx`
+- `src/app/admin/disputes/page.tsx`
+- `src/app/admin/adjustments/page.tsx`
+- `src/app/admin/event-logs/page.tsx`
+- `src/hooks/useDisputes.ts`, `useAdminDisputes.ts`, `useAdminAdjustments.ts`, `useAdminEventLogs.ts`
+- `src/components/disputes/DisputesClient.tsx`
+- `src/components/admin/AdminDisputesClient.tsx`, `AdminAdjustmentsClient.tsx`, `AdminEventLogsClient.tsx`
+- Event log integration across login, transfers, bill pay, jobs, reconciliation, support, admin users
+- `README.md`, `PROJECT_LOG.md`
+
+### Features Added
+
+- Controlled balance adjustment workflow with ledger-backed posting.
+- Member dispute submission and admin dispute review without automatic reversals.
+- Append-only event log foundation with admin read-only viewer.
+- Major workflows integrated with safe event logging.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–14 ledger safety, worker runner, and reconciliation read-only behavior.
+- No direct unsafe balance edits or automatic dispute reversals.
+
+### Pending Next Step
+
+- Production cron setup, PDF statements, customer profile/KYC settings, admin compliance dashboard.
+

@@ -10,6 +10,7 @@ import {
   LogOut,
   Receipt,
   ReceiptText,
+  Scale,
   Shield,
   WalletCards,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const appRoutes = [
   { label: "Transfers", href: "/transfers", icon: ArrowLeftRight },
   { label: "Bill Pay", href: "/bill-pay", icon: Receipt },
   { label: "Transactions", href: "/transactions", icon: ReceiptText },
+  { label: "Disputes", href: "/disputes", icon: Scale },
   { label: "Cards", href: "/cards", icon: CreditCard },
   { label: "Loans", href: "/loans", icon: Landmark },
   { label: "Support", href: "/support", icon: CircleHelp },

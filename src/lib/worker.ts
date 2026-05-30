@@ -11,6 +11,7 @@ import {
 } from "@/lib/jobQueue";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
+import { writeEventLog } from "@/lib/eventLog";
 import { applyRiskAssessment, scoreTransferRisk } from "@/lib/risk";
 import { computeNextRunAt } from "@/lib/scheduledTransfers";
 
@@ -219,6 +220,13 @@ export async function runDueJobs(limit = 25): Promise<WorkerRunSummary> {
         jobType: job.jobType,
         status: "COMPLETED",
       });
+      void writeEventLog({
+        eventType: "JOB_COMPLETED",
+        entityType: "JobQueue",
+        entityId: job.id,
+        message: `Job ${job.jobType} completed.`,
+        metadata: { jobType: job.jobType },
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown worker error";
       await markJobFailed(job.id, message);
@@ -228,6 +236,14 @@ export async function runDueJobs(limit = 25): Promise<WorkerRunSummary> {
         jobType: job.jobType,
         status: "FAILED",
         error: message,
+      });
+      void writeEventLog({
+        eventType: "JOB_FAILED",
+        entityType: "JobQueue",
+        entityId: job.id,
+        message: `Job ${job.jobType} failed.`,
+        severity: "ERROR",
+        metadata: { jobType: job.jobType, error: message },
       });
     }
   }

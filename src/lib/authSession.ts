@@ -4,6 +4,7 @@ const SAFE_REDIRECT_PREFIXES = [
   "/transactions",
   "/transfers",
   "/bill-pay",
+  "/disputes",
   "/cards",
   "/loans",
   "/support",

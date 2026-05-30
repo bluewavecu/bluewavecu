@@ -146,6 +146,28 @@ enum JobStatus {
   CANCELLED
 }
 
+enum AdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  POSTED
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+  CLOSED
+}
+
+enum EventSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
 model User {
   id             String          @id @default(cuid())
   fullName       String
@@ -171,6 +193,9 @@ model User {
   mfaSettings         MfaSetting[]
   payees              Payee[]
   billPayments        BillPayment[]
+  adjustmentRequests  AdjustmentRequest[] @relation("MemberAdjustments")
+  adminAdjustments    AdjustmentRequest[] @relation("AdminAdjustments")
+  disputes            Dispute[]
 
   @@index([email])
   @@index([role])
@@ -196,6 +221,7 @@ model Account {
   ledgerEntries    LedgerEntry[]
   scheduledTransfers ScheduledTransfer[]
   billPayments     BillPayment[]
+  adjustmentRequests AdjustmentRequest[]
 
   @@index([userId])
   @@index([accountType])
@@ -223,6 +249,8 @@ model Transaction {
   account        Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
   ledgerEntries  LedgerEntry[]
   billPayments   BillPayment[]
+  disputes       Dispute[]
+  adjustmentRequests AdjustmentRequest[]
 
   @@index([userId])
   @@index([accountId])
@@ -501,5 +529,72 @@ model JobQueue {
   @@index([jobType])
   @@index([status])
   @@index([runAt])
+  @@index([createdAt])
+}
+
+model AdjustmentRequest {
+  id            String            @id @default(cuid())
+  accountId     String
+  userId        String
+  adminId       String
+  amount        Decimal           @db.Decimal(14, 2)
+  direction     LedgerDirection
+  reason        String
+  status        AdjustmentStatus  @default(PENDING)
+  reviewedAt    DateTime?
+  postedAt      DateTime?
+  reviewNote    String?
+  transactionId String?           @unique
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  account     Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user        User         @relation("MemberAdjustments", fields: [userId], references: [id], onDelete: Cascade)
+  admin       User         @relation("AdminAdjustments", fields: [adminId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([userId])
+  @@index([adminId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Dispute {
+  id              String        @id @default(cuid())
+  userId          String
+  transactionId   String
+  reason          String
+  description     String
+  status          DisputeStatus @default(OPEN)
+  resolutionNote  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([transactionId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EventLog {
+  id         String        @id @default(cuid())
+  eventType  String
+  actorId    String?
+  entityType String
+  entityId   String?
+  severity   EventSeverity @default(INFO)
+  message    String
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+
+  @@index([eventType])
+  @@index([actorId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([severity])
   @@index([createdAt])
 }

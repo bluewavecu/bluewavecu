@@ -411,6 +411,35 @@ Safety note: Bluewave bill pay is simulation-only. No real external payments are
 
 - Pending Step 15: controlled adjustment workflow, dispute handling, webhook/event log, production cron setup.
 
+## Step 15 Notes
+
+### Controlled Adjustments
+
+- Admin-only adjustment requests with approve → post workflow.
+- Posting creates ledger entries and linked transactions — no direct balance edits.
+- APIs: `GET/POST/PATCH /api/admin/adjustments`.
+
+### Disputes
+
+- Members can dispute owned transactions at `/disputes` without automatic reversals.
+- Admin review at `/admin/disputes` with status updates and resolution notes.
+- APIs: `GET/POST /api/disputes`, `PATCH /api/disputes/[id]`, `GET/PATCH /api/admin/disputes`.
+
+### Event Logs
+
+- Append-only `EventLog` model with `writeEventLog` helpers.
+- Admin read-only viewer at `/admin/event-logs`.
+- Integrated into login, transfers, bill pay, jobs, reconciliation, support, and admin actions.
+
+Apply the Step 15 migration when PostgreSQL is available:
+
+```bash
+npx prisma migrate dev --name add_adjustments_disputes_event_logs
+npm run db:seed
+```
+
+- Pending Step 16: production cron setup, PDF statements, customer profile/KYC settings, admin compliance dashboard.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -432,6 +461,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 12: Scheduled transfers, risk engine, session security, and MFA foundation.
 - Step 13: Bill pay, payees, and job queue foundation.
 - Step 14: Worker runner, reconciliation dashboard, and finance reports.
+- Step 15: Controlled adjustments, disputes, and event logs.
 
 ## Step 2 Notes
 

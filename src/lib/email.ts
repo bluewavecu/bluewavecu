@@ -400,3 +400,76 @@ export async function sendBillPaymentReviewedEmail(params: {
     "sendBillPaymentReviewedEmail",
   );
 }
+
+export async function sendAdjustmentPostedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  direction: "DEBIT" | "CREDIT";
+  reference: string;
+}) {
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Balance adjustment posted",
+      text: `Hi ${params.fullName}, a ${params.direction.toLowerCase()} adjustment of $${params.amount.toFixed(2)} was posted (${params.reference}).`,
+      html: buildEmailHtml(
+        "Balance adjustment posted",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>A controlled <strong>${escapeHtml(params.direction.toLowerCase())}</strong> adjustment of <strong>$${params.amount.toFixed(2)}</strong> was posted to your account.</p>
+         <p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>`,
+      ),
+      idempotencyKey: `adjustment-posted/${params.reference}`,
+    },
+    "sendAdjustmentPostedEmail",
+  );
+}
+
+export async function sendDisputeCreatedEmail(params: {
+  email: string;
+  fullName: string;
+  reference: string;
+  reason: string;
+}) {
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Dispute submitted",
+      text: `Hi ${params.fullName}, your dispute for ${params.reference} was received. Reason: ${params.reason}. Submitting a dispute does not automatically reverse a transaction.`,
+      html: buildEmailHtml(
+        "Dispute submitted",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>We received your dispute for transaction <strong>${escapeHtml(params.reference)}</strong>.</p>
+         <p><strong>Reason:</strong> ${escapeHtml(params.reason)}</p>
+         <p>Submitting a dispute does not automatically reverse a transaction.</p>`,
+      ),
+      idempotencyKey: `dispute-created/${params.reference}`,
+    },
+    "sendDisputeCreatedEmail",
+  );
+}
+
+export async function sendDisputeUpdatedEmail(params: {
+  email: string;
+  fullName: string;
+  reference: string;
+  status: string;
+  resolutionNote?: string;
+}) {
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: `Dispute ${params.status.toLowerCase().replaceAll("_", " ")}`,
+      text: `Hi ${params.fullName}, your dispute for ${params.reference} is now ${params.status}. ${params.resolutionNote ?? ""}`,
+      html: buildEmailHtml(
+        "Dispute update",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>Your dispute for <strong>${escapeHtml(params.reference)}</strong> is now <strong>${escapeHtml(params.status.replaceAll("_", " "))}</strong>.</p>
+         ${params.resolutionNote ? `<p>${escapeHtml(params.resolutionNote)}</p>` : ""}
+         <p>Disputes do not automatically reverse transactions.</p>`,
+      ),
+      idempotencyKey: `dispute-updated/${params.reference}/${params.status}`,
+    },
+    "sendDisputeUpdatedEmail",
+  );
+}

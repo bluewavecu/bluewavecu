@@ -7,6 +7,7 @@ import {
   sendAdminAlertEmail,
   sendTransferCreatedEmail,
 } from "@/lib/email";
+import { writeLedgerEvent } from "@/lib/eventLog";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib/risk";
@@ -141,6 +142,14 @@ export async function POST(request: NextRequest) {
       reference: transaction.reference,
       amount: transaction.amount.toNumber(),
       metadata: { href: "/transfers" },
+    });
+
+    void writeLedgerEvent({
+      eventType: "TRANSFER_CREATED",
+      actorId: payload.userId,
+      entityId: transaction.id,
+      message: `Transfer ${transaction.reference} created for review.`,
+      metadata: { reference: transaction.reference, amount: Math.abs(input.amount) },
     });
 
     return apiSuccess(

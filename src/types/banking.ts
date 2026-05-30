@@ -718,3 +718,92 @@ export type FinanceReportsData = {
     recentHighSeverity: number;
   };
 };
+
+export type LedgerDirection = "DEBIT" | "CREDIT";
+export type AdjustmentStatus = "PENDING" | "APPROVED" | "REJECTED" | "POSTED";
+export type DisputeStatus = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "REJECTED" | "CLOSED";
+export type EventSeverity = "INFO" | "WARNING" | "ERROR" | "CRITICAL";
+
+export type AdjustmentRecord = {
+  id: string;
+  accountId: string;
+  userId: string;
+  adminId: string;
+  amount: number;
+  direction: LedgerDirection;
+  reason: string;
+  status: AdjustmentStatus;
+  reviewedAt: string | null;
+  postedAt: string | null;
+  reviewNote: string | null;
+  transactionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  accountNumber?: string;
+  accountType?: AccountType;
+  userName?: string;
+  userEmail?: string;
+};
+
+export type AdjustmentsData = {
+  adjustments: AdjustmentRecord[];
+  summary: {
+    pending: number;
+    approved: number;
+    total: number;
+  };
+};
+
+export type DisputeRecord = {
+  id: string;
+  userId: string;
+  transactionId: string;
+  reason: string;
+  description: string;
+  status: DisputeStatus;
+  resolutionNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+  transaction?: {
+    reference: string;
+    amount: number;
+    description: string;
+    merchant: string | null;
+    status: string;
+  };
+  userName?: string;
+  userEmail?: string;
+};
+
+export type DisputesData = {
+  disputes: DisputeRecord[];
+};
+
+export type AdminDisputesData = {
+  disputes: DisputeRecord[];
+  summary: {
+    open: number;
+    underReview: number;
+    total: number;
+  };
+};
+
+export type EventLogRecord = {
+  id: string;
+  eventType: string;
+  actorId: string | null;
+  entityType: string;
+  entityId: string | null;
+  severity: EventSeverity;
+  message: string;
+  metadata: unknown;
+  createdAt: string;
+};
+
+export type EventLogsData = {
+  events: EventLogRecord[];
+  summary: {
+    total: number;
+    bySeverity: Record<string, number>;
+  };
+};

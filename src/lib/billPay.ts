@@ -6,6 +6,7 @@ import {
   sendBillPaymentReviewedEmail,
   sendPayeeAddedEmail,
 } from "@/lib/email";
+import { writeAdminEvent, writeEventLog, writeLedgerEvent } from "@/lib/eventLog";
 import { enqueueJob } from "@/lib/jobQueue";
 import {
   failReviewedPaymentTransaction,
@@ -279,6 +280,15 @@ export async function createBillPayment(userId: string, input: BillPaymentCreate
     billPaymentId: billPayment.id,
   });
 
+  void writeEventLog({
+    eventType: "BILL_PAYMENT_CREATED",
+    actorId: userId,
+    entityType: "BillPayment",
+    entityId: billPayment.id,
+    message: `Bill payment created for ${payee.nickname ?? payee.name}.`,
+    metadata: { amount: input.amount, status },
+  });
+
   if (input.amount >= 5000 || assessment.severity === "HIGH") {
     void sendAdminAlertEmail({
       subject: "Bill payment review alert",
@@ -446,6 +456,14 @@ export async function approveBillPaymentReview(params: {
     billPaymentId: billPayment.id,
   });
 
+  void writeLedgerEvent({
+    eventType: "BILL_PAYMENT_POSTED",
+    actorId: params.adminId,
+    entityId: updated.id,
+    message: `Bill payment posted (${ledgerResult.reference ?? billPayment.transaction.reference}).`,
+    metadata: { status: "POSTED" },
+  });
+
   return { billPayment: serializeBillPayment(updated), transaction: ledgerResult };
 }
 
@@ -511,6 +529,15 @@ export async function failBillPaymentReview(params: {
     payeeName: billPayment.payee.nickname ?? billPayment.payee.name,
     amount: billPayment.amount.toNumber(),
     billPaymentId: billPayment.id,
+  });
+
+  void writeAdminEvent({
+    eventType: "BILL_PAYMENT_REVIEWED",
+    actorId: params.adminId,
+    entityId: updated.id,
+    message: `Bill payment marked ${nextStatus}.`,
+    severity: nextStatus === "FAILED" ? "WARNING" : "INFO",
+    metadata: { status: nextStatus },
   });
 
   return serializeBillPayment(updated);

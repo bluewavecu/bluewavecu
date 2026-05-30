@@ -5,6 +5,7 @@ import {
   sendAdminAlertEmail,
   sendSupportTicketCreatedEmail,
 } from "@/lib/email";
+import { writeEventLog } from "@/lib/eventLog";
 import { createSupportNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
@@ -109,6 +110,15 @@ export async function POST(request: NextRequest) {
       ticketId: ticket.id,
       subject: ticket.subject,
       status: ticket.status,
+    });
+
+    void writeEventLog({
+      eventType: "SUPPORT_TICKET_CREATED",
+      actorId: payload.userId,
+      entityType: "SupportTicket",
+      entityId: ticket.id,
+      message: `Support ticket created: ${ticket.subject}.`,
+      metadata: { priority: ticket.priority },
     });
 
     return apiSuccess({ ticket: serializeTicket(ticket) }, { status: 201 });

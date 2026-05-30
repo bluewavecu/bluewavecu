@@ -3,6 +3,7 @@ import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sendSupportTicketUpdatedEmail } from "@/lib/email";
 import { createSupportNotification } from "@/lib/notifications";
+import { writeEventLog } from "@/lib/eventLog";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateSupportTicketStatusSchema } from "@/lib/validators";
 import type {
@@ -123,6 +124,15 @@ export async function PATCH(request: NextRequest) {
       ticketId: updated.id,
       subject: updated.subject,
       status: updated.status,
+    });
+
+    void writeEventLog({
+      eventType: "SUPPORT_TICKET_UPDATED",
+      actorId: auth.admin.id,
+      entityType: "SupportTicket",
+      entityId: updated.id,
+      message: `Support ticket status updated to ${updated.status}.`,
+      metadata: { previousStatus: existing.status, nextStatus: updated.status },
     });
 
     return apiSuccess({ ticket: serializeTicket(updated) });

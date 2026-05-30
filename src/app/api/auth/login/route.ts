@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@/lib/auth";
 import { sendLoginAlertEmail } from "@/lib/email";
+import { writeSecurityEvent } from "@/lib/eventLog";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { getClientIp, getUserAgent } from "@/lib/requestContext";
@@ -30,6 +31,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      void writeSecurityEvent({
+        eventType: "LOGIN_FAILED",
+        message: "Login failed for unknown email.",
+        severity: "WARNING",
+        metadata: { emailDomain: input.email.split("@")[1] ?? "unknown" },
+      });
       return apiError("Invalid email or password", 401);
     }
 
@@ -46,6 +53,14 @@ export async function POST(request: NextRequest) {
       void applyRiskAssessment({
         userId: user.id,
         assessment: failedAssessment,
+      });
+
+      void writeSecurityEvent({
+        eventType: "LOGIN_FAILED",
+        actorId: user.id,
+        entityId: user.id,
+        message: "Login failed due to invalid password.",
+        severity: "WARNING",
       });
 
       return apiError("Invalid email or password", 401);
@@ -97,6 +112,14 @@ export async function POST(request: NextRequest) {
         sessionId: session.id,
         deviceName: session.deviceName,
       },
+    });
+
+    void writeSecurityEvent({
+      eventType: "LOGIN_SUCCESS",
+      actorId: user.id,
+      entityId: session.id,
+      message: `Successful sign-in from ${session.deviceName}.`,
+      severity: "INFO",
     });
 
     return response;
