@@ -3,6 +3,10 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
+import {
+  sendAdminAlertEmail,
+  sendTransferCreatedEmail,
+} from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { transferSchema } from "@/lib/validators";
@@ -65,6 +69,15 @@ export async function POST(request: NextRequest) {
     const description = buildTransferDescription(input);
     const merchant = input.recipientName ?? "External transfer";
 
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { email: true, fullName: true },
+    });
+
+    if (!user) {
+      return apiError("User not found", 404);
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         userId: payload.userId,
@@ -93,6 +106,19 @@ export async function POST(request: NextRequest) {
       status: transaction.status,
       createdAt: transaction.createdAt.toISOString(),
     };
+
+    void sendTransferCreatedEmail({
+      email: user.email,
+      fullName: user.fullName,
+      amount: transaction.amount.toNumber(),
+      reference: transaction.reference,
+      description: transaction.description,
+    });
+    void sendAdminAlertEmail({
+      subject: "Pending transfer review",
+      message: `${user.fullName} submitted transfer ${transaction.reference} for $${Math.abs(transaction.amount.toNumber()).toFixed(2)}.`,
+      idempotencyKey: `admin-alert/transfer-created/${transaction.reference}`,
+    });
 
     return apiSuccess(
       {

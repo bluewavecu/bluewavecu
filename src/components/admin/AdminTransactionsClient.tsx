@@ -7,7 +7,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAdminTransactions } from "@/hooks/useAdminTransactions";
 import { cn } from "@/lib/utils";
-import type { TransactionStatus, TransactionType } from "@/types/banking";
+import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
 
 const statusFilters: Array<{ label: string; value?: TransactionStatus }> = [
   { label: "All statuses" },
@@ -25,10 +25,26 @@ const typeFilters: Array<{ label: string; value?: TransactionType }> = [
   { label: "Card", value: "CARD" },
 ];
 
-const pendingActions: Array<Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">> = [
-  "COMPLETED",
-  "FAILED",
-  "REVERSED",
+const reviewActions: Array<{
+  status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">;
+  label: string;
+  confirm: string;
+}> = [
+  {
+    status: "COMPLETED",
+    label: "Approve",
+    confirm: "Approve this pending transfer? Balances will not change in the current workflow.",
+  },
+  {
+    status: "FAILED",
+    label: "Fail",
+    confirm: "Mark this pending transfer as failed?",
+  },
+  {
+    status: "REVERSED",
+    label: "Reverse",
+    confirm: "Reverse this pending transfer review decision?",
+  },
 ];
 
 function getStatusLabel(status: string) {
@@ -54,9 +70,77 @@ function getStatusBadgeClass(status: TransactionStatus) {
   return "bg-primary-navy/[0.06] text-primary-navy dark:bg-white/[0.08] dark:text-white";
 }
 
+function TransactionReviewCard({
+  transaction,
+  isUpdating,
+  onReview,
+}: {
+  transaction: AdminTransactionRecord;
+  isUpdating: boolean;
+  onReview: (
+    transactionId: string,
+    status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
+    confirmMessage: string,
+  ) => void;
+}) {
+  const canReview = transaction.status === "PENDING" && transaction.type === "TRANSFER";
+
+  return (
+    <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h3 className="font-semibold text-primary-navy dark:text-white">
+            {transaction.merchant ?? transaction.description}
+          </h3>
+          <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+            {transaction.user.fullName} | {transaction.account.maskedAccountNumber}
+          </p>
+          <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+            {getStatusLabel(transaction.type)} | {transaction.reference}
+          </p>
+        </div>
+        <div className="flex flex-col items-start gap-2 lg:items-end">
+          <p className="text-lg font-semibold text-primary-navy dark:text-white">
+            {formatCurrency(Math.abs(transaction.amount))}
+          </p>
+          <span
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-semibold",
+              getStatusBadgeClass(transaction.status),
+            )}
+          >
+            {getStatusLabel(transaction.status)}
+          </span>
+        </div>
+      </div>
+
+      {canReview ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {reviewActions.map((action) => (
+            <button
+              key={`${transaction.id}-${action.status}`}
+              type="button"
+              disabled={isUpdating}
+              onClick={() => onReview(transaction.id, action.status, action.confirm)}
+              className="rounded-full border border-primary-navy/[0.08] px-3 py-1.5 text-xs font-semibold transition hover:border-ocean-blue disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.08]"
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 text-xs font-medium text-bluewave-gray dark:text-white/[0.48]">
+          Review actions are available only for pending transfer requests.
+        </p>
+      )}
+    </article>
+  );
+}
+
 export function AdminTransactionsClient() {
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -77,6 +161,25 @@ export function AdminTransactionsClient() {
     updateTransactionStatus,
   } = useAdminTransactions(filters);
 
+  async function handleReview(
+    transactionId: string,
+    status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
+    confirmMessage: string,
+  ) {
+    const confirmed = window.confirm(confirmMessage);
+
+    if (!confirmed) {
+      return;
+    }
+
+    const success = await updateTransactionStatus(transactionId, status);
+
+    if (success) {
+      setSuccessMessage(`Transfer marked as ${getStatusLabel(status).toLowerCase()}.`);
+      await refetch();
+    }
+  }
+
   if (isLoading) {
     return (
       <LoadingState title="Loading transactions" message="Retrieving transaction review queue." />
@@ -93,6 +196,12 @@ export function AdminTransactionsClient() {
   }
 
   const transactions = data?.transactions ?? [];
+  const pendingTransfers = transactions.filter(
+    (transaction) => transaction.status === "PENDING" && transaction.type === "TRANSFER",
+  );
+  const otherTransactions = transactions.filter(
+    (transaction) => !(transaction.status === "PENDING" && transaction.type === "TRANSFER"),
+  );
 
   return (
     <section className="grid gap-5 xl:grid-cols-[0.7fr_1.3fr]">
@@ -134,64 +243,76 @@ export function AdminTransactionsClient() {
         </div>
       </aside>
 
-      <div className="grid gap-4">
+      <div className="grid gap-5">
+        {successMessage ? (
+          <p
+            role="status"
+            className="rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-royal-blue dark:text-light-blue"
+          >
+            {successMessage}
+          </p>
+        ) : null}
+
         {updateError ? (
           <p className="rounded-lg border border-red-500/[0.20] bg-red-500/[0.08] px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
             {updateError}
           </p>
         ) : null}
 
-        {transactions.length > 0 ? (
-          transactions.map((transaction) => (
-            <article
-              key={transaction.id}
-              className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
-            >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <h3 className="font-semibold text-primary-navy dark:text-white">
-                    {transaction.merchant ?? transaction.description}
-                  </h3>
-                  <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                    {transaction.user.fullName} | {transaction.account.maskedAccountNumber}
-                  </p>
-                  <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                    {getStatusLabel(transaction.type)} | {transaction.reference}
-                  </p>
-                </div>
-                <div className="flex flex-col items-start gap-2 lg:items-end">
-                  <p className="text-lg font-semibold text-primary-navy dark:text-white">
-                    {formatCurrency(Math.abs(transaction.amount))}
-                  </p>
-                  <span
-                    className={cn(
-                      "rounded-full px-3 py-1 text-xs font-semibold",
-                      getStatusBadgeClass(transaction.status),
-                    )}
-                  >
-                    {getStatusLabel(transaction.status)}
-                  </span>
-                </div>
-              </div>
+        <section className="grid gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+              Pending Transfer Review
+            </h2>
+            <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+              Review transfer requests before completion. Balances are not updated in this workflow.
+            </p>
+          </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {pendingActions.map((status) => (
-                  <button
-                    key={`${transaction.id}-${status}`}
-                    type="button"
-                    disabled={isUpdating || transaction.status !== "PENDING"}
-                    onClick={() => void updateTransactionStatus(transaction.id, status)}
-                    className="rounded-full border border-primary-navy/[0.08] px-3 py-1.5 text-xs font-semibold transition hover:border-ocean-blue disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.08]"
-                  >
-                    Mark {getStatusLabel(status)}
-                  </button>
-                ))}
-              </div>
-            </article>
-          ))
-        ) : (
-          <EmptyState title="No transactions found" message="Adjust filters or seed demo transactions." />
-        )}
+          {pendingTransfers.length > 0 ? (
+            pendingTransfers.map((transaction) => (
+              <TransactionReviewCard
+                key={transaction.id}
+                transaction={transaction}
+                isUpdating={isUpdating}
+                onReview={(transactionId, status, confirmMessage) =>
+                  void handleReview(transactionId, status, confirmMessage)
+                }
+              />
+            ))
+          ) : (
+            <EmptyState
+              title="No pending transfers"
+              message="Pending transfer requests will appear here for review."
+            />
+          )}
+        </section>
+
+        <section className="grid gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+              All Transactions
+            </h2>
+            <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+              Completed, failed, reversed, and non-transfer activity.
+            </p>
+          </div>
+
+          {otherTransactions.length > 0 ? (
+            otherTransactions.map((transaction) => (
+              <TransactionReviewCard
+                key={transaction.id}
+                transaction={transaction}
+                isUpdating={isUpdating}
+                onReview={(transactionId, status, confirmMessage) =>
+                  void handleReview(transactionId, status, confirmMessage)
+                }
+              />
+            ))
+          ) : (
+            <EmptyState title="No other transactions" message="Adjust filters or seed demo data." />
+          )}
+        </section>
       </div>
     </section>
   );

@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, hashPassword, sanitizeUser, signAuthToken } from "@/lib/auth";
+import {
+  sendAdminAlertEmail,
+  sendWelcomeEmail,
+} from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { registerSchema } from "@/lib/validators";
@@ -51,6 +55,17 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
     response.cookies.set(createAuthCookie(token));
+
+    void sendWelcomeEmail({
+      email: user.email,
+      fullName: user.fullName,
+      userId: user.id,
+    });
+    void sendAdminAlertEmail({
+      subject: "New member registration",
+      message: `${user.fullName} (${user.email}) registered and is pending review.`,
+      idempotencyKey: `admin-alert/register/${user.id}`,
+    });
 
     return response;
   } catch (error) {

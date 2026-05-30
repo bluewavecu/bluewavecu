@@ -7,6 +7,9 @@ const envSchema = z.object({
     .min(16, "JWT_SECRET must be at least 16 characters for production safety"),
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
+  ADMIN_ALERT_EMAIL: z.string().email("ADMIN_ALERT_EMAIL must be a valid email").optional(),
 });
 
 export type ServerEnv = z.infer<typeof envSchema>;
@@ -29,10 +32,19 @@ export function getServerEnv(): ServerEnv {
     JWT_SECRET: process.env.JWT_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NODE_ENV: process.env.NODE_ENV,
+    RESEND_API_KEY: process.env.RESEND_API_KEY?.trim() || undefined,
+    EMAIL_FROM: process.env.EMAIL_FROM?.trim() || undefined,
+    ADMIN_ALERT_EMAIL: process.env.ADMIN_ALERT_EMAIL?.trim() || undefined,
   });
 
   if (!result.success) {
     throw new Error(`Environment validation failed:\n${formatEnvErrors(result.error)}`);
+  }
+
+  if (result.data.NODE_ENV === "production" && !result.data.RESEND_API_KEY) {
+    throw new Error(
+      "Environment validation failed:\n- RESEND_API_KEY: required in production",
+    );
   }
 
   cachedEnv = result.data;

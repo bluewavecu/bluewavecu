@@ -2,6 +2,10 @@ import { NextRequest } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
+import {
+  sendAdminAlertEmail,
+  sendTransferStatusEmail,
+} from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateTransactionStatusSchema } from "@/lib/validators";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
@@ -126,6 +130,20 @@ export async function PATCH(request: NextRequest) {
       return apiError("Only pending transactions can be updated", 400);
     }
 
+    const reviewStatuses: Array<Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">> = [
+      "COMPLETED",
+      "FAILED",
+      "REVERSED",
+    ];
+
+    if (!reviewStatuses.includes(input.status)) {
+      return apiError("Invalid review status for pending transaction", 400);
+    }
+
+    if (existing.type !== "TRANSFER") {
+      return apiError("Only pending transfer transactions can be reviewed", 400);
+    }
+
     const updated = await prisma.transaction.update({
       where: { id: input.transactionId },
       data: { status: input.status },
@@ -147,6 +165,23 @@ export async function PATCH(request: NextRequest) {
         userEmail: updated.user.email,
       },
     });
+
+    void sendTransferStatusEmail({
+      email: updated.user.email,
+      fullName: updated.user.fullName,
+      amount: updated.amount.toNumber(),
+      reference: updated.reference,
+      description: updated.description,
+      status: updated.status as "COMPLETED" | "FAILED" | "REVERSED",
+    });
+
+    if (input.status === "COMPLETED" || input.status === "FAILED") {
+      void sendAdminAlertEmail({
+        subject: `Transfer review ${input.status === "COMPLETED" ? "approved" : "declined"}`,
+        message: `${updated.user.fullName}'s transfer ${updated.reference} was marked ${input.status}.`,
+        idempotencyKey: `admin-alert/transfer-review/${updated.reference}/${input.status}`,
+      });
+    }
 
     return apiSuccess({ transaction: serializeTransaction(updated) });
   } catch (error) {

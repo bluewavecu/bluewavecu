@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import {
+  sendAdminAlertEmail,
+  sendSupportTicketCreatedEmail,
+} from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { supportTicketSchema } from "@/lib/validators";
@@ -66,8 +70,18 @@ export async function POST(request: NextRequest) {
     }
 
     const input = supportTicketSchema.parse(await request.json());
+    const prisma = getPrisma();
 
-    const ticket = await getPrisma().supportTicket.create({
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { email: true, fullName: true },
+    });
+
+    if (!user) {
+      return apiError("User not found", 404);
+    }
+
+    const ticket = await prisma.supportTicket.create({
       data: {
         userId: payload.userId,
         subject: input.subject,
@@ -75,6 +89,18 @@ export async function POST(request: NextRequest) {
         priority: input.priority,
         status: "OPEN",
       },
+    });
+
+    void sendSupportTicketCreatedEmail({
+      email: user.email,
+      fullName: user.fullName,
+      ticketId: ticket.id,
+      subject: ticket.subject,
+    });
+    void sendAdminAlertEmail({
+      subject: "New support ticket",
+      message: `${user.fullName} opened ticket "${ticket.subject}".`,
+      idempotencyKey: `admin-alert/support-created/${ticket.id}`,
     });
 
     return apiSuccess({ ticket: serializeTicket(ticket) }, { status: 201 });

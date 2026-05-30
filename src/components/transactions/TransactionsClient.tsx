@@ -34,7 +34,11 @@ const transactionIcons = {
   transfer: Repeat2,
 };
 
-function getStatusLabel(status: string) {
+function getStatusLabel(status: string, type?: TransactionType) {
+  if (status === "PENDING" && type === "TRANSFER") {
+    return "Pending Review";
+  }
+
   return status
     .toLowerCase()
     .replace(/_/g, " ")
@@ -185,7 +189,8 @@ export function TransactionsClient() {
             Transaction history
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Authenticated activity from your Bluewave accounts.
+            Authenticated activity from your Bluewave accounts. Transfer requests are reviewed
+            before completion.
           </p>
 
           <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
@@ -238,7 +243,7 @@ export function TransactionsClient() {
                             getStatusBadgeClass(transaction.status),
                           )}
                         >
-                          {getStatusLabel(transaction.status)}
+                          {getStatusLabel(transaction.status, transaction.type)}
                         </span>
                       </div>
                     </div>

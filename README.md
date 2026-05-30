@@ -186,8 +186,35 @@ Point the production domain to Render:
 | `NEXT_PUBLIC_APP_URL` | Yes | Public HTTPS app URL |
 | `NODE_ENV` | Yes | `production` on Render |
 | `ALLOW_DEMO_SEED` | No | Set `true` only for demo/staging seeds |
+| `RESEND_API_KEY` | Yes (production) | Resend API key for transactional email |
+| `EMAIL_FROM` | No | Default: `Bluewave Credit Union <no-reply@bluewavecu.com>` |
+| `ADMIN_ALERT_EMAIL` | No | Admin inbox for registration/transfer/support alerts |
 
 Environment validation runs at startup via `src/lib/env.ts` and fails fast with readable errors when required variables are missing or invalid.
+
+### Email Setup (Resend)
+
+1. Create a [Resend](https://resend.com) account and verify your sending domain.
+2. Add `RESEND_API_KEY` to `.env` locally or Render environment variables.
+3. Optionally set `EMAIL_FROM` and `ADMIN_ALERT_EMAIL`.
+4. In **development**, if `RESEND_API_KEY` is missing, email payloads are logged to the server console instead of sent — auth and banking APIs continue to work.
+5. In **production**, `RESEND_API_KEY` is required.
+
+Email events:
+
+- Registration welcome + admin alert
+- Login alert to member
+- Transfer created + admin alert
+- Transfer review status update to member (+ admin alert on approve/decline)
+- Support ticket created + admin alert
+- Support ticket status update to member
+
+Transfer review workflow:
+
+- Member transfer POST creates a `PENDING` transfer transaction (no balance movement).
+- Admin reviews pending transfers at `/admin/transactions` with Approve / Fail / Reverse actions.
+- Status updates write audit logs and trigger email notifications.
+- Balances remain unchanged until Step 10 ledger work.
 
 ### Deployment Troubleshooting
 
@@ -207,7 +234,16 @@ Environment validation runs at startup via `src/lib/env.ts` and fails fast with 
 - Added `safeApi` utilities and `ServerErrorState` / `ApiErrorState` for production-safe API errors.
 - Added `render.yaml`, security headers in `next.config.ts`, and idempotent production-safe seed behavior.
 - Session-expired handling redirects API clients to `/login?expired=1&next=...`.
-- Pending Step 9: notifications, email system, transfer review workflow, admin approvals, production transaction engine.
+- Pending Step 10: balance ledger system, transaction double-entry safety, admin approval balance posting, webhook/event log foundation.
+
+## Step 9 Notes
+
+- Added Resend email foundation with development logging when `RESEND_API_KEY` is missing.
+- Auth register/login routes send welcome, login alert, and admin registration alerts without blocking success.
+- Transfer and support routes send member and admin notifications on create/update.
+- Admin transfer PATCH restricts review to pending `TRANSFER` transactions and sends status emails.
+- Admin transactions UI includes a dedicated pending transfer review section with confirm actions.
+- Balances are not updated — transfer review remains notification and status only.
 
 ## Project Safety Note
 
@@ -224,6 +260,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 6: Full banking page data and transaction workflows.
 - Step 7: Admin dashboard, role guard, and audit logs.
 - Step 8: Deployment hardening, Render config, middleware protection, and production safeguards.
+- Step 9: Email notifications and admin transfer review workflow.
 
 ## Step 2 Notes
 

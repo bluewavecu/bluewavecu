@@ -90,7 +90,8 @@ export function TransfersClient() {
               <div>
                 <p className="font-semibold text-primary-navy dark:text-white">{successMessage}</p>
                 <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  Your request is queued for review. Account balances remain unchanged.
+                  Your transfer request has been submitted and is pending review. You&apos;ll receive
+                  an email update when its status changes. Account balances remain unchanged.
                 </p>
               </div>
             </div>

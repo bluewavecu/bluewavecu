@@ -453,3 +453,44 @@ Status: Completed
 ### Pending Next Step
 
 - Notifications, email system, transfer review workflow, admin approvals, and production transaction engine.
+
+## Step 9: Email Notifications And Admin Transfer Review Workflow
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `src/lib/email.ts`
+- `src/lib/env.ts`
+- `.env.example`
+- `package.json` / `package-lock.json` (Resend SDK)
+- `src/app/api/auth/register/route.ts`
+- `src/app/api/auth/login/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/support/route.ts`
+- `src/app/api/admin/transactions/route.ts`
+- `src/app/api/admin/support/route.ts`
+- `src/components/admin/AdminTransactionsClient.tsx`
+- `src/components/admin/AdminSupportClient.tsx`
+- `src/components/transactions/TransactionsClient.tsx`
+- `src/components/transfers/TransfersClient.tsx`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- Resend SDK integration with dev-safe logging when API key is absent.
+- Transactional email templates for welcome, login alerts, transfers, support, and admin alerts.
+- Auth, transfer, support, and admin routes fire emails without blocking API success.
+- Admin transfer review restricted to pending transfer transactions with audit logs and status emails.
+- Improved admin pending transfer review UI and support ticket action labels.
+- Member-facing pending transfer status copy and post-submit messaging.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–8 foundations, middleware, rate limits, and audit logging.
+- Do not post balances or enable real money movement until Step 10 ledger rules are defined.
+
+### Pending Next Step
+
+- Balance ledger system, transaction double-entry safety, admin approval balance posting, and webhook/event log foundation.

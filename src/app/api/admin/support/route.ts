@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
+import { sendSupportTicketUpdatedEmail } from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateSupportTicketStatusSchema } from "@/lib/validators";
 import type {
@@ -106,6 +107,14 @@ export async function PATCH(request: NextRequest) {
         subject: updated.subject,
         userEmail: updated.user.email,
       },
+    });
+
+    void sendSupportTicketUpdatedEmail({
+      email: updated.user.email,
+      fullName: updated.user.fullName,
+      ticketId: updated.id,
+      subject: updated.subject,
+      status: updated.status,
     });
 
     return apiSuccess({ ticket: serializeTicket(updated) });

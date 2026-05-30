@@ -24,7 +24,11 @@ const priorityFilters: Array<{ label: string; value?: SupportTicketPriority }> =
   { label: "Urgent", value: "URGENT" },
 ];
 
-const statusActions: SupportTicketStatus[] = ["OPEN", "PENDING", "RESOLVED", "CLOSED"];
+const statusActions: Array<{ status: SupportTicketStatus; label: string }> = [
+  { status: "PENDING", label: "Mark In Progress" },
+  { status: "RESOLVED", label: "Resolve" },
+  { status: "CLOSED", label: "Close" },
+];
 
 function getStatusLabel(status: string) {
   if (status === "PENDING") {
@@ -56,6 +60,7 @@ function getStatusBadgeClass(status: SupportTicketStatus) {
 export function AdminSupportClient() {
   const [selectedStatus, setSelectedStatus] = useState<SupportTicketStatus | undefined>();
   const [selectedPriority, setSelectedPriority] = useState<SupportTicketPriority | undefined>();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -75,6 +80,15 @@ export function AdminSupportClient() {
     refetch,
     updateTicketStatus,
   } = useAdminSupport(filters);
+
+  async function handleStatusUpdate(ticketId: string, status: SupportTicketStatus, label: string) {
+    const success = await updateTicketStatus(ticketId, status);
+
+    if (success) {
+      setSuccessMessage(`Ticket updated: ${label}.`);
+      await refetch();
+    }
+  }
 
   if (isLoading) {
     return <LoadingState title="Loading support tickets" message="Retrieving support queue." />;
@@ -132,6 +146,15 @@ export function AdminSupportClient() {
       </aside>
 
       <div className="grid gap-4">
+        {successMessage ? (
+          <p
+            role="status"
+            className="rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-royal-blue dark:text-light-blue"
+          >
+            {successMessage}
+          </p>
+        ) : null}
+
         {updateError ? (
           <p className="rounded-lg border border-red-500/[0.20] bg-red-500/[0.08] px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
             {updateError}
@@ -170,15 +193,15 @@ export function AdminSupportClient() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {statusActions.map((status) => (
+                {statusActions.map((action) => (
                   <button
-                    key={`${ticket.id}-${status}`}
+                    key={`${ticket.id}-${action.status}`}
                     type="button"
-                    disabled={isUpdating || ticket.status === status}
-                    onClick={() => void updateTicketStatus(ticket.id, status)}
+                    disabled={isUpdating || ticket.status === action.status}
+                    onClick={() => void handleStatusUpdate(ticket.id, action.status, action.label)}
                     className="rounded-full border border-primary-navy/[0.08] px-3 py-1.5 text-xs font-semibold transition hover:border-ocean-blue disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.08]"
                   >
-                    Set {getStatusLabel(status)}
+                    {action.label}
                   </button>
                 ))}
               </div>

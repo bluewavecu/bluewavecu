@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@/lib/auth";
+import { sendLoginAlertEmail } from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { loginSchema } from "@/lib/validators";
@@ -46,6 +47,12 @@ export async function POST(request: NextRequest) {
       token,
     });
     response.cookies.set(createAuthCookie(token));
+
+    void sendLoginAlertEmail({
+      email: user.email,
+      fullName: user.fullName,
+      userId: user.id,
+    });
 
     return response;
   } catch (error) {
