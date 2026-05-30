@@ -3,8 +3,29 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { supportTicketSchema } from "@/lib/validators";
+import type { PageSupportTicket } from "@/types/banking";
 
 export const runtime = "nodejs";
+
+function serializeTicket(ticket: {
+  id: string;
+  subject: string;
+  message: string;
+  status: PageSupportTicket["status"];
+  priority: PageSupportTicket["priority"];
+  createdAt: Date;
+  updatedAt: Date;
+}): PageSupportTicket {
+  return {
+    id: ticket.id,
+    subject: ticket.subject,
+    message: ticket.message,
+    status: ticket.status,
+    priority: ticket.priority,
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +33,7 @@ export async function GET(request: NextRequest) {
     const payload = token ? verifyAuthToken(token) : null;
 
     if (!payload) {
-      return apiError("Authentication required", 401);
+      return apiError("Unauthorized", 401);
     }
 
     const tickets = await getPrisma().supportTicket.findMany({
@@ -20,7 +41,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return apiSuccess({ tickets });
+    return apiSuccess({
+      tickets: tickets.map(serializeTicket),
+    });
   } catch (error) {
     return handleApiError(error);
   }
@@ -32,7 +55,7 @@ export async function POST(request: NextRequest) {
     const payload = token ? verifyAuthToken(token) : null;
 
     if (!payload) {
-      return apiError("Authentication required", 401);
+      return apiError("Unauthorized", 401);
     }
 
     const input = supportTicketSchema.parse(await request.json());
@@ -47,7 +70,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return apiSuccess({ ticket }, { status: 201 });
+    return apiSuccess({ ticket: serializeTicket(ticket) }, { status: 201 });
   } catch (error) {
     return handleApiError(error);
   }

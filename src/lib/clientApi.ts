@@ -7,6 +7,8 @@ export async function postJson<T>(url: string, body: unknown): Promise<ApiRespon
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
+      cache: "no-store",
       body: JSON.stringify(body),
     });
 
@@ -30,7 +32,10 @@ export async function postJson<T>(url: string, body: unknown): Promise<ApiRespon
 
 export async function getJson<T>(url: string): Promise<ApiResponse<T>> {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      credentials: "include",
+      cache: "no-store",
+    });
     const payload = (await response.json()) as ApiResponse<T>;
 
     if (!response.ok && payload.success) {

@@ -281,3 +281,59 @@ Status: Completed
 ### Pending Next Step
 
 - Full page APIs for accounts, transactions, cards, loans, support, and stricter protected-route middleware.
+
+## Step 6: Full Banking Page Data And Transaction Workflows
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `README.md`
+- `PROJECT_LOG.md`
+- `src/lib/bankingSerialize.ts`
+- `src/lib/clientApi.ts`
+- `src/lib/validators.ts`
+- `src/types/banking.ts`
+- `src/app/api/accounts/route.ts`
+- `src/app/api/transactions/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/cards/route.ts`
+- `src/app/api/loans/route.ts`
+- `src/app/api/support/route.ts`
+- `src/hooks/useAccounts.ts`
+- `src/hooks/useTransactions.ts`
+- `src/hooks/useCards.ts`
+- `src/hooks/useLoans.ts`
+- `src/hooks/useSupportTickets.ts`
+- `src/hooks/useTransfer.ts`
+- `src/components/accounts/AccountsClient.tsx`
+- `src/components/transactions/TransactionsClient.tsx`
+- `src/components/transfers/TransfersClient.tsx`
+- `src/components/cards/CardsClient.tsx`
+- `src/components/loans/LoansClient.tsx`
+- `src/components/support/SupportClient.tsx`
+- `src/app/accounts/page.tsx`
+- `src/app/transactions/page.tsx`
+- `src/app/transfers/page.tsx`
+- `src/app/cards/page.tsx`
+- `src/app/loans/page.tsx`
+- `src/app/support/page.tsx`
+
+### Features Added
+
+- Improved member APIs to return masked account data, filtered transactions, linked card summaries, demo loan offers, and serialized support tickets.
+- Added page-specific data hooks with authenticated fetch, loading/error/empty handling, and unauthorized redirect to `/login`.
+- Connected accounts, transactions, transfers, cards, loans, and support pages to dedicated APIs while preserving the existing app shell and premium fintech styling.
+- Added pending transfer workflow via `/api/transfers` POST with zod validation and no balance movement.
+- Added support ticket creation workflow via `/api/support` POST with subject, message, and priority validation.
+- Added disabled demo card controls labeled “Coming soon”.
+
+### What Should Not Be Rebuilt
+
+- Preserve Step 1 marketing pages, Step 2 app shell, Step 3 Prisma/API foundation, Step 4 auth wiring, and Step 5 dashboard data connection.
+- Keep dashboard aggregate components in `src/components/dashboard/` intact.
+- Do not implement real money movement or card control actions until approval and audit requirements are defined.
+
+### Pending Next Step
+
+- Admin dashboard, role guard, user management, and audit logs.

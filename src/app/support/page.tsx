@@ -1,11 +1,11 @@
-import { SupportClient } from "@/components/dashboard/SupportClient";
+import { SupportClient } from "@/components/support/SupportClient";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function SupportPage() {
   return (
     <AppShell
       title="Support"
-      subtitle="Support inbox, contact paths, and secure message placeholders backed by authenticated summary data."
+      subtitle="Review support tickets, submit new requests, and contact Bluewave member support."
     >
       <SupportClient />
     </AppShell>

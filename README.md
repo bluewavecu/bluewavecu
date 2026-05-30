@@ -144,6 +144,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 3: PostgreSQL Prisma schema and API foundation.
 - Step 4: Auth form API wiring and demo seed data.
 - Step 5: Authenticated dashboard API data connection.
+- Step 6: Full banking page data and transaction workflows.
 
 ## Step 2 Notes
 
@@ -191,3 +192,36 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Dashboard widgets now accept live props while preserving `mockBanking.ts` as fallback/reference data.
 - Dashboard, accounts, transactions, cards, loans, and support screens now use API-ready authenticated client fetch patterns.
 - Pending next step: full page APIs for accounts, transactions, cards, loans, support, and stricter route protection.
+
+## Step 6 Notes
+
+- Added dedicated authenticated APIs for accounts, transactions, transfers, cards, loans, and support tickets.
+- Added page data hooks: `useAccounts`, `useTransactions`, `useCards`, `useLoans`, `useSupportTickets`, and `useTransfer`.
+- Connected `/accounts`, `/transactions`, `/transfers`, `/cards`, `/loans`, and `/support` to live API data with loading, error, empty, and unauthorized redirect states.
+- Transfer submissions create pending transfer transactions only and do not move real balances.
+- Support page supports ticket listing and ticket creation with validated POST requests.
+- Pending next step: admin dashboard, role guard, user management, and audit logs.
+
+## Authenticated Banking Pages
+
+After seeding demo data and signing in, these member routes load live API data:
+
+- `/dashboard`
+- `/accounts`
+- `/transactions`
+- `/transfers`
+- `/cards`
+- `/loans`
+- `/support`
+
+## Local Testing (Step 6)
+
+1. Copy `.env.example` to `.env` and configure `DATABASE_URL` and `JWT_SECRET`.
+2. Run `npx prisma generate`.
+3. Seed demo data with `npm run db:seed`.
+4. Start the app with `npm run dev`.
+5. Sign in at `/login` using:
+   - Member: `avery.morgan@bluewavecu.test` / `BluewaveDemo2026!`
+6. Verify authenticated pages load data and handle unauthorized access by redirecting to `/login`.
+7. On `/transfers`, submit a transfer and confirm the pending success message without balance changes.
+8. On `/support`, create a ticket and confirm it appears in the ticket list.

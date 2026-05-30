@@ -168,3 +168,113 @@ export type DashboardData = {
   loans: DashboardLoan[];
   supportTicketSummary: DashboardSupportTicketSummary;
 };
+
+export type PageAccount = {
+  id: string;
+  accountType: AccountType;
+  displayName: string;
+  maskedAccountNumber: string;
+  accountNumberLast4: string;
+  routingNumber: string;
+  balance: number;
+  availableBalance: number;
+  currency: string;
+  status: AccountStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AccountsData = {
+  accounts: PageAccount[];
+};
+
+export type PageTransaction = {
+  id: string;
+  accountId: string;
+  accountType: AccountType;
+  maskedAccountNumber: string;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  merchant: string | null;
+  reference: string;
+  status: TransactionStatus;
+  createdAt: string;
+};
+
+export type TransactionsData = {
+  transactions: PageTransaction[];
+};
+
+export type LinkedAccountSummary = {
+  id: string;
+  accountType: AccountType;
+  displayName: string;
+  maskedAccountNumber: string;
+};
+
+export type PageCard = {
+  id: string;
+  accountId: string;
+  cardType: CardType;
+  last4: string;
+  cardholderName: string;
+  status: CardStatus;
+  spendingLimit: number;
+  linkedAccount: LinkedAccountSummary;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CardsData = {
+  cards: PageCard[];
+};
+
+export type PageLoan = DashboardLoan;
+
+export type LoanOffer = {
+  id: string;
+  title: string;
+  description: string;
+  preApprovedAmount: number;
+  rateRange: string;
+  termMonths: number;
+  disclaimer: string;
+};
+
+export type LoansData = {
+  loans: PageLoan[];
+  offers: LoanOffer[];
+};
+
+export type PageSupportTicket = DashboardSupportTicket;
+
+export type SupportTicketsData = {
+  tickets: PageSupportTicket[];
+};
+
+export type CreateSupportTicketInput = {
+  subject: string;
+  message: string;
+  priority: SupportTicketPriority;
+};
+
+export type TransferRequestInput = {
+  fromAccountId: string;
+  toAccountNumber?: string;
+  recipientName?: string;
+  amount: number;
+  memo?: string;
+};
+
+export type TransferData = {
+  transaction: PageTransaction;
+  message: string;
+};
+
+export type TransactionFilters = {
+  accountId?: string;
+  status?: TransactionStatus;
+  type?: TransactionType;
+  limit?: number;
+};

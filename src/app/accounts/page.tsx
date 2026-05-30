@@ -1,11 +1,11 @@
-import { AccountsClient } from "@/components/dashboard/AccountsClient";
+import { AccountsClient } from "@/components/accounts/AccountsClient";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function AccountsPage() {
   return (
     <AppShell
       title="Accounts"
-      subtitle="View authenticated checking, savings, and credit account surfaces from the dashboard API."
+      subtitle="View checking, savings, and credit accounts with live authenticated balances."
     >
       <AccountsClient />
     </AppShell>

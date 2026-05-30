@@ -12,12 +12,18 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const transferSchema = z.object({
-  accountId: z.string().min(1, "Source account is required"),
-  amount: z.coerce.number().positive("Amount must be greater than zero"),
-  description: z.string().trim().min(3).max(180),
-  merchant: z.string().trim().max(120).optional(),
-});
+export const transferSchema = z
+  .object({
+    fromAccountId: z.string().min(1, "Source account is required"),
+    toAccountNumber: z.string().trim().min(4).max(20).optional(),
+    recipientName: z.string().trim().min(2).max(120).optional(),
+    amount: z.coerce.number().positive("Amount must be greater than zero"),
+    memo: z.string().trim().max(180).optional(),
+  })
+  .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
+    message: "Recipient account number or name is required",
+    path: ["toAccountNumber"],
+  });
 
 export const supportTicketSchema = z.object({
   subject: z.string().trim().min(3).max(160),

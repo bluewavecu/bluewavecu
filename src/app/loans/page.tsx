@@ -1,11 +1,11 @@
-import { LoansClient } from "@/components/dashboard/LoansClient";
+import { LoansClient } from "@/components/loans/LoansClient";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function LoansPage() {
   return (
     <AppShell
       title="Loans"
-      subtitle="A lending center foundation prepared against authenticated loan records."
+      subtitle="Review active loans, demo pre-qualification offers, and payment estimates."
     >
       <LoansClient />
     </AppShell>
