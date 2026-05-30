@@ -1,13 +1,13 @@
-import { AdminOverviewClient } from "@/components/admin/AdminOverviewClient";
+import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 import { AdminShell } from "@/components/admin/AdminShell";
 
 export default function AdminPage() {
   return (
     <AdminShell
-      title="Admin Overview"
-      subtitle="Monitor users, accounts, transactions, support volume, and pending transfer review."
+      title="Command Center"
+      subtitle="Banking operations overview, alerts, and review queues."
     >
-      <AdminOverviewClient />
+      <AdminCommandCenter />
     </AdminShell>
   );
 }

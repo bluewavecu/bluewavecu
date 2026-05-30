@@ -37,6 +37,10 @@ function buildUsersUrl(filters?: AdminUserFilters) {
     params.set("search", filters.search);
   }
 
+  if (filters?.kycStatus) {
+    params.set("kycStatus", filters.kycStatus);
+  }
+
   const query = params.toString();
   return query ? `/api/admin/users?${query}` : "/api/admin/users";
 }

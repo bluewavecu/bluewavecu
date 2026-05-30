@@ -172,9 +172,13 @@ function TransactionReviewCard({
   );
 }
 
-export function AdminTransactionsClient() {
-  const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
-  const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
+export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: boolean }) {
+  const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>(
+    reviewOnly ? "PENDING" : undefined,
+  );
+  const [selectedType, setSelectedType] = useState<TransactionType | undefined>(
+    reviewOnly ? "TRANSFER" : undefined,
+  );
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const filters = useMemo(

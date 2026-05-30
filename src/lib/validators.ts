@@ -1,11 +1,63 @@
 import { z } from "zod";
 
-export const registerSchema = z.object({
-  fullName: z.string().trim().min(2, "Full name is required").max(120),
-  email: z.string().trim().toLowerCase().email(),
-  phone: z.string().trim().min(7, "Phone number is required").max(32),
-  password: z.string().min(8, "Password must be at least 8 characters").max(128),
-});
+function parseDateOfBirth(value: string) {
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function isAtLeast18YearsOld(dateOfBirth: Date) {
+  const today = new Date();
+  let age = today.getUTCFullYear() - dateOfBirth.getUTCFullYear();
+  const monthDiff = today.getUTCMonth() - dateOfBirth.getUTCMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < dateOfBirth.getUTCDate())) {
+    age -= 1;
+  }
+
+  return age >= 18;
+}
+
+export const registerSchema = z
+  .object({
+    fullName: z.string().trim().min(2, "Full name is required").max(120),
+    email: z.string().trim().toLowerCase().email(),
+    phone: z.string().trim().min(7, "Phone number is required").max(32),
+    dateOfBirth: z
+      .string()
+      .trim()
+      .min(1, "Date of birth is required")
+      .refine((value) => parseDateOfBirth(value) !== null, "Enter a valid date of birth")
+      .refine(
+        (value) => {
+          const parsed = parseDateOfBirth(value);
+          return parsed ? isAtLeast18YearsOld(parsed) : false;
+        },
+        "You must be at least 18 years old to enroll",
+      ),
+    occupation: z.string().trim().min(2, "Occupation is required").max(120),
+    addressLine1: z.string().trim().min(3, "Street address is required").max(160),
+    addressLine2: z.string().trim().max(160).optional(),
+    city: z.string().trim().min(2, "City is required").max(80),
+    state: z.string().trim().min(2, "State is required").max(80),
+    postalCode: z
+      .string()
+      .trim()
+      .min(3, "Postal code is required")
+      .max(16)
+      .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
+    country: z.string().trim().min(2, "Country is required").max(80).default("US"),
+    password: z.string().min(8, "Password must be at least 8 characters").max(128),
+  })
+  .transform((input) => ({
+    ...input,
+    dateOfBirth: parseDateOfBirth(input.dateOfBirth)!,
+    addressLine2: input.addressLine2?.trim() || undefined,
+  }));
 
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),

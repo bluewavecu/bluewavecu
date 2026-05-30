@@ -779,3 +779,42 @@ After signing in with the demo admin account, these role-guarded routes are avai
 6. POST `/api/auth/logout` while signed in and confirm the auth cookie is cleared.
 7. Rapidly retry login/register/transfer/support POST requests to confirm rate limit responses.
 8. Sign in as admin, open `/admin`, then sign in as member and confirm `/admin` redirects to `/dashboard`.
+
+## Step 19 Notes — Admin Operations Console
+
+### Overview
+
+The admin area is a ledger-controlled banking operations console covering members, money movement, risk, compliance, and platform operations. All balance changes remain tied to ledger posting workflows — no direct balance edits.
+
+### Admin navigation (grouped)
+
+- **Overview:** Command Center (`/admin`), Operational Alerts (`/admin/alerts`)
+- **Members:** Users, Accounts, Customer Profiles/KYC, Sessions/Security
+- **Money Movement:** Transactions, Transfer Reviews, Bill Pay Reviews, Adjustments, Reconciliation
+- **Risk & Compliance:** Risk Monitoring, Disputes, Compliance, Audit Logs, Event Logs
+- **Operations:** Support Tickets, Jobs, Finance Reports, System Settings
+
+### Command center APIs
+
+- `GET /api/admin/command-center` — metrics, alerts, recent admin activity, event logs
+- `GET /api/admin/system-health` — jobs, reconciliation signals, cron/email status
+- `GET /api/admin/settings` — read-only environment and feature flags
+- `GET /api/admin/members/[id]` — member 360 (accounts, transactions, events; no passwordHash)
+- `GET /api/admin/sessions` — active member sessions
+
+### Safety guarantees
+
+- No unsafe balance edits; adjustments and transfer/bill-pay approvals post via ledger only.
+- Admin actions write audit logs and event logs where appropriate.
+- Masked account numbers; no `passwordHash` or full card numbers in admin API responses.
+- Consistent API format: `{ success, data?, error? }`.
+
+### Admin workflow summary
+
+1. **Members** — review pending enrollments, activate/suspend, KYC at `/admin/compliance`.
+2. **Transfers / bill pay** — approve or fail pending reviews; ledger posts on approval only.
+3. **Adjustments** — create → approve → post with ledger entries.
+4. **Reconciliation** — read-only mismatch review; corrections via adjustment workflow.
+5. **Risk / disputes / support** — queue review with notes; disputes do not auto-reverse.
+
+Pending Step 20: visual polish, accessibility audit, real database E2E, deployment staging QA.

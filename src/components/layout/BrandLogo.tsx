@@ -1,12 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BRAND_LOGO } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-export const BRAND_LOGO = {
-  src: "/images/logo.webp",
-  width: 2172,
-  height: 724,
-} as const;
+export { BRAND_LOGO };
 
 export function getBrandLogoDimensions(displayHeight: number) {
   return {
@@ -37,7 +34,7 @@ export function BrandLogo({
   const logo = (
     <Image
       src={BRAND_LOGO.src}
-      alt="Bluewave Credit Union"
+      alt={BRAND_LOGO.alt}
       width={width}
       height={height}
       priority={priority}

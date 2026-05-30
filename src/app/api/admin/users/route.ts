@@ -6,7 +6,7 @@ import { getPrisma } from "@/lib/prisma";
 import { createAccountNotification } from "@/lib/notifications";
 import { writeAdminEvent } from "@/lib/eventLog";
 import { adminUpdateUserStatusSchema } from "@/lib/validators";
-import type { AdminUserSummary, UserRole, UserStatus } from "@/types/banking";
+import type { AdminUserSummaryWithKyc, UserRole, UserStatus, KycStatus } from "@/types/banking";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,8 @@ function serializeUser(user: {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
-}): AdminUserSummary {
+  customerProfile?: { kycStatus: KycStatus } | null;
+}): AdminUserSummaryWithKyc {
   return {
     id: user.id,
     fullName: user.fullName,
@@ -29,6 +30,7 @@ function serializeUser(user: {
     status: user.status,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
+    kycStatus: user.customerProfile?.kycStatus ?? null,
   };
 }
 
@@ -43,12 +45,18 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") as UserStatus | null;
     const role = searchParams.get("role") as UserRole | null;
+    const kycStatus = searchParams.get("kycStatus") as KycStatus | null;
     const search = searchParams.get("search")?.trim();
 
     const users = await getPrisma().user.findMany({
       where: {
         ...(status ? { status } : {}),
         ...(role ? { role } : {}),
+        ...(kycStatus
+          ? {
+              customerProfile: { kycStatus },
+            }
+          : {}),
         ...(search
           ? {
               OR: [
@@ -57,6 +65,9 @@ export async function GET(request: NextRequest) {
               ],
             }
           : {}),
+      },
+      include: {
+        customerProfile: { select: { kycStatus: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,

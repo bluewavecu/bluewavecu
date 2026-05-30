@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       openSupportTickets,
       recentSecurityEvents,
       urgentSupportTickets,
+      pendingUsers,
     ] = await Promise.all([
       prisma.transaction.count({
         where: { type: "TRANSFER", status: "PENDING" },
@@ -49,9 +50,24 @@ export async function GET(request: NextRequest) {
           priority: "URGENT",
         },
       }),
+      prisma.user.count({
+        where: { status: "PENDING", role: "USER" },
+      }),
     ]);
 
     const alerts: AdminOperationalAlertsData["alerts"] = [];
+
+    if (pendingUsers > 0) {
+      alerts.push({
+        id: "pending-memberships",
+        type: "ACCOUNT",
+        severity: "warning",
+        title: "Pending membership applications",
+        message: `${pendingUsers} membership application${pendingUsers === 1 ? "" : "s"} awaiting review.`,
+        href: "/admin/users",
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     if (pendingTransfers > 0) {
       alerts.push({

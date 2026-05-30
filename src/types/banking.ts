@@ -366,14 +366,19 @@ export type AdminOverviewData = {
   recentSupportTickets: AdminSupportTicketRecord[];
 };
 
+export type AdminUserSummaryWithKyc = AdminUserSummary & {
+  kycStatus?: KycStatus | null;
+};
+
 export type AdminUsersData = {
-  users: AdminUserSummary[];
+  users: AdminUserSummaryWithKyc[];
 };
 
 export type AdminUserFilters = {
   status?: UserStatus;
   role?: UserRole;
   search?: string;
+  kycStatus?: KycStatus;
 };
 
 export type AdminAccountRecord = {
@@ -885,4 +890,100 @@ export type CardActionResult = {
 export type LoanApplyResult = {
   ticketId: string;
   message: string;
+};
+
+export type AdminCommandCenterMetrics = {
+  totalMembers: number;
+  activeMembers: number;
+  pendingMemberships: number;
+  pendingKyc: number;
+  pendingTransfers: number;
+  pendingBillPayments: number;
+  openDisputes: number;
+  openSupportTickets: number;
+  highRiskEvents: number;
+  reconciliationMismatches: number;
+  dueJobs: number;
+  failedJobs: number;
+  totalAccounts: number;
+  totalTransactions: number;
+};
+
+export type AdminCommandCenterData = {
+  metrics: AdminCommandCenterMetrics;
+  alerts: AdminOperationalAlert[];
+  recentAdminActivity: AdminAuditLogRecord[];
+  recentEvents: EventLogRecord[];
+  recentUsers: AdminUserSummary[];
+  recentTransactions: AdminTransactionRecord[];
+  recentSupportTickets: AdminSupportTicketRecord[];
+};
+
+export type AdminSystemHealthData = {
+  status: "healthy" | "degraded" | "critical";
+  database: "connected";
+  emailConfigured: boolean;
+  cronConfigured: boolean;
+  demoSeedProtected: boolean;
+  appUrl: string;
+  systemMode: string;
+  jobs: {
+    due: number;
+    failed: number;
+    running: number;
+    total: number;
+  };
+  reconciliation: {
+    mismatchCount: number;
+    noLedgerCount: number;
+  };
+  recentCronEvents: EventLogRecord[];
+};
+
+export type AdminSettingsData = {
+  environment: string;
+  appUrl: string;
+  emailConfigured: boolean;
+  adminAlertEmail: string | null;
+  cronConfigured: boolean;
+  demoSeedProtected: boolean;
+  systemMode: string;
+  featureFlags: Record<string, boolean>;
+};
+
+export type AdminMemberDetailData = {
+  user: AdminUserSummary & { kycStatus?: KycStatus | null };
+  profile: CustomerProfileRecord | null;
+  accounts: AdminAccountRecord[];
+  recentTransactions: AdminTransactionRecord[];
+  openTicketCount: number;
+  openDisputeCount: number;
+  activeSessionCount: number;
+  highRiskEventCount: number;
+  recentEvents: EventLogRecord[];
+};
+
+export type AdminSessionRecord = {
+  id: string;
+  deviceName: string;
+  ipAddress: string;
+  location: string | null;
+  isActive: boolean;
+  lastSeenAt: string;
+  createdAt: string;
+  revokedAt: string | null;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    status: UserStatus;
+  };
+};
+
+export type AdminSessionsData = {
+  sessions: AdminSessionRecord[];
+  summary: {
+    active: number;
+    total: number;
+  };
 };

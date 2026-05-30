@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@/lib/auth";
-import { sendLoginAlertEmail } from "@/lib/email";
-import { writeSecurityEvent } from "@/lib/eventLog";
+import { sendAdminAlertEmail, sendLoginAlertEmail } from "@/lib/email";
+import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
 import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
@@ -121,6 +121,31 @@ export async function POST(request: NextRequest) {
       entityId: session.id,
       message: `Successful sign-in from ${session.deviceName}.`,
       severity: "INFO",
+    });
+
+    void writeAdminEvent({
+      eventType: "MEMBER_SIGN_IN",
+      actorId: user.id,
+      entityId: session.id,
+      message: `${user.fullName} signed in to online banking.`,
+      metadata: {
+        email: user.email,
+        deviceName: session.deviceName,
+        ipAddress,
+        status: user.status,
+      },
+    });
+
+    void sendAdminAlertEmail({
+      subject: "Member sign-in",
+      message: [
+        `${user.fullName} signed in to online banking.`,
+        `Email: ${user.email}`,
+        `Device: ${session.deviceName}`,
+        `IP address: ${ipAddress ?? "Unknown"}`,
+        `Account status: ${user.status}`,
+      ].join("\n"),
+      idempotencyKey: `admin-alert/login/${session.id}`,
     });
 
     return response;

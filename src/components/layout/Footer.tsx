@@ -38,7 +38,7 @@ export function Footer() {
       <div className="section-shell py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1.45fr]">
           <div>
-            <BrandLogo displayHeight={48} />
+            <BrandLogo href="/" displayHeight={48} priority />
             <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">
               Your secure gateway to modern digital banking. Access your accounts,
               discover competitive products, and manage your financial future with

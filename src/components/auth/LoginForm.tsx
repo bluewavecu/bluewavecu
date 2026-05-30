@@ -62,9 +62,8 @@ export function LoginForm() {
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="member@bluewavecu.com"
             required
-            className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
+            className="w-full bg-transparent text-primary-navy outline-none dark:text-white"
           />
         </span>
       </label>
@@ -79,9 +78,8 @@ export function LoginForm() {
             type="password"
             name="password"
             autoComplete="current-password"
-            placeholder="Enter password"
             required
-            className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
+            className="w-full bg-transparent text-primary-navy outline-none dark:text-white"
           />
           <Eye size={18} aria-hidden="true" />
         </span>
@@ -124,7 +122,7 @@ export function LoginForm() {
       <p className="text-center text-sm text-bluewave-gray dark:text-white/[0.62]">
         New to Bluewave?{" "}
         <Link href="/register" className="font-semibold text-royal-blue hover:text-ocean-blue">
-          Create an account
+          Enroll in online banking
         </Link>
       </p>
     </form>
