@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 
 export const BRAND_LOGO = {
   src: "/images/logo.webp",
-  width: 925,
-  height: 270,
+  width: 959,
+  height: 231,
 } as const;
 
 export function getBrandLogoDimensions(displayHeight: number) {
@@ -21,6 +21,8 @@ type BrandLogoProps = {
   className?: string;
   priority?: boolean;
   onClick?: () => void;
+  /** Use `dark` on light backgrounds (inverts the white logo). Default `light` for navy/dark surfaces. */
+  tone?: "light" | "dark";
 };
 
 export function BrandLogo({
@@ -29,6 +31,7 @@ export function BrandLogo({
   className,
   priority = false,
   onClick,
+  tone = "light",
 }: BrandLogoProps) {
   const { width, height } = getBrandLogoDimensions(displayHeight);
 
@@ -40,7 +43,10 @@ export function BrandLogo({
       height={height}
       priority={priority}
       sizes={`${width}px`}
-      className="block h-auto max-w-none object-contain object-left"
+      className={cn(
+        "block h-auto max-w-none object-contain object-left",
+        tone === "dark" && "brightness-0 dark:brightness-100",
+      )}
     />
   );
 

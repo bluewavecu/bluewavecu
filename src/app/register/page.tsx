@@ -1,7 +1,6 @@
 import { ShieldCheck, Sparkles } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function RegisterPage() {
   return (
@@ -9,18 +8,7 @@ export default function RegisterPage() {
       <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
         <section className="flex items-center justify-center px-4 py-10 sm:px-6">
           <div className="w-full max-w-md">
-            <Link href="/" aria-label="Bluewave Credit Union home" className="mb-10 inline-flex">
-              <span className="relative block h-12 w-52 overflow-hidden">
-                <Image
-                  src="/images/logo.webp"
-                  alt="Bluewave Credit Union"
-                  fill
-                  priority
-                  sizes="208px"
-                  className="object-contain object-left"
-                />
-              </span>
-            </Link>
+            <BrandLogo displayHeight={48} priority tone="dark" className="mb-10" />
 
             <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_24px_90px_rgba(10,42,94,0.12)] dark:border-white/[0.08] dark:bg-white/[0.06] sm:p-8">
               <div className="mb-7">
