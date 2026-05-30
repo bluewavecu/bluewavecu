@@ -75,7 +75,46 @@ export const mfaToggleSchema = z.object({
   enabled: z.boolean(),
 });
 
+export const payeeCreateSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  nickname: z.string().trim().max(80).optional(),
+  category: z.string().trim().max(80).optional(),
+  accountNumber: z.string().trim().min(4).max(20).optional(),
+  routingNumber: z.string().trim().min(9).max(9).optional(),
+  address: z.string().trim().max(200).optional(),
+  phone: z.string().trim().max(32).optional(),
+});
+
+export const payeeUpdateSchema = payeeCreateSchema.partial().extend({
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+});
+
+export const billPaymentCreateSchema = z.object({
+  fromAccountId: z.string().min(1),
+  payeeId: z.string().min(1),
+  amount: z.coerce.number().positive(),
+  memo: z.string().trim().max(180).optional(),
+  dueDate: z.coerce.date().optional(),
+  scheduledFor: z.coerce.date().optional(),
+  submitForReview: z.boolean().optional(),
+});
+
+export const billPaymentUpdateSchema = z.object({
+  action: z.enum(["cancel", "submit"]),
+});
+
+export const adminBillPaymentReviewSchema = z.object({
+  billPaymentId: z.string().min(1),
+  action: z.enum(["APPROVE", "FAIL", "CANCEL"]),
+  reviewNote: z.string().trim().max(500).optional(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;
+export type PayeeUpdateInput = z.infer<typeof payeeUpdateSchema>;
+export type BillPaymentCreateInput = z.infer<typeof billPaymentCreateSchema>;
+export type BillPaymentUpdateInput = z.infer<typeof billPaymentUpdateSchema>;
+export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;

@@ -319,4 +319,167 @@ export async function failReviewedTransferTransaction(params: {
   });
 }
 
+export async function postApprovedPaymentTransaction(params: {
+  transactionId: string;
+  adminId: string;
+  reviewNote?: string;
+}) {
+  const prisma = getPrisma();
+
+  return prisma.$transaction(async (tx) => {
+    const transaction = await tx.transaction.findUnique({
+      where: { id: params.transactionId },
+      include: {
+        account: true,
+        ledgerEntries: true,
+      },
+    });
+
+    if (!transaction) {
+      throw new LedgerError("Transaction not found", "NOT_FOUND");
+    }
+
+    if (transaction.type !== "PAYMENT") {
+      throw new LedgerError("Only payment transactions can be posted", "INVALID_TYPE");
+    }
+
+    if (transaction.status !== "PENDING") {
+      throw new LedgerError("Only pending payment transactions can be approved", "INVALID_STATUS");
+    }
+
+    if (transaction.postedAt || transaction.ledgerEntries.length > 0) {
+      throw new LedgerError("Payment has already been posted", "ALREADY_POSTED");
+    }
+
+    const paymentAmount = Math.abs(transaction.amount.toNumber());
+
+    if (paymentAmount <= 0) {
+      throw new LedgerError("Payment amount must be greater than zero", "INVALID_AMOUNT");
+    }
+
+    const sourceAccount = transaction.account;
+    const sourceBalance = sourceAccount.balance.toNumber();
+    const sourceAvailable = sourceAccount.availableBalance.toNumber();
+
+    if (
+      hasInsufficientFunds(sourceAccount.accountType, sourceAvailable, paymentAmount) ||
+      hasInsufficientFunds(sourceAccount.accountType, sourceBalance, paymentAmount)
+    ) {
+      throw new LedgerError("Insufficient funds in source account", "INSUFFICIENT_FUNDS");
+    }
+
+    const balanceAfterDebit = sourceBalance - paymentAmount;
+    const availableAfterDebit = sourceAvailable - paymentAmount;
+
+    await tx.account.update({
+      where: { id: sourceAccount.id },
+      data: {
+        balance: decimal(balanceAfterDebit),
+        availableBalance: decimal(availableAfterDebit),
+      },
+    });
+
+    await tx.ledgerEntry.create({
+      data: {
+        transactionId: transaction.id,
+        accountId: sourceAccount.id,
+        userId: transaction.userId,
+        direction: "DEBIT",
+        amount: decimal(paymentAmount),
+        currency: sourceAccount.currency,
+        balanceBefore: decimal(sourceBalance),
+        balanceAfter: decimal(balanceAfterDebit),
+        description: `Bill payment review/posting simulation: ${transaction.description}`,
+      },
+    });
+
+    const reviewedAt = new Date();
+
+    const updated = await tx.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "COMPLETED",
+        postedAt: reviewedAt,
+        reviewedAt,
+        reviewedBy: params.adminId,
+        reviewNote: params.reviewNote?.trim() || null,
+      },
+      include: {
+        ledgerEntries: { orderBy: { createdAt: "asc" } },
+      },
+    });
+
+    return {
+      id: updated.id,
+      type: "PAYMENT" as const,
+      amount: updated.amount.toNumber(),
+      description: updated.description,
+      merchant: updated.merchant,
+      reference: updated.reference,
+      status: "COMPLETED" as const,
+      postedAt: updated.postedAt?.toISOString() ?? null,
+      reviewedAt: updated.reviewedAt?.toISOString() ?? null,
+      reviewedBy: updated.reviewedBy,
+      reviewNote: updated.reviewNote,
+      createdAt: updated.createdAt.toISOString(),
+      ledgerEntries: updated.ledgerEntries.map(serializeLedgerEntry),
+    };
+  });
+}
+
+export async function failReviewedPaymentTransaction(params: {
+  transactionId: string;
+  adminId: string;
+  status: "FAILED" | "REVERSED";
+  reviewNote?: string;
+}) {
+  const prisma = getPrisma();
+
+  return prisma.$transaction(async (tx) => {
+    const transaction = await tx.transaction.findUnique({
+      where: { id: params.transactionId },
+      include: { ledgerEntries: true },
+    });
+
+    if (!transaction) {
+      throw new LedgerError("Transaction not found", "NOT_FOUND");
+    }
+
+    if (transaction.type !== "PAYMENT") {
+      throw new LedgerError("Only payment transactions can be reviewed", "INVALID_TYPE");
+    }
+
+    if (transaction.status !== "PENDING") {
+      throw new LedgerError("Only pending payment transactions can be reviewed", "INVALID_STATUS");
+    }
+
+    if (transaction.postedAt || transaction.ledgerEntries.length > 0) {
+      throw new LedgerError("Posted payments cannot be failed here", "ALREADY_POSTED");
+    }
+
+    const reviewedAt = new Date();
+
+    const updated = await tx.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: params.status,
+        reviewedAt,
+        reviewedBy: params.adminId,
+        reviewNote: params.reviewNote?.trim() || null,
+      },
+      include: {
+        ledgerEntries: { orderBy: { createdAt: "asc" } },
+      },
+    });
+
+    return {
+      id: updated.id,
+      reference: updated.reference,
+      status: params.status,
+      amount: updated.amount.toNumber(),
+      description: updated.description,
+    };
+  });
+}
+
 export type { PostedTransferSummary };

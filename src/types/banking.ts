@@ -555,3 +555,72 @@ export type AdminRiskData = {
     highOrCritical: number;
   };
 };
+
+export type PayeeStatus = "ACTIVE" | "INACTIVE" | "DELETED";
+export type BillPaymentStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "PENDING_REVIEW"
+  | "APPROVED"
+  | "FAILED"
+  | "CANCELLED"
+  | "POSTED";
+
+export type PayeeRecord = {
+  id: string;
+  name: string;
+  nickname: string | null;
+  category: string | null;
+  maskedAccountNumber: string | null;
+  routingNumber: string | null;
+  address: string | null;
+  phone: string | null;
+  status: PayeeStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PayeesData = {
+  payees: PayeeRecord[];
+};
+
+export type BillPaymentRecord = {
+  id: string;
+  fromAccountId: string;
+  maskedAccountNumber: string;
+  payeeId: string;
+  payeeName: string;
+  payeeCategory: string | null;
+  amount: number;
+  memo: string | null;
+  dueDate: string | null;
+  scheduledFor: string | null;
+  status: BillPaymentStatus;
+  transactionId: string | null;
+  riskScore: number | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BillPaymentsData = {
+  billPayments: BillPaymentRecord[];
+};
+
+export type AdminBillPaymentRecord = BillPaymentRecord & {
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+};
+
+export type AdminBillPaymentsData = {
+  billPayments: AdminBillPaymentRecord[];
+  summary: {
+    pendingReview: number;
+    total: number;
+  };
+};

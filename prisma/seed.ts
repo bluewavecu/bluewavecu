@@ -522,6 +522,36 @@ async function main() {
 
     logStep("Ensured demo MFA placeholder setting.");
 
+    if (checkingAccountId) {
+      await prisma.payee.deleteMany({ where: { userId: demoUser.id } });
+      const utilityPayee = await prisma.payee.create({
+        data: {
+          userId: demoUser.id,
+          name: "Apex Utilities",
+          nickname: "Electric bill",
+          category: "Utilities",
+          accountNumber: "9988776655",
+          status: "ACTIVE",
+        },
+      });
+
+      await prisma.billPayment.deleteMany({ where: { userId: demoUser.id } });
+      await prisma.billPayment.create({
+        data: {
+          userId: demoUser.id,
+          fromAccountId: checkingAccountId,
+          payeeId: utilityPayee.id,
+          amount: "164.82",
+          memo: "Monthly electricity bill",
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: "DRAFT",
+          riskScore: 35,
+        },
+      });
+
+      logStep("Refreshed demo payees and bill payment.");
+    }
+
     const auditSeedActions = [
       {
         action: "SEED_DEMO_DATA",

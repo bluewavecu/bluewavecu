@@ -3,6 +3,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { sendAdminAlertEmail } from "@/lib/email";
+import { enqueueJob } from "@/lib/jobQueue";
 import { createNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib/risk";
@@ -146,6 +147,16 @@ export async function POST(request: NextRequest) {
         fromAccount: {
           select: { accountNumber: true },
         },
+      },
+    });
+
+    // Worker not implemented yet — queue only records future review generation intent.
+    void enqueueJob({
+      jobType: "SCHEDULED_TRANSFER_REVIEW",
+      runAt: nextRunAt,
+      payload: {
+        scheduledTransferId: scheduledTransfer.id,
+        userId: payload.userId,
       },
     });
 

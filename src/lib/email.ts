@@ -324,3 +324,79 @@ export async function sendAdminAlertEmail(params: {
     "sendAdminAlertEmail",
   );
 }
+
+export async function sendPayeeAddedEmail(params: {
+  email: string;
+  fullName: string;
+  payeeName: string;
+}) {
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Payee added to your account",
+      text: `Hi ${params.fullName}, ${params.payeeName} was added to your payee list.`,
+      html: buildEmailHtml(
+        "Payee added",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p><strong>${escapeHtml(params.payeeName)}</strong> was added to your Bluewave payee list.</p>`,
+      ),
+      idempotencyKey: `payee-added/${params.email}/${params.payeeName}`,
+    },
+    "sendPayeeAddedEmail",
+  );
+}
+
+export async function sendBillPaymentCreatedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  payeeName: string;
+  status: string;
+}) {
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Bill payment saved",
+      text: `Hi ${params.fullName}, your bill payment to ${params.payeeName} for $${params.amount.toFixed(2)} was saved (${params.status}).`,
+      html: buildEmailHtml(
+        "Bill payment saved",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>Your bill payment to <strong>${escapeHtml(params.payeeName)}</strong> for <strong>$${params.amount.toFixed(2)}</strong> was saved.</p>
+         <p>Status: ${escapeHtml(params.status)}. Bill payments are submitted for review before posting.</p>`,
+      ),
+      idempotencyKey: `bill-payment-created/${params.email}/${params.amount}/${Date.now()}`,
+    },
+    "sendBillPaymentCreatedEmail",
+  );
+}
+
+export async function sendBillPaymentReviewedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  payeeName: string;
+  status: string;
+  reference?: string;
+}) {
+  const balanceMessage =
+    params.status === "POSTED"
+      ? "Balances were updated after admin approval and ledger posting."
+      : "Account balances were not changed.";
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: `Bill payment ${params.status.toLowerCase()}`,
+      text: `Hi ${params.fullName}, your bill payment to ${params.payeeName} was ${params.status.toLowerCase()}. ${balanceMessage}`,
+      html: buildEmailHtml(
+        `Bill payment ${params.status.toLowerCase()}`,
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>Your bill payment to <strong>${escapeHtml(params.payeeName)}</strong> for <strong>$${params.amount.toFixed(2)}</strong> is now <strong>${escapeHtml(params.status)}</strong>.</p>
+         ${params.reference ? `<p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>` : ""}
+         <p>${balanceMessage}</p>`,
+      ),
+      idempotencyKey: `bill-payment-reviewed/${params.reference ?? params.payeeName}/${params.status}`,
+    },
+    "sendBillPaymentReviewedEmail",
+  );
+}

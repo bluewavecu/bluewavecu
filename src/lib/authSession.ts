@@ -3,6 +3,7 @@ const SAFE_REDIRECT_PREFIXES = [
   "/accounts",
   "/transactions",
   "/transfers",
+  "/bill-pay",
   "/cards",
   "/loans",
   "/support",

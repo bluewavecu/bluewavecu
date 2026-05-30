@@ -246,6 +246,56 @@ export async function scoreTransferRisk(params: {
   } satisfies RiskAssessment;
 }
 
+export async function scoreBillPaymentRisk(params: {
+  userId: string;
+  amount: number;
+  payeeId: string;
+}) {
+  const prisma = getPrisma();
+  let score = 20;
+  const reasons: string[] = [];
+
+  if (params.amount >= HIGH_AMOUNT_THRESHOLD) {
+    score += 40;
+    reasons.push(`Bill payment amount exceeds $${HIGH_AMOUNT_THRESHOLD.toLocaleString()}.`);
+  }
+
+  const priorPayment = await prisma.billPayment.findFirst({
+    where: {
+      userId: params.userId,
+      payeeId: params.payeeId,
+      status: { in: ["POSTED", "PENDING_REVIEW", "APPROVED"] },
+    },
+  });
+
+  if (!priorPayment) {
+    score += 20;
+    reasons.push("First bill payment to this payee.");
+  }
+
+  const recentPayments = await prisma.billPayment.count({
+    where: {
+      userId: params.userId,
+      createdAt: { gte: new Date(Date.now() - RAPID_TRANSFER_WINDOW_MS) },
+    },
+  });
+
+  if (recentPayments >= RAPID_TRANSFER_COUNT) {
+    score += 25;
+    reasons.push("Multiple bill payments submitted in a short window.");
+  }
+
+  const severity = getRiskSeverity(score);
+
+  return {
+    score,
+    severity,
+    reason: reasons.join(" ") || "Routine bill payment activity.",
+    eventType: "BILL_PAYMENT",
+    metadata: { amount: params.amount, payeeId: params.payeeId },
+  } satisfies RiskAssessment;
+}
+
 export async function scoreAdminReviewRisk(params: {
   userId: string;
   action: "FAILED" | "REVERSED";

@@ -184,3 +184,54 @@ export async function createAdminActionNotification(params: {
     metadata: params.metadata,
   });
 }
+
+export async function createPayeeNotification(params: {
+  userId: string;
+  payeeName: string;
+  payeeId: string;
+}) {
+  return createNotification({
+    userId: params.userId,
+    type: "ACCOUNT",
+    title: "Payee added",
+    message: `${params.payeeName} was added to your payee list.`,
+    metadata: { href: "/bill-pay", payeeId: params.payeeId },
+  });
+}
+
+export async function createBillPaymentNotification(params: {
+  userId: string;
+  event: "created" | "submitted" | "approved" | "failed" | "cancelled";
+  payeeName: string;
+  amount: number;
+  billPaymentId: string;
+}) {
+  const amountLabel = `$${Math.abs(params.amount).toFixed(2)}`;
+  const titles = {
+    created: "Bill payment saved",
+    submitted: "Bill payment submitted for review",
+    approved: "Bill payment posted",
+    failed: "Bill payment declined",
+    cancelled: "Bill payment cancelled",
+  } as const;
+
+  const messages = {
+    created: `Your bill payment to ${params.payeeName} for ${amountLabel} was saved.`,
+    submitted: `Your bill payment to ${params.payeeName} for ${amountLabel} is pending admin review.`,
+    approved: `Your bill payment to ${params.payeeName} for ${amountLabel} was approved and posted.`,
+    failed: `Your bill payment to ${params.payeeName} for ${amountLabel} was declined during review.`,
+    cancelled: `Your bill payment to ${params.payeeName} for ${amountLabel} was cancelled.`,
+  } as const;
+
+  return createNotification({
+    userId: params.userId,
+    type: "TRANSFER",
+    title: titles[params.event],
+    message: messages[params.event],
+    metadata: {
+      href: "/bill-pay",
+      billPaymentId: params.billPaymentId,
+      event: params.event,
+    },
+  });
+}

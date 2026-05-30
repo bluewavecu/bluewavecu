@@ -645,3 +645,57 @@ Status: Completed
 ### Pending Next Step
 
 - Bill pay module, payees/recipients, recurring payments processor, production job queue foundation.
+
+## Step 13: Bill Pay, Payees, And Job Queue Foundation
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `src/lib/billPay.ts`
+- `src/lib/jobQueue.ts`
+- `src/lib/ledger.ts`
+- `src/lib/risk.ts`
+- `src/lib/notifications.ts`
+- `src/lib/email.ts`
+- `src/lib/validators.ts`
+- `src/types/banking.ts`
+- `src/app/api/payees/route.ts`
+- `src/app/api/payees/[id]/route.ts`
+- `src/app/api/bill-pay/route.ts`
+- `src/app/api/bill-pay/[id]/route.ts`
+- `src/app/api/admin/bill-pay/route.ts`
+- `src/app/api/scheduled-transfers/route.ts`
+- `src/app/bill-pay/page.tsx`
+- `src/app/admin/bill-pay/page.tsx`
+- `src/hooks/usePayees.ts`
+- `src/hooks/useBillPay.ts`
+- `src/hooks/useAdminBillPay.ts`
+- `src/components/bill-pay/*`
+- `src/components/admin/AdminBillPayClient.tsx`
+- `src/components/layout/AppSidebar.tsx`
+- `src/components/admin/AdminSidebar.tsx`
+- `src/middleware.ts`
+- `src/lib/authSession.ts`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- Payee management with soft delete and masked account display.
+- Bill payment create/schedule/submit/cancel workflow without direct balance movement.
+- Admin bill pay review with ledger-safe payment posting on approval.
+- DB-backed job queue foundation for future scheduled processing.
+- Scheduled transfer creation enqueues review jobs without auto-posting.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–12 ledger safety, risk engine, sessions, notifications, and audit logging.
+- No real external billers or payment networks.
+- Job queue records intent only — worker runner not implemented.
+
+### Pending Next Step
+
+- Production worker runner, recurring processor, statement PDF export, admin finance reports, reconciliation dashboard.

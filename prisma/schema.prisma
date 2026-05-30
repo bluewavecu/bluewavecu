@@ -122,6 +122,30 @@ enum MfaMethod {
   TOTP
 }
 
+enum PayeeStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum BillPaymentStatus {
+  DRAFT
+  SCHEDULED
+  PENDING_REVIEW
+  APPROVED
+  FAILED
+  CANCELLED
+  POSTED
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 model User {
   id             String          @id @default(cuid())
   fullName       String
@@ -145,6 +169,8 @@ model User {
   riskEvents          RiskEvent[]
   sessions            UserSession[]
   mfaSettings         MfaSetting[]
+  payees              Payee[]
+  billPayments        BillPayment[]
 
   @@index([email])
   @@index([role])
@@ -169,6 +195,7 @@ model Account {
   cards            Card[]
   ledgerEntries    LedgerEntry[]
   scheduledTransfers ScheduledTransfer[]
+  billPayments     BillPayment[]
 
   @@index([userId])
   @@index([accountType])
@@ -195,6 +222,7 @@ model Transaction {
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   account        Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
   ledgerEntries  LedgerEntry[]
+  billPayments   BillPayment[]
 
   @@index([userId])
   @@index([accountId])
@@ -400,4 +428,78 @@ model MfaSetting {
   @@unique([userId, method])
   @@index([userId])
   @@index([isEnabled])
+}
+
+model Payee {
+  id            String      @id @default(cuid())
+  userId        String
+  name          String
+  nickname      String?
+  category      String?
+  accountNumber String?
+  routingNumber String?
+  address       String?
+  phone         String?
+  status        PayeeStatus @default(ACTIVE)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billPayments BillPayment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([name])
+}
+
+model BillPayment {
+  id            String            @id @default(cuid())
+  userId        String
+  fromAccountId String
+  payeeId       String
+  amount        Decimal           @db.Decimal(14, 2)
+  memo          String?
+  dueDate       DateTime?
+  scheduledFor  DateTime?
+  status        BillPaymentStatus @default(DRAFT)
+  transactionId String?           @unique
+  riskScore     Int?
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNote    String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromAccount Account      @relation(fields: [fromAccountId], references: [id], onDelete: Cascade)
+  payee       Payee        @relation(fields: [payeeId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([fromAccountId])
+  @@index([payeeId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([scheduledFor])
+  @@index([createdAt])
+}
+
+model JobQueue {
+  id          String    @id @default(cuid())
+  jobType     String
+  status      JobStatus @default(QUEUED)
+  runAt       DateTime
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  payload     Json
+  error       String?
+  lockedAt    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([jobType])
+  @@index([status])
+  @@index([runAt])
+  @@index([createdAt])
 }
