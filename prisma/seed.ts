@@ -431,6 +431,97 @@ async function main() {
 
     logStep("Refreshed demo notifications.");
 
+    const checkingAccountId = accountIds.get("1048225701");
+
+    if (checkingAccountId) {
+      await prisma.scheduledTransfer.deleteMany({
+        where: { userId: demoUser.id },
+      });
+
+      const scheduledFor = new Date();
+      scheduledFor.setDate(scheduledFor.getDate() + 7);
+
+      await prisma.scheduledTransfer.create({
+        data: {
+          userId: demoUser.id,
+          fromAccountId: checkingAccountId,
+          recipientName: "Jordan Parker",
+          destinationAccountNumber: "1048225799",
+          amount: "350.00",
+          memo: "Monthly rent schedule",
+          frequency: "MONTHLY",
+          scheduledFor,
+          nextRunAt: scheduledFor,
+          status: "ACTIVE",
+        },
+      });
+
+      logStep("Refreshed demo scheduled transfer.");
+    }
+
+    await prisma.riskEvent.deleteMany({
+      where: { userId: demoUser.id },
+    });
+    await prisma.riskEvent.createMany({
+      data: [
+        {
+          userId: demoUser.id,
+          eventType: "LOGIN",
+          riskScore: 45,
+          severity: "MEDIUM",
+          reason: "Sign-in from an unfamiliar device during demo seed.",
+          metadata: { ipAddress: "127.0.0.1" },
+        },
+        {
+          userId: demoUser.id,
+          eventType: "TRANSFER",
+          riskScore: 70,
+          severity: "HIGH",
+          reason: "Transfer amount exceeds $5,000 during demo seed.",
+          metadata: { amount: 5200 },
+        },
+      ],
+    });
+
+    logStep("Refreshed demo risk events.");
+
+    await prisma.userSession.deleteMany({
+      where: { userId: demoUser.id },
+    });
+    await prisma.userSession.create({
+      data: {
+        userId: demoUser.id,
+        tokenId: "demo-session-token",
+        deviceName: "Mac",
+        ipAddress: "127.0.0.1",
+        userAgent: "BluewaveDemoSeed/1.0",
+        location: "Local demo",
+        isActive: true,
+        lastSeenAt: new Date(),
+      },
+    });
+
+    logStep("Refreshed demo user session.");
+
+    await prisma.mfaSetting.upsert({
+      where: {
+        userId_method: {
+          userId: demoUser.id,
+          method: "EMAIL",
+        },
+      },
+      create: {
+        userId: demoUser.id,
+        method: "EMAIL",
+        isEnabled: false,
+      },
+      update: {
+        isEnabled: false,
+      },
+    });
+
+    logStep("Ensured demo MFA placeholder setting.");
+
     const auditSeedActions = [
       {
         action: "SEED_DEMO_DATA",

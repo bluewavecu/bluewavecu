@@ -52,6 +52,7 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
     return {
       userId: decoded.userId,
       role: decoded.role,
+      sessionId: decoded.sessionId,
     };
   } catch {
     return null;
@@ -81,6 +82,7 @@ export function decodeAuthTokenPayload(token: string): AuthTokenPayload | null {
     return {
       userId: decoded.userId,
       role: decoded.role,
+      sessionId: decoded.sessionId,
     };
   } catch {
     return null;

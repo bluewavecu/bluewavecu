@@ -47,6 +47,34 @@ export const adminUpdateSupportTicketStatusSchema = z.object({
   status: z.enum(["OPEN", "PENDING", "RESOLVED", "CLOSED"]),
 });
 
+export const scheduledTransferSchema = z
+  .object({
+    fromAccountId: z.string().min(1, "Source account is required"),
+    destinationAccountNumber: z.string().trim().min(4).max(20).optional(),
+    recipientName: z.string().trim().min(2).max(120).optional(),
+    amount: z.coerce.number().positive("Amount must be greater than zero"),
+    memo: z.string().trim().max(180).optional(),
+    frequency: z.enum(["ONE_TIME", "WEEKLY", "BIWEEKLY", "MONTHLY"]),
+    scheduledFor: z.coerce.date(),
+  })
+  .refine((data) => Boolean(data.destinationAccountNumber || data.recipientName), {
+    message: "Recipient account number or name is required",
+    path: ["destinationAccountNumber"],
+  });
+
+export const scheduledTransferUpdateSchema = z.object({
+  status: z.enum(["ACTIVE", "PAUSED", "CANCELLED"]),
+});
+
+export const sessionRevokeSchema = z.object({
+  sessionId: z.string().min(1, "Session ID is required"),
+});
+
+export const mfaToggleSchema = z.object({
+  method: z.enum(["EMAIL", "SMS", "TOTP"]).default("EMAIL"),
+  enabled: z.boolean(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;

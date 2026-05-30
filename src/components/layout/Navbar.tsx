@@ -1,9 +1,9 @@
 "use client";
 
 import { Menu, UserPlus, X, LogIn } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -24,23 +24,7 @@ export function Navbar() {
         aria-label="Main navigation"
         className="section-shell flex h-20 items-center justify-between gap-6"
       >
-        <Link
-          href="/"
-          aria-label="Bluewave Credit Union home"
-          className="flex min-w-0 items-center"
-          onClick={() => setOpen(false)}
-        >
-          <span className="relative block h-11 w-40 overflow-hidden sm:w-48">
-            <Image
-              src="/images/logo.webp"
-              alt="Bluewave Credit Union"
-              fill
-              priority
-              sizes="(min-width: 640px) 192px, 160px"
-              className="object-contain object-left"
-            />
-          </span>
-        </Link>
+        <BrandLogo priority displayHeight={44} onClick={() => setOpen(false)} />
 
         <div className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (

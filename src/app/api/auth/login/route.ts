@@ -4,6 +4,9 @@ import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@
 import { sendLoginAlertEmail } from "@/lib/email";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
+import { getClientIp, getUserAgent } from "@/lib/requestContext";
+import { applyRiskAssessment, scoreLoginRisk } from "@/lib/risk";
+import { createUserSession } from "@/lib/sessions";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { loginSchema } from "@/lib/validators";
 
@@ -19,6 +22,8 @@ export async function POST(request: NextRequest) {
 
     const input = loginSchema.parse(await request.json());
     const prisma = getPrisma();
+    const ipAddress = getClientIp(request);
+    const userAgent = getUserAgent(request);
 
     const user = await prisma.user.findUnique({
       where: { email: input.email },
@@ -31,6 +36,18 @@ export async function POST(request: NextRequest) {
     const passwordMatches = await verifyPassword(input.password, user.passwordHash);
 
     if (!passwordMatches) {
+      const failedAssessment = await scoreLoginRisk({
+        userId: user.id,
+        ipAddress,
+        userAgent,
+        loginFailed: true,
+      });
+
+      void applyRiskAssessment({
+        userId: user.id,
+        assessment: failedAssessment,
+      });
+
       return apiError("Invalid email or password", 401);
     }
 
@@ -38,9 +55,26 @@ export async function POST(request: NextRequest) {
       return apiError("This account is suspended", 403);
     }
 
+    const session = await createUserSession({
+      userId: user.id,
+      request,
+    });
+
     const token = signAuthToken({
       userId: user.id,
       role: user.role,
+      sessionId: session.id,
+    });
+
+    const loginAssessment = await scoreLoginRisk({
+      userId: user.id,
+      ipAddress,
+      userAgent,
+    });
+
+    void applyRiskAssessment({
+      userId: user.id,
+      assessment: loginAssessment,
     });
 
     const response = apiSuccess({
@@ -56,7 +90,13 @@ export async function POST(request: NextRequest) {
     });
     void createSecurityNotification({
       userId: user.id,
-      metadata: { href: "/dashboard" },
+      title: "New sign-in detected",
+      message: `A sign-in was recorded from ${session.deviceName}.`,
+      metadata: {
+        href: "/security",
+        sessionId: session.id,
+        deviceName: session.deviceName,
+      },
     });
 
     return response;

@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   ReceiptText,
+  Shield,
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +25,7 @@ const appRoutes = [
   { label: "Cards", href: "/cards", icon: CreditCard },
   { label: "Loans", href: "/loans", icon: Landmark },
   { label: "Support", href: "/support", icon: CircleHelp },
+  { label: "Security", href: "/security", icon: Shield },
 ];
 
 export function AppSidebar() {

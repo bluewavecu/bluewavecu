@@ -11,6 +11,7 @@ const memberRoutes = [
   "/cards",
   "/loans",
   "/support",
+  "/security",
 ];
 
 function isProtectedMemberRoute(pathname: string) {
@@ -54,6 +55,7 @@ export const config = {
     "/cards/:path*",
     "/loans/:path*",
     "/support/:path*",
+    "/security/:path*",
     "/admin/:path*",
   ],
 };

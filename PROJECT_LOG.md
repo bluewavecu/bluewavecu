@@ -587,3 +587,61 @@ Status: Completed
 ### Pending Next Step
 
 - Recurring payments, scheduled transfers, fraud/risk engine, device/session management, MFA foundation.
+
+## Step 12: Scheduled Transfers, Risk Engine, And Session Security
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `src/lib/risk.ts`
+- `src/lib/sessions.ts`
+- `src/lib/requestContext.ts`
+- `src/lib/scheduledTransfers.ts`
+- `src/lib/auth.ts`
+- `src/lib/validators.ts`
+- `src/types/banking.ts`
+- `src/app/api/auth/login/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/admin/transactions/route.ts`
+- `src/app/api/sessions/route.ts`
+- `src/app/api/sessions/revoke/route.ts`
+- `src/app/api/scheduled-transfers/route.ts`
+- `src/app/api/scheduled-transfers/[id]/route.ts`
+- `src/app/api/mfa/settings/route.ts`
+- `src/app/api/mfa/toggle/route.ts`
+- `src/app/api/admin/risk/route.ts`
+- `src/app/security/page.tsx`
+- `src/app/admin/risk/page.tsx`
+- `src/hooks/useScheduledTransfers.ts`
+- `src/hooks/useAdminRisk.ts`
+- `src/components/security/SessionsClient.tsx`
+- `src/components/transfers/TransfersClient.tsx`
+- `src/components/admin/AdminRiskClient.tsx`
+- `src/components/admin/AdminOverviewClient.tsx`
+- `src/components/layout/AppSidebar.tsx`
+- `src/components/admin/AdminSidebar.tsx`
+- `src/middleware.ts`
+- `src/lib/authSession.ts`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- Scheduled transfer infrastructure with member CRUD and no automatic posting.
+- Risk scoring for login, transfers, scheduled transfers, and admin review actions.
+- Session/device tracking on login with revoke support and security page.
+- Email MFA placeholder toggle with security notifications.
+- Admin risk monitoring dashboard and high-risk summary on admin overview.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–11 ledger safety, notifications, emails, audit logs, and admin review posting.
+- Scheduled transfers must not create transactions or post ledger entries automatically.
+- CRITICAL risk blocks actions; HIGH creates alerts without blocking.
+
+### Pending Next Step
+
+- Bill pay module, payees/recipients, recurring payments processor, production job queue foundation.

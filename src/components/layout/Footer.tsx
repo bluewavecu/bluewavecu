@@ -1,6 +1,6 @@
 import { ArrowUpRight, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 const footerLinks = [
   {
@@ -38,17 +38,7 @@ export function Footer() {
       <div className="section-shell py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1.45fr]">
           <div>
-            <Link href="/" aria-label="Bluewave Credit Union home" className="inline-flex">
-              <span className="relative block h-12 w-48 overflow-hidden">
-                <Image
-                  src="/images/logo.webp"
-                  alt="Bluewave Credit Union"
-                  fill
-                  sizes="192px"
-                  className="object-contain object-left"
-                />
-              </span>
-            </Link>
+            <BrandLogo displayHeight={48} />
             <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">
               Your secure gateway to modern digital banking. Access your accounts,
               discover competitive products, and manage your financial future with

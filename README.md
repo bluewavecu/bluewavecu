@@ -316,6 +316,44 @@ npm run db:seed
 
 - Pending Step 12: recurring payments, scheduled transfers, fraud/risk engine, device/session management, MFA foundation.
 
+## Step 12 Notes
+
+### Scheduled Transfers
+
+- `ScheduledTransfer` model stores future transfer schedules only — no automatic balance movement.
+- Member APIs: `GET/POST /api/scheduled-transfers`, `PATCH /api/scheduled-transfers/[id]`.
+- Supports ONE_TIME, WEEKLY, BIWEEKLY, MONTHLY frequencies with ACTIVE/PAUSED/CANCELLED/COMPLETED status.
+- Transfers page includes Immediate and Scheduled tabs with pause/resume/cancel controls.
+
+### Risk Engine
+
+- `src/lib/risk.ts` scores login, transfer, scheduled transfer, and admin review events.
+- `RiskEvent` records are created for MEDIUM+ severity; CRITICAL blocks the action.
+- HIGH/CRITICAL events trigger security notifications and admin alert emails.
+- Admin risk monitoring at `/admin/risk` via `GET /api/admin/risk`.
+
+### Session Security
+
+- Successful login creates a `UserSession` with device, IP, and user agent metadata.
+- JWT payload includes `sessionId` for current session tracking.
+- Member APIs: `GET /api/sessions`, `POST /api/sessions/revoke`.
+- Security page at `/security` lists active sessions and supports revoke (current session logs out).
+
+### MFA Foundation
+
+- `MfaSetting` model with EMAIL/SMS/TOTP methods (EMAIL placeholder enabled in UI).
+- APIs: `GET /api/mfa/settings`, `POST /api/mfa/toggle`.
+- OTP delivery is not implemented yet — toggle creates security notifications only.
+
+Apply the Step 12 migration when PostgreSQL is available:
+
+```bash
+npx prisma migrate dev --name add_scheduled_transfers_risk_sessions_mfa
+npm run db:seed
+```
+
+- Pending Step 13: bill pay module, payees/recipients, recurring payments processor, production job queue foundation.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -334,6 +372,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 9: Email notifications and admin transfer review workflow.
 - Step 10: Balance ledger and admin-approved transfer posting.
 - Step 11: Notifications center, statement exports, and account activity timeline.
+- Step 12: Scheduled transfers, risk engine, session security, and MFA foundation.
 
 ## Step 2 Notes
 

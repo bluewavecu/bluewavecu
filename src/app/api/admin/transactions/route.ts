@@ -9,6 +9,7 @@ import {
 import { failReviewedTransferTransaction, LedgerError, postApprovedTransferTransaction } from "@/lib/ledger";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
+import { applyRiskAssessment, scoreAdminReviewRisk } from "@/lib/risk";
 import { adminUpdateTransactionStatusSchema } from "@/lib/validators";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
 
@@ -246,6 +247,19 @@ export async function PATCH(request: NextRequest) {
       amount: ledgerResult.amount,
       metadata: { href: "/transactions" },
     });
+
+    if (input.status === "FAILED" || input.status === "REVERSED") {
+      const reviewAssessment = await scoreAdminReviewRisk({
+        userId: existing.user.id,
+        action: input.status,
+        reference: ledgerResult.reference,
+      });
+
+      void applyRiskAssessment({
+        userId: existing.user.id,
+        assessment: reviewAssessment,
+      });
+    }
 
     return apiSuccess({ transaction: serializeTransaction(updated) });
   } catch (error) {

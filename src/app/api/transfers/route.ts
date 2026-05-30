@@ -9,6 +9,7 @@ import {
 } from "@/lib/email";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
+import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib/risk";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { transferSchema } from "@/lib/validators";
 import type { PageTransaction } from "@/types/banking";
@@ -78,6 +79,19 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return apiError("User not found", 404);
     }
+
+    const assessment = await scoreTransferRisk({
+      userId: payload.userId,
+      amount: input.amount,
+      destinationAccountNumber: input.toAccountNumber,
+    });
+
+    if (shouldBlockAction(assessment.severity)) {
+      await applyRiskAssessment({ userId: payload.userId, assessment });
+      return apiError("Transfer blocked due to critical risk review.", 403);
+    }
+
+    void applyRiskAssessment({ userId: payload.userId, assessment });
 
     const transaction = await prisma.transaction.create({
       data: {

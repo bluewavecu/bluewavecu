@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ReceiptText,
   Shield,
+  ShieldAlert,
   Users,
   WalletCards,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const adminRoutes = [
   { label: "Accounts", href: "/admin/accounts", icon: WalletCards },
   { label: "Transactions", href: "/admin/transactions", icon: ReceiptText },
   { label: "Support", href: "/admin/support", icon: Shield },
+  { label: "Risk Monitoring", href: "/admin/risk", icon: ShieldAlert },
   { label: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList },
 ];
 

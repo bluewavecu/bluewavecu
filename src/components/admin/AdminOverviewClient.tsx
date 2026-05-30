@@ -9,6 +9,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAdminOperationalAlerts } from "@/hooks/useNotifications";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
+import { useAdminRisk } from "@/hooks/useAdminRisk";
 import { cn } from "@/lib/utils";
 
 function getStatusLabel(status: string) {
@@ -34,6 +35,7 @@ export function AdminOverviewClient() {
     isLoading: alertsLoading,
     refetch: refetchAlerts,
   } = useAdminOperationalAlerts();
+  const { data: riskData } = useAdminRisk("HIGH");
 
   if (isLoading) {
     return <LoadingState title="Loading admin overview" message="Retrieving platform metrics." />;
@@ -70,6 +72,28 @@ export function AdminOverviewClient() {
           },
         ]}
       />
+
+      {riskData && riskData.summary.highOrCritical > 0 ? (
+        <article className="rounded-lg border border-amber-500/[0.30] bg-amber-500/[0.06] p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+                High-risk alerts
+              </h2>
+              <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+                {riskData.summary.highOrCritical} high or critical risk event
+                {riskData.summary.highOrCritical === 1 ? "" : "s"} require review.
+              </p>
+            </div>
+            <Link
+              href="/admin/risk"
+              className="text-sm font-semibold text-royal-blue dark:text-light-blue"
+            >
+              Open risk monitoring
+            </Link>
+          </div>
+        </article>
+      ) : null}
 
       <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
         <div className="flex items-center justify-between">

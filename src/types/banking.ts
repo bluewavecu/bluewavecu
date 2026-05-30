@@ -48,6 +48,7 @@ export type SafeUser = {
 export type AuthTokenPayload = {
   userId: string;
   role: UserRole;
+  sessionId?: string;
 };
 
 export type AuthResponse = {
@@ -477,4 +478,80 @@ export type AdminOperationalAlert = {
 
 export type AdminOperationalAlertsData = {
   alerts: AdminOperationalAlert[];
+};
+
+export type ScheduledTransferFrequency = "ONE_TIME" | "WEEKLY" | "BIWEEKLY" | "MONTHLY";
+export type ScheduledTransferStatus = "ACTIVE" | "PAUSED" | "CANCELLED" | "COMPLETED";
+export type RiskSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type MfaMethod = "EMAIL" | "SMS" | "TOTP";
+
+export type ScheduledTransferRecord = {
+  id: string;
+  fromAccountId: string;
+  maskedAccountNumber: string;
+  recipientName: string | null;
+  destinationAccountNumber: string | null;
+  amount: number;
+  memo: string | null;
+  frequency: ScheduledTransferFrequency;
+  scheduledFor: string;
+  nextRunAt: string;
+  status: ScheduledTransferStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ScheduledTransfersData = {
+  scheduledTransfers: ScheduledTransferRecord[];
+};
+
+export type UserSessionRecord = {
+  id: string;
+  deviceName: string;
+  ipAddress: string;
+  userAgent: string;
+  location: string | null;
+  isActive: boolean;
+  isCurrent: boolean;
+  lastSeenAt: string;
+  createdAt: string;
+  revokedAt: string | null;
+};
+
+export type UserSessionsData = {
+  sessions: UserSessionRecord[];
+};
+
+export type MfaSettingRecord = {
+  method: MfaMethod;
+  isEnabled: boolean;
+  verifiedAt: string | null;
+};
+
+export type MfaSettingsData = {
+  settings: MfaSettingRecord[];
+};
+
+export type RiskEventRecord = {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  eventType: string;
+  riskScore: number;
+  severity: RiskSeverity;
+  reason: string;
+  metadata: Record<string, string | number | boolean | null> | null;
+  createdAt: string;
+};
+
+export type AdminRiskData = {
+  events: RiskEventRecord[];
+  summary: {
+    total: number;
+    highOrCritical: number;
+  };
 };
