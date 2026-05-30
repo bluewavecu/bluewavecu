@@ -73,6 +73,11 @@ Required variables:
 DATABASE_URL=
 JWT_SECRET=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+RESEND_API_KEY=
+EMAIL_FROM=
+ADMIN_ALERT_EMAIL=
+CRON_SECRET=
+ALLOW_DEMO_SEED=false
 ```
 
 Use a PostgreSQL connection string for `DATABASE_URL` in production. Do not
@@ -84,8 +89,35 @@ Generate the Prisma client:
 npx prisma generate
 ```
 
-When migrations are introduced, apply them against the configured PostgreSQL
-database using Prisma migration commands.
+### Migration commands
+
+**Production (Render shell or one-off job after deploy):**
+
+```bash
+npx prisma migrate deploy
+```
+
+**Local development:**
+
+```bash
+npx prisma migrate dev
+```
+
+**Seed demo data (local or staging only):**
+
+```bash
+npm run db:seed
+```
+
+The seed script skips production unless `ALLOW_DEMO_SEED=true` is set intentionally.
+
+> If `prisma/migrations/` is empty, create the initial migration locally when PostgreSQL is reachable:
+>
+> ```bash
+> npx prisma migrate dev --name init
+> ```
+>
+> Commit the generated migration files before deploying to Render.
 
 Seed local demo data after configuring `DATABASE_URL` and `JWT_SECRET`:
 
@@ -132,6 +164,31 @@ src/
 ## Deployment Note For Render
 
 Bluewave ships with a `render.yaml` Blueprint for production deployment.
+
+### Render Deployment Steps
+
+1. Create a **Render PostgreSQL** database and copy the **internal** connection string into `DATABASE_URL`.
+2. Create a **Web Service** from the GitHub repo (or apply the Blueprint).
+3. Set environment variables:
+   - `DATABASE_URL` — internal PostgreSQL URL
+   - `JWT_SECRET` — 32+ character random secret
+   - `NEXT_PUBLIC_APP_URL` — public HTTPS URL (e.g. `https://bluewavecu.com`)
+   - `CRON_SECRET` — bearer secret for `POST /api/cron/run-jobs`
+   - `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_ALERT_EMAIL` — required for production email
+   - `ALLOW_DEMO_SEED=false` (default; set `true` only for demo/staging)
+4. Deploy the web service (`buildCommand`: `npm install && npx prisma generate && npm run build`, `startCommand`: `npm start`).
+5. Run migrations against the production database:
+   ```bash
+   npx prisma migrate deploy
+   ```
+6. Optional seed — only if `ALLOW_DEMO_SEED=true` on a demo/staging environment:
+   ```bash
+   npm run db:seed
+   ```
+7. Point **Cloudflare DNS** to Render (CNAME `www` → `*.onrender.com`; apex per Render/Cloudflare docs).
+8. Test login, admin routes, member routes, cron endpoint, and statement exports.
+
+See `DEPLOYMENT_CHECKLIST.md` for the full route and API QA checklist.
 
 ### Render Setup
 
@@ -185,7 +242,8 @@ Point the production domain to Render:
 | `JWT_SECRET` | Yes | 32+ character random secret |
 | `NEXT_PUBLIC_APP_URL` | Yes | Public HTTPS app URL |
 | `NODE_ENV` | Yes | `production` on Render |
-| `ALLOW_DEMO_SEED` | No | Set `true` only for demo/staging seeds |
+| `CRON_SECRET` | Yes (production cron) | Bearer secret for `POST /api/cron/run-jobs` |
+| `ALLOW_DEMO_SEED` | No | Default `false`; set `true` only for demo/staging seeds |
 | `RESEND_API_KEY` | Yes (production) | Resend API key for transactional email |
 | `EMAIL_FROM` | No | Default: `Bluewave Credit Union <no-reply@bluewavecu.com>` |
 | `ADMIN_ALERT_EMAIL` | No | Admin inbox for registration/transfer/support alerts |
@@ -504,6 +562,39 @@ npm run db:seed
 
 - Pending Step 17: deployment checklist, Render database setup, production env verification, final QA pass, GitHub push/deploy instructions.
 
+## Step 17 Notes
+
+### Deployment Prep
+
+- `DEPLOYMENT_CHECKLIST.md` — route, API, and post-deploy QA checklist.
+- README updated with migration commands, Render deployment steps, and env var reference.
+- `render.yaml` documents `ALLOW_DEMO_SEED=false` by default alongside required secrets.
+- `.env.example` lists all production-relevant variables including `CRON_SECRET` and `ALLOW_DEMO_SEED`.
+
+### Migration commands
+
+| Environment | Command |
+| --- | --- |
+| Production | `npx prisma migrate deploy` |
+| Local dev | `npx prisma migrate dev` |
+| Demo seed | `npm run db:seed` (requires `ALLOW_DEMO_SEED=true` in production) |
+
+### Before first GitHub push
+
+1. Ensure initial Prisma migration files exist and are committed (create with `npx prisma migrate dev --name init` when DB is reachable).
+2. Run `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+3. Review `DEPLOYMENT_CHECKLIST.md` and complete smoke checks.
+4. Push to GitHub; connect Render; set env vars; deploy; run `npx prisma migrate deploy`.
+5. Do **not** enable `ALLOW_DEMO_SEED` on real production data.
+
+### Pending manual steps
+
+- Create and commit Prisma migration files when PostgreSQL is available.
+- Configure Render PostgreSQL and web service env vars.
+- Set up Render Cron Job for `POST /api/cron/run-jobs` with `Authorization: Bearer $CRON_SECRET`.
+- Configure Cloudflare DNS to Render.
+- Full DB-backed E2E testing after first deploy.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -527,6 +618,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 14: Worker runner, reconciliation dashboard, and finance reports.
 - Step 15: Controlled adjustments, disputes, and event logs.
 - Step 16: Production cron, PDF statements, customer profile/KYC, and admin compliance dashboard.
+- Step 17: Deployment checklist, Render launch notes, migration commands, and production QA prep.
 
 ## Step 2 Notes
 

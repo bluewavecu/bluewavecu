@@ -826,5 +826,38 @@ Status: Completed
 
 ### Pending Next Step
 
-- Deployment checklist, Render database setup, production env verification, final QA pass, GitHub push/deploy instructions.
+- GitHub push, Render first deploy, migration apply, DNS, and full production QA.
+
+## Step 17: Final QA, Render Deployment Prep, Push Checklist
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `DEPLOYMENT_CHECKLIST.md` — public, member, admin route QA and API smoke checks
+- `README.md` — migration commands, Render deployment steps, Step 17 notes
+- `PROJECT_LOG.md` — Step 17 entry
+- `render.yaml` — `ALLOW_DEMO_SEED=false` default
+- `.env.example` — explicit `ALLOW_DEMO_SEED=false`
+- `.gitignore` — exclude stray root asset files
+
+### Features Added
+
+- Production deployment checklist for routes, APIs, and post-deploy QA.
+- Documented production vs local migration and seed commands.
+- Render Blueprint env var documentation finalized.
+- Production safety audit documented (no code regressions required).
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–16 ledger safety, cron/worker behavior, KYC, and compliance workflows.
+- Do not push automatically; manual Render and DNS setup remains required.
+
+### Pending Manual Steps
+
+- Create initial Prisma migration when PostgreSQL is reachable.
+- GitHub push and Render first deploy.
+- `npx prisma migrate deploy` on production database.
+- Cloudflare DNS to Render.
+- Full DB-backed E2E testing after deploy.
 
