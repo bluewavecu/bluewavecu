@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import type { AccountsData, ApiResponse } from "@/types/banking";
 
 type AccountsState = {
@@ -12,7 +12,7 @@ type AccountsState = {
 };
 
 export function useAccounts(): AccountsState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<AccountsData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +32,7 @@ export function useAccounts(): AccountsState {
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -60,7 +60,7 @@ export function useAccounts(): AccountsState {
         }
       }
     },
-    [router],
+    [redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

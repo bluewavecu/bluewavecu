@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { supportTicketSchema } from "@/lib/validators";
 import type { PageSupportTicket } from "@/types/banking";
 
@@ -56,6 +57,12 @@ export async function POST(request: NextRequest) {
 
     if (!payload) {
       return apiError("Unauthorized", 401);
+    }
+
+    const rateLimit = enforceRateLimit(request, "support-create", rateLimitPresets.support);
+
+    if (!rateLimit.allowed) {
+      return apiError(rateLimit.message, 429);
     }
 
     const input = supportTicketSchema.parse(await request.json());

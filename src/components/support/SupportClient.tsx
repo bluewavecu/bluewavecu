@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { CircleHelp, Mail, MessageSquareText, Phone } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { cn } from "@/lib/utils";
@@ -68,7 +68,7 @@ export function SupportClient() {
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={refetch} />;
+    return <ApiErrorState message={error} onRetry={refetch} />;
   }
 
   const tickets = data?.tickets ?? [];

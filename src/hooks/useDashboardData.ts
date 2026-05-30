@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import type { ApiResponse, DashboardData } from "@/types/banking";
 
 type DashboardDataState = {
@@ -12,7 +12,7 @@ type DashboardDataState = {
 };
 
 export function useDashboardData(): DashboardDataState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +32,7 @@ export function useDashboardData(): DashboardDataState {
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -60,7 +60,7 @@ export function useDashboardData(): DashboardDataState {
         }
       }
     },
-    [router],
+    [redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

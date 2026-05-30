@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { safeHandleApiError } from "@/lib/safeApi";
 import type { ApiResponse } from "@/types/banking";
 
 export function apiSuccess<T>(data: T, init?: ResponseInit) {
@@ -27,10 +28,5 @@ export function validationError(error: ZodError) {
 }
 
 export function handleApiError(error: unknown) {
-  if (error instanceof ZodError) {
-    return validationError(error);
-  }
-
-  console.error(error);
-  return apiError("Unexpected server error", 500);
+  return safeHandleApiError(error);
 }

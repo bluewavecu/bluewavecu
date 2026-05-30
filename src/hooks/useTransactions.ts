@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import type { ApiResponse, TransactionFilters, TransactionsData } from "@/types/banking";
 
 type TransactionsState = {
@@ -35,7 +35,7 @@ function buildTransactionsUrl(filters?: TransactionFilters) {
 }
 
 export function useTransactions(filters?: TransactionFilters): TransactionsState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<TransactionsData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +56,7 @@ export function useTransactions(filters?: TransactionFilters): TransactionsState
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -84,7 +84,7 @@ export function useTransactions(filters?: TransactionFilters): TransactionsState
         }
       }
     },
-    [requestUrl, router],
+    [requestUrl, redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

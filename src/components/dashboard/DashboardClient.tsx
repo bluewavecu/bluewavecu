@@ -6,7 +6,7 @@ import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
@@ -48,7 +48,7 @@ export function DashboardClient() {
 
   if (error) {
     return (
-      <ErrorState
+      <ApiErrorState
         title="Dashboard unavailable"
         message={error}
         actionLabel="Reload Dashboard"

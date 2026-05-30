@@ -131,7 +131,83 @@ src/
 
 ## Deployment Note For Render
 
-Use the Node runtime on Render. Set the build command to `npm run build` and the start command to `npm start`. Configure production environment variables in Render before deployment when backend services are added.
+Bluewave ships with a `render.yaml` Blueprint for production deployment.
+
+### Render Setup
+
+1. Connect the GitHub repository to Render.
+2. Create a **PostgreSQL** database on Render and copy the internal connection string.
+3. Create a **Web Service** from the repo (or apply the Blueprint).
+4. Set environment variables before the first deploy:
+
+```bash
+DATABASE_URL=postgresql://...
+JWT_SECRET=<long-random-secret-32-chars-minimum>
+NEXT_PUBLIC_APP_URL=https://bluewavecu.com
+NODE_ENV=production
+```
+
+5. Recommended build command:
+
+```bash
+npm install && npx prisma generate && npm run build
+```
+
+6. Recommended start command:
+
+```bash
+npm start
+```
+
+7. After the database is reachable, run migrations when they are introduced, then seed demo data only for staging/demo:
+
+```bash
+npm run db:seed
+```
+
+The seed script skips production by default unless `ALLOW_DEMO_SEED=true` is set intentionally.
+
+### Cloudflare DNS
+
+Point the production domain to Render:
+
+- Create a **CNAME** record: `www` → your Render service hostname (`*.onrender.com`).
+- For the apex domain, use Cloudflare CNAME flattening or Render's apex instructions.
+- Enable **Proxied** (orange cloud) for DDoS protection if desired.
+- Set SSL/TLS mode to **Full (strict)** once Render provides a valid certificate.
+- Ensure `NEXT_PUBLIC_APP_URL` matches the public HTTPS URL (e.g. `https://bluewavecu.com`).
+
+### Production Environment Variables
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Render PostgreSQL internal URL |
+| `JWT_SECRET` | Yes | 32+ character random secret |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public HTTPS app URL |
+| `NODE_ENV` | Yes | `production` on Render |
+| `ALLOW_DEMO_SEED` | No | Set `true` only for demo/staging seeds |
+
+Environment validation runs at startup via `src/lib/env.ts` and fails fast with readable errors when required variables are missing or invalid.
+
+### Deployment Troubleshooting
+
+- **Build fails on Prisma**: Run `npx prisma generate` locally and confirm `DATABASE_URL` is set on Render before build if your pipeline requires it.
+- **502 / service won't start**: Confirm `npm start` binds to Render's `PORT` (Next.js handles this by default).
+- **Login works locally but not in production**: Verify `NEXT_PUBLIC_APP_URL`, cookie `Secure` flag, and HTTPS DNS setup.
+- **Database connection errors**: Use Render's internal database URL from the web service, not the external URL.
+- **Unauthorized on all pages**: Check `JWT_SECRET` is set and unchanged between deploys; changing it invalidates existing sessions.
+- **Demo data missing**: Run `npm run db:seed` against the target database; in production set `ALLOW_DEMO_SEED=true` only for intentional demo environments.
+
+## Step 8 Notes
+
+- Added Zod environment validation (`src/lib/env.ts`) and production-safe `.env.example`.
+- Added global middleware for member and admin route protection with login redirect preservation.
+- Added secure JWT cookie helpers, logout API route, and sign-out buttons in app/admin headers.
+- Added in-memory IP rate limiting for login, register, transfers, and support ticket creation.
+- Added `safeApi` utilities and `ServerErrorState` / `ApiErrorState` for production-safe API errors.
+- Added `render.yaml`, security headers in `next.config.ts`, and idempotent production-safe seed behavior.
+- Session-expired handling redirects API clients to `/login?expired=1&next=...`.
+- Pending Step 9: notifications, email system, transfer review workflow, admin approvals, production transaction engine.
 
 ## Project Safety Note
 
@@ -147,6 +223,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 5: Authenticated dashboard API data connection.
 - Step 6: Full banking page data and transaction workflows.
 - Step 7: Admin dashboard, role guard, and audit logs.
+- Step 8: Deployment hardening, Render config, middleware protection, and production safeguards.
 
 ## Step 2 Notes
 
@@ -261,3 +338,14 @@ After signing in with the demo admin account, these role-guarded routes are avai
 8. On `/admin/audit-logs`, confirm new admin actions appear after PATCH operations.
 9. Sign in as the demo member and confirm `/api/admin/overview` returns `403 Forbidden`.
 10. Sign out or use a private window and confirm admin APIs return `401 Unauthorized`.
+
+## Local Testing (Step 8)
+
+1. Complete Step 7 setup and confirm `.env` includes `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_APP_URL`, and `NODE_ENV`.
+2. Run validation: `npx prisma generate`, `npm run lint`, `npm run build`, `npx tsc --noEmit`.
+3. Start the app with `npm run dev`.
+4. Visit `/dashboard` while signed out and confirm redirect to `/login?next=/dashboard`.
+5. Sign in and use **Sign out** in the header; confirm redirect to `/login` and protected routes block again.
+6. POST `/api/auth/logout` while signed in and confirm the auth cookie is cleared.
+7. Rapidly retry login/register/transfer/support POST requests to confirm rate limit responses.
+8. Sign in as admin, open `/admin`, then sign in as member and confirm `/admin` redirects to `/dashboard`.

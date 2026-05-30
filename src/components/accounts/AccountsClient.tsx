@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeftRight, BadgeCheck, ReceiptText, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -42,7 +42,7 @@ export function AccountsClient() {
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={refetch} />;
+    return <ApiErrorState message={error} onRetry={refetch} />;
   }
 
   if (!data || data.accounts.length === 0) {

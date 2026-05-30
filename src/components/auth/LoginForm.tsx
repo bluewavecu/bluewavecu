@@ -2,16 +2,20 @@
 
 import { ArrowRight, Eye, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { buttonVariants } from "@/components/ui/Button";
+import { getSafeRedirectPath } from "@/lib/authSession";
 import { postJson } from "@/lib/clientApi";
 import type { AuthResponse } from "@/types/banking";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const sessionExpired = searchParams.get("expired") === "1";
+  const nextPath = searchParams.get("next");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,12 +38,22 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    const destination = getSafeRedirectPath(nextPath, result.data.user.role);
+    router.push(destination);
     router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {sessionExpired ? (
+        <p
+          role="status"
+          className="rounded-lg border border-amber-500/[0.20] bg-amber-500/[0.08] px-4 py-3 text-sm font-medium text-amber-800 dark:text-amber-200"
+        >
+          Your session expired. Sign in again to continue.
+        </p>
+      ) : null}
+
       <label className="block">
         <span className="text-sm font-semibold text-primary-navy dark:text-white">Email</span>
         <span className="mt-2 flex items-center gap-3 rounded-lg border border-primary-navy/[0.10] bg-white px-4 py-3 text-bluewave-gray shadow-[0_12px_34px_rgba(10,42,94,0.06)] focus-within:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06]">

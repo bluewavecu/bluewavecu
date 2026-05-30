@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminSupport } from "@/hooks/useAdminSupport";
 import { cn } from "@/lib/utils";
@@ -82,7 +82,7 @@ export function AdminSupportClient() {
 
   if (error) {
     return (
-      <ErrorState
+      <ApiErrorState
         message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />

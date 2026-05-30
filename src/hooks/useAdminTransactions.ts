@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import { patchJson } from "@/lib/clientApi";
 import type {
   AdminTransactionFilters,
@@ -41,7 +41,7 @@ function buildTransactionsUrl(filters?: AdminTransactionFilters) {
 }
 
 export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTransactionsState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<AdminTransactionsData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,7 +66,7 @@ export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTr
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -101,7 +101,7 @@ export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTr
         }
       }
     },
-    [requestUrl, router],
+    [requestUrl, redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

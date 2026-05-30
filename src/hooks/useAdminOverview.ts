@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import type { AdminOverviewData, ApiResponse } from "@/types/banking";
 
 type AdminOverviewState = {
@@ -13,7 +13,7 @@ type AdminOverviewState = {
 };
 
 export function useAdminOverview(): AdminOverviewState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<AdminOverviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +35,7 @@ export function useAdminOverview(): AdminOverviewState {
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -70,7 +70,7 @@ export function useAdminOverview(): AdminOverviewState {
         }
       }
     },
-    [router],
+    [redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

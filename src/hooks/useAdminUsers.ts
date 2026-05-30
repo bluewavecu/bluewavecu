@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import { patchJson } from "@/lib/clientApi";
 import type {
   AdminUserFilters,
@@ -42,7 +42,7 @@ function buildUsersUrl(filters?: AdminUserFilters) {
 }
 
 export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
-  const router = useRouter();
+  const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<AdminUsersData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,7 +67,7 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
 
         if (response.status === 401 || (!payload.success && payload.error === "Unauthorized")) {
           setData(null);
-          router.replace("/login");
+          redirectToLogin();
           return;
         }
 
@@ -100,7 +100,7 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
         }
       }
     },
-    [requestUrl, router],
+    [requestUrl, redirectToLogin],
   );
 
   const refetch = useCallback(async () => {

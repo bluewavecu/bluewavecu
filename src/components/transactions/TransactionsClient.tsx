@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, ReceiptText, Repeat2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -105,7 +105,7 @@ export function TransactionsClient() {
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={refetch} />;
+    return <ApiErrorState message={error} onRetry={refetch} />;
   }
 
   const transactions = data?.transactions ?? [];

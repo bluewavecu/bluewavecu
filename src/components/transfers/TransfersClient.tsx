@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { ArrowLeftRight, CalendarDays, CheckCircle2, Send } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -26,7 +26,7 @@ export function TransfersClient() {
   }
 
   if (accountsError) {
-    return <ErrorState message={accountsError} onRetry={refetch} />;
+    return <ApiErrorState message={accountsError} onRetry={refetch} />;
   }
 
   if (!accountsData || accountsData.accounts.length === 0) {

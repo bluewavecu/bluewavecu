@@ -398,3 +398,58 @@ Status: Completed
 ### Pending Next Step
 
 - Deployment hardening, Render configuration, environment validation, and production safety.
+
+## Step 8: Deployment Hardening And Render Production Setup
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `src/lib/env.ts`
+- `src/lib/rateLimit.ts`
+- `src/lib/safeApi.ts`
+- `src/lib/authSession.ts`
+- `src/middleware.ts`
+- `src/app/api/auth/logout/route.ts`
+- `src/components/ui/ServerErrorState.tsx`
+- `src/components/ui/ApiErrorState.tsx`
+- `src/hooks/useUnauthorizedRedirect.ts`
+- `render.yaml`
+- `.env.example`
+- `next.config.ts`
+- `prisma/seed.ts`
+- `src/lib/auth.ts`
+- `src/lib/api.ts`
+- `src/lib/prisma.ts`
+- `src/components/layout/AppUserBadge.tsx`
+- `src/components/auth/LoginForm.tsx`
+- `src/app/login/page.tsx`
+- `src/app/api/auth/login/route.ts`
+- `src/app/api/auth/register/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/support/route.ts`
+- Member and admin data hooks (unauthorized redirect with session-expired query)
+- Banking and admin page clients (`ApiErrorState` integration)
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- Zod-based environment validation with typed server env access.
+- Global middleware protecting member banking routes and admin routes with role checks.
+- Secure JWT cookie settings (httpOnly, sameSite=lax, secure in production) and logout flow.
+- In-memory IP rate limiting on login, register, transfer, and support POST endpoints.
+- Production-safe API error wrapper without stack trace leakage.
+- Render Blueprint (`render.yaml`) with build/start commands and env placeholders.
+- Next.js security headers and image optimization hardening.
+- Idempotent seed script with production guard and upserts for users, accounts, and transactions.
+- Session-expired UX, post-login redirect preservation, and sign-out buttons in headers.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–7 member banking, admin dashboard, and API foundations.
+- Do not replace in-memory rate limiting with external services until Step 9+ infrastructure is defined.
+
+### Pending Next Step
+
+- Notifications, email system, transfer review workflow, admin approvals, and production transaction engine.

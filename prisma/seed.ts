@@ -8,6 +8,84 @@ const DEMO_ADMIN_EMAIL = "admin@bluewavecu.test";
 const DEMO_MEMBER_PASSWORD = "BluewaveDemo2026!";
 const DEMO_ADMIN_PASSWORD = "BluewaveAdmin2026!";
 
+const DEMO_ACCOUNTS = [
+  {
+    accountNumber: "1048225701",
+    accountType: "CHECKING" as const,
+    balance: "18420.72",
+    availableBalance: "17890.21",
+  },
+  {
+    accountNumber: "1048225702",
+    accountType: "SAVINGS" as const,
+    balance: "42110.50",
+    availableBalance: "42110.50",
+  },
+  {
+    accountNumber: "1048225703",
+    accountType: "CREDIT" as const,
+    balance: "-1284.16",
+    availableBalance: "8715.84",
+  },
+];
+
+const DEMO_TRANSACTIONS = [
+  {
+    reference: "DEMO-TXN-1001",
+    accountNumber: "1048225701",
+    type: "DEPOSIT" as const,
+    amount: "4800.00",
+    description: "Direct deposit",
+    merchant: "Northline Payroll",
+    status: "COMPLETED" as const,
+  },
+  {
+    reference: "DEMO-TXN-1002",
+    accountNumber: "1048225701",
+    type: "PAYMENT" as const,
+    amount: "-164.82",
+    description: "Monthly electricity bill",
+    merchant: "Apex Utilities",
+    status: "COMPLETED" as const,
+  },
+  {
+    reference: "DEMO-TXN-1003",
+    accountNumber: "1048225702",
+    type: "TRANSFER" as const,
+    amount: "750.00",
+    description: "Savings contribution",
+    merchant: "Bluewave Transfer",
+    status: "COMPLETED" as const,
+  },
+  {
+    reference: "DEMO-TXN-1004",
+    accountNumber: "1048225703",
+    type: "CARD" as const,
+    amount: "-89.43",
+    description: "Card purchase",
+    merchant: "Harbor Market",
+    status: "COMPLETED" as const,
+  },
+  {
+    reference: "DEMO-TXN-1005",
+    accountNumber: "1048225703",
+    type: "CARD" as const,
+    amount: "-49.00",
+    description: "Business subscription",
+    merchant: "CloudDesk Software",
+    status: "COMPLETED" as const,
+  },
+  {
+    reference: "DEMO-TXN-1006",
+    accountNumber: "1048225701",
+    type: "TRANSFER" as const,
+    amount: "-250.00",
+    description: "Transfer to Account ending 5799: Rent payment",
+    merchant: "Jordan Parker",
+    status: "PENDING" as const,
+  },
+];
+
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
 
@@ -19,7 +97,22 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
+function logStep(message: string) {
+  console.log(`[seed] ${message}`);
+}
+
 async function main() {
+  const isProduction = process.env.NODE_ENV === "production";
+  const allowDemoSeed = process.env.ALLOW_DEMO_SEED === "true";
+
+  if (isProduction && !allowDemoSeed) {
+    logStep(
+      "Skipping demo seed in production. Set ALLOW_DEMO_SEED=true only for intentional demo deployments.",
+    );
+    return;
+  }
+
+  logStep("Starting Bluewave demo seed...");
   const prisma = createPrismaClient();
   const memberPasswordHash = await bcrypt.hash(DEMO_MEMBER_PASSWORD, 12);
   const adminPasswordHash = await bcrypt.hash(DEMO_ADMIN_PASSWORD, 12);
@@ -82,124 +175,78 @@ async function main() {
       },
     });
 
-    await prisma.supportTicket.deleteMany({
-      where: { userId: { in: [demoUser.id, pendingUser.id] } },
-    });
-    await prisma.loan.deleteMany({ where: { userId: demoUser.id } });
+    logStep("Ensured demo users (member, pending member, admin).");
+
+    const accountIds = new Map<string, string>();
+
+    for (const account of DEMO_ACCOUNTS) {
+      const savedAccount = await prisma.account.upsert({
+        where: { accountNumber: account.accountNumber },
+        update: {
+          userId: demoUser.id,
+          accountType: account.accountType,
+          routingNumber: "000000000",
+          balance: account.balance,
+          availableBalance: account.availableBalance,
+          currency: "USD",
+          status: "ACTIVE",
+        },
+        create: {
+          userId: demoUser.id,
+          accountType: account.accountType,
+          accountNumber: account.accountNumber,
+          routingNumber: "000000000",
+          balance: account.balance,
+          availableBalance: account.availableBalance,
+          currency: "USD",
+          status: "ACTIVE",
+        },
+      });
+
+      accountIds.set(account.accountNumber, savedAccount.id);
+    }
+
+    logStep(`Ensured ${DEMO_ACCOUNTS.length} demo accounts.`);
+
+    for (const transaction of DEMO_TRANSACTIONS) {
+      const accountId = accountIds.get(transaction.accountNumber);
+
+      if (!accountId) {
+        throw new Error(`Missing demo account for transaction ${transaction.reference}.`);
+      }
+
+      await prisma.transaction.upsert({
+        where: { reference: transaction.reference },
+        update: {
+          userId: demoUser.id,
+          accountId,
+          type: transaction.type,
+          amount: transaction.amount,
+          description: transaction.description,
+          merchant: transaction.merchant,
+          status: transaction.status,
+        },
+        create: {
+          userId: demoUser.id,
+          accountId,
+          type: transaction.type,
+          amount: transaction.amount,
+          description: transaction.description,
+          merchant: transaction.merchant,
+          reference: transaction.reference,
+          status: transaction.status,
+        },
+      });
+    }
+
+    logStep(`Ensured ${DEMO_TRANSACTIONS.length} demo transactions.`);
+
     await prisma.card.deleteMany({ where: { userId: demoUser.id } });
-    await prisma.transaction.deleteMany({ where: { userId: demoUser.id } });
-    await prisma.account.deleteMany({ where: { userId: demoUser.id } });
-    await prisma.adminAuditLog.deleteMany({ where: { adminId: adminUser.id } });
-
-    const checking = await prisma.account.create({
-      data: {
-        userId: demoUser.id,
-        accountType: "CHECKING",
-        accountNumber: "1048225701",
-        routingNumber: "000000000",
-        balance: "18420.72",
-        availableBalance: "17890.21",
-        currency: "USD",
-        status: "ACTIVE",
-      },
-    });
-
-    const savings = await prisma.account.create({
-      data: {
-        userId: demoUser.id,
-        accountType: "SAVINGS",
-        accountNumber: "1048225702",
-        routingNumber: "000000000",
-        balance: "42110.50",
-        availableBalance: "42110.50",
-        currency: "USD",
-        status: "ACTIVE",
-      },
-    });
-
-    const credit = await prisma.account.create({
-      data: {
-        userId: demoUser.id,
-        accountType: "CREDIT",
-        accountNumber: "1048225703",
-        routingNumber: "000000000",
-        balance: "-1284.16",
-        availableBalance: "8715.84",
-        currency: "USD",
-        status: "ACTIVE",
-      },
-    });
-
-    await prisma.transaction.createMany({
-      data: [
-        {
-          userId: demoUser.id,
-          accountId: checking.id,
-          type: "DEPOSIT",
-          amount: "4800.00",
-          description: "Direct deposit",
-          merchant: "Northline Payroll",
-          reference: "DEMO-TXN-1001",
-          status: "COMPLETED",
-        },
-        {
-          userId: demoUser.id,
-          accountId: checking.id,
-          type: "PAYMENT",
-          amount: "-164.82",
-          description: "Monthly electricity bill",
-          merchant: "Apex Utilities",
-          reference: "DEMO-TXN-1002",
-          status: "COMPLETED",
-        },
-        {
-          userId: demoUser.id,
-          accountId: savings.id,
-          type: "TRANSFER",
-          amount: "750.00",
-          description: "Savings contribution",
-          merchant: "Bluewave Transfer",
-          reference: "DEMO-TXN-1003",
-          status: "COMPLETED",
-        },
-        {
-          userId: demoUser.id,
-          accountId: credit.id,
-          type: "CARD",
-          amount: "-89.43",
-          description: "Card purchase",
-          merchant: "Harbor Market",
-          reference: "DEMO-TXN-1004",
-          status: "COMPLETED",
-        },
-        {
-          userId: demoUser.id,
-          accountId: credit.id,
-          type: "CARD",
-          amount: "-49.00",
-          description: "Business subscription",
-          merchant: "CloudDesk Software",
-          reference: "DEMO-TXN-1005",
-          status: "COMPLETED",
-        },
-        {
-          userId: demoUser.id,
-          accountId: checking.id,
-          type: "TRANSFER",
-          amount: "-250.00",
-          description: "Transfer to Account ending 5799: Rent payment",
-          merchant: "Jordan Parker",
-          reference: "DEMO-TXN-1006",
-          status: "PENDING",
-        },
-      ],
-    });
-
     await prisma.card.createMany({
       data: [
         {
           userId: demoUser.id,
-          accountId: checking.id,
+          accountId: accountIds.get("1048225701")!,
           cardType: "DEBIT",
           last4: "2841",
           cardholderName: "Avery Morgan",
@@ -208,7 +255,7 @@ async function main() {
         },
         {
           userId: demoUser.id,
-          accountId: credit.id,
+          accountId: accountIds.get("1048225703")!,
           cardType: "CREDIT",
           last4: "9256",
           cardholderName: "Avery Morgan",
@@ -218,6 +265,9 @@ async function main() {
       ],
     });
 
+    logStep("Refreshed demo cards.");
+
+    await prisma.loan.deleteMany({ where: { userId: demoUser.id } });
     await prisma.loan.create({
       data: {
         userId: demoUser.id,
@@ -231,6 +281,11 @@ async function main() {
       },
     });
 
+    logStep("Refreshed demo loan preview.");
+
+    await prisma.supportTicket.deleteMany({
+      where: { userId: { in: [demoUser.id, pendingUser.id] } },
+    });
     await prisma.supportTicket.createMany({
       data: [
         {
@@ -257,42 +312,59 @@ async function main() {
       ],
     });
 
-    await prisma.adminAuditLog.createMany({
-      data: [
-        {
-          adminId: adminUser.id,
-          action: "SEED_DEMO_DATA",
-          entityType: "User",
-          entityId: demoUser.id,
-          details: {
-            email: DEMO_USER_EMAIL,
-            purpose: "Local demo account bootstrap",
-          },
-        },
-        {
-          adminId: adminUser.id,
-          action: "REVIEW_PENDING_MEMBER",
-          entityType: "User",
-          entityId: pendingUser.id,
-          details: {
-            email: DEMO_PENDING_USER_EMAIL,
-            status: "PENDING",
-          },
-        },
-        {
-          adminId: adminUser.id,
-          action: "QUEUE_TRANSFER_REVIEW",
-          entityType: "Transaction",
-          entityId: "DEMO-TXN-1006",
-          details: {
-            reference: "DEMO-TXN-1006",
-            status: "PENDING",
-          },
-        },
-      ],
-    });
+    logStep("Refreshed demo support tickets.");
 
-    console.log("Seeded Bluewave demo banking data.");
+    const auditSeedActions = [
+      {
+        action: "SEED_DEMO_DATA",
+        entityType: "User",
+        entityId: demoUser.id,
+        details: {
+          email: DEMO_USER_EMAIL,
+          purpose: "Local demo account bootstrap",
+        },
+      },
+      {
+        action: "REVIEW_PENDING_MEMBER",
+        entityType: "User",
+        entityId: pendingUser.id,
+        details: {
+          email: DEMO_PENDING_USER_EMAIL,
+          status: "PENDING",
+        },
+      },
+      {
+        action: "QUEUE_TRANSFER_REVIEW",
+        entityType: "Transaction",
+        entityId: "DEMO-TXN-1006",
+        details: {
+          reference: "DEMO-TXN-1006",
+          status: "PENDING",
+        },
+      },
+    ] as const;
+
+    for (const auditEntry of auditSeedActions) {
+      const existing = await prisma.adminAuditLog.findFirst({
+        where: {
+          adminId: adminUser.id,
+          action: auditEntry.action,
+          entityId: auditEntry.entityId,
+        },
+      });
+
+      if (!existing) {
+        await prisma.adminAuditLog.create({
+          data: {
+            adminId: adminUser.id,
+            ...auditEntry,
+          },
+        });
+      }
+    }
+
+    logStep("Ensured demo admin audit log entries.");
+    logStep("Bluewave demo seed completed successfully.");
     console.log(`Demo member: ${DEMO_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
     console.log(`Demo pending member: ${DEMO_PENDING_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
     console.log(`Demo admin: ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`);
@@ -302,6 +374,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error("[seed] Failed:", error);
   process.exit(1);
 });

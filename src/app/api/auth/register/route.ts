@@ -2,12 +2,19 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, hashPassword, sanitizeUser, signAuthToken } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { registerSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimit = enforceRateLimit(request, "auth-register", rateLimitPresets.register);
+
+    if (!rateLimit.allowed) {
+      return apiError(rateLimit.message, 429);
+    }
+
     const input = registerSchema.parse(await request.json());
     const prisma = getPrisma();
 

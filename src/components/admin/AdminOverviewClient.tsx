@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
@@ -33,7 +33,7 @@ export function AdminOverviewClient() {
 
   if (error) {
     return (
-      <ErrorState
+      <ApiErrorState
         message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />

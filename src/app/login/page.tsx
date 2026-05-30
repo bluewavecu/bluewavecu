@@ -1,6 +1,7 @@
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
@@ -77,7 +78,15 @@ export default function LoginPage() {
                   Demo: avery.morgan@bluewavecu.test
                 </p>
               </div>
-              <LoginForm />
+              <Suspense
+                fallback={
+                  <p className="text-sm text-bluewave-gray dark:text-white/[0.62]">
+                    Loading sign-in form...
+                  </p>
+                }
+              >
+                <LoginForm />
+              </Suspense>
             </div>
 
             <Link
