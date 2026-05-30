@@ -54,11 +54,19 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const limit = parseLimit(searchParams.get("limit"));
+    const readFilter = searchParams.get("read");
     const prisma = getPrisma();
+
+    const readWhere =
+      readFilter === "read"
+        ? { isRead: true }
+        : readFilter === "unread"
+          ? { isRead: false }
+          : {};
 
     const [notifications, unreadCount] = await Promise.all([
       prisma.notification.findMany({
-        where: { userId: payload.userId },
+        where: { userId: payload.userId, ...readWhere },
         orderBy: { createdAt: "desc" },
         take: limit,
       }),

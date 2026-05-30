@@ -619,6 +619,38 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 15: Controlled adjustments, disputes, and event logs.
 - Step 16: Production cron, PDF statements, customer profile/KYC, and admin compliance dashboard.
 - Step 17: Deployment checklist, Render launch notes, migration commands, and production QA prep.
+- Step 18: Holistic member banking portal refinement.
+
+## Step 18 Notes
+
+### Member Banking Portal
+
+Authenticated members access a grouped sidebar navigation covering overview, money movement, products, service, and account settings.
+
+**Core routes**
+
+- Overview: `/dashboard`
+- Money: `/accounts`, `/transactions`, `/transfers`, `/bill-pay`, `/statements`
+- Products: `/cards`, `/member/loans`, `/payees`
+- Service: `/disputes`, `/member/support`, `/notifications`
+- Account: `/profile`, `/member/security`, `/settings`
+
+**Safe workflow notes**
+
+- Transfers and bill payments create pending/review records only.
+- Balances change after admin approval and ledger posting.
+- Card controls and loan applications create support tickets — no automatic status changes or credit decisions.
+- KYC-unverified members see elevated risk warnings on transfers and bill pay.
+
+**New APIs**
+
+- `GET /api/member/summary` — attention panel counts and balances
+- `POST /api/cards/actions` — demo card control requests
+- `POST /api/loans/apply` — loan application request (support ticket)
+- `GET /api/notifications?read=all|read|unread` — notification filters
+- Support tickets accept optional `category` field
+
+Pending Step 19: visual polish, accessibility audit, loading/error consistency, production E2E testing.
 
 ## Step 2 Notes
 

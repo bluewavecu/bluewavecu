@@ -2,31 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME, decodeAuthTokenPayload } from "@/lib/auth";
 import { buildLoginUrl } from "@/lib/authSession";
-import {
-  MEMBER_LOANS_PATH,
-  MEMBER_SECURITY_PATH,
-  MEMBER_SUPPORT_PATH,
-} from "@/lib/memberRoutes";
-
-const memberRoutes = [
-  "/dashboard",
-  "/accounts",
-  "/transactions",
-  "/transfers",
-  "/bill-pay",
-  "/disputes",
-  "/cards",
-  MEMBER_LOANS_PATH,
-  MEMBER_SUPPORT_PATH,
-  "/profile",
-  MEMBER_SECURITY_PATH,
-];
-
-function isProtectedMemberRoute(pathname: string) {
-  return memberRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-}
+import { isMemberProtectedPath } from "@/lib/memberRoutes";
 
 function isAdminRoute(pathname: string) {
   return pathname === "/admin" || pathname.startsWith("/admin/");
@@ -35,7 +11,7 @@ function isAdminRoute(pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (!isProtectedMemberRoute(pathname) && !isAdminRoute(pathname)) {
+  if (!isMemberProtectedPath(pathname) && !isAdminRoute(pathname)) {
     return NextResponse.next();
   }
 
@@ -61,8 +37,12 @@ export const config = {
     "/transactions/:path*",
     "/transfers/:path*",
     "/bill-pay/:path*",
+    "/statements/:path*",
+    "/payees/:path*",
     "/disputes/:path*",
     "/cards/:path*",
+    "/notifications/:path*",
+    "/settings/:path*",
     "/member/:path*",
     "/profile/:path*",
     "/admin/:path*",

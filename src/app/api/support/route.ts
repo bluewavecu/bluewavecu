@@ -74,6 +74,11 @@ export async function POST(request: NextRequest) {
     const input = supportTicketSchema.parse(await request.json());
     const prisma = getPrisma();
 
+    const categoryPrefix = input.category ? `[${input.category.replace("_", " ")}] ` : "";
+    const subject = input.subject.startsWith("[")
+      ? input.subject
+      : `${categoryPrefix}${input.subject}`;
+
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { email: true, fullName: true },
@@ -86,7 +91,7 @@ export async function POST(request: NextRequest) {
     const ticket = await prisma.supportTicket.create({
       data: {
         userId: payload.userId,
-        subject: input.subject,
+        subject,
         message: input.message,
         priority: input.priority,
         status: "OPEN",

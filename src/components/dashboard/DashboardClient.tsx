@@ -1,13 +1,15 @@
 "use client";
 
-import { AlertTriangle, CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import { CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
+import { AttentionPanel } from "@/components/dashboard/AttentionPanel";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
 import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { SecuritySessionCard } from "@/components/dashboard/SecuritySessionCard";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
@@ -103,6 +105,8 @@ export function DashboardClient() {
         </div>
       </section>
 
+      <AttentionPanel />
+
       {data.accounts.length > 0 ? (
         <BalanceCards accounts={data.accounts} />
       ) : (
@@ -166,23 +170,7 @@ export function DashboardClient() {
         <AccountOverview accounts={data.accounts} loans={data.loans} />
         <div className="grid gap-5">
           <NotificationsPanel limit={5} compact />
-
-          <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-            <div className="flex gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
-                <AlertTriangle size={21} aria-hidden="true" />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
-                  Security notice
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-                  This dashboard now requires a valid Bluewave session cookie. Transfers
-                  still create pending records only and do not move real money.
-                </p>
-              </div>
-            </div>
-          </div>
+          <SecuritySessionCard />
 
           <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-5 text-white shadow-[0_18px_60px_rgba(10,42,94,0.12)]">
             <div className="flex gap-4">

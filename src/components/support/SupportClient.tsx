@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { CircleHelp, Mail, MessageSquareText, Phone } from "lucide-react";
+import Link from "next/link";
+import { CircleHelp, Mail, MapPin, MessageSquareText, Phone } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -16,6 +17,16 @@ const supportContacts = [
 ];
 
 const priorityOptions: SupportTicketPriority[] = ["LOW", "NORMAL", "HIGH", "URGENT"];
+
+const categoryOptions = [
+  "ACCOUNT",
+  "TRANSFER",
+  "BILL_PAY",
+  "CARD",
+  "LOAN",
+  "SECURITY",
+  "OTHER",
+] as const;
 
 function getStatusLabel(status: string) {
   return status
@@ -61,6 +72,7 @@ export function SupportClient() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [priority, setPriority] = useState<SupportTicketPriority>("NORMAL");
+  const [category, setCategory] = useState<(typeof categoryOptions)[number]>("ACCOUNT");
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   if (isLoading) {
@@ -81,6 +93,7 @@ export function SupportClient() {
       subject: subject.trim(),
       message: message.trim(),
       priority,
+      category,
     });
 
     if (ticket) {
@@ -141,6 +154,25 @@ export function SupportClient() {
             Create support ticket
           </h2>
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+            <label className="block">
+              <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                Category
+              </span>
+              <select
+                value={category}
+                onChange={(event) =>
+                  setCategory(event.target.value as (typeof categoryOptions)[number])
+                }
+                className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+              >
+                {categoryOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {getStatusLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <label className="block">
               <span className="text-sm font-semibold text-primary-navy dark:text-white">Subject</span>
               <input
@@ -210,8 +242,18 @@ export function SupportClient() {
           <CircleHelp size={26} className="text-light-blue" aria-hidden="true" />
           <h2 className="mt-5 text-2xl font-semibold">Member support</h2>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            {tickets.length} authenticated ticket{tickets.length === 1 ? "" : "s"} on file. For
-            urgent help, call (646) 776-4480.
+            {tickets.length} authenticated ticket{tickets.length === 1 ? "" : "s"} on file.
+          </p>
+          <p className="mt-4 inline-flex items-start gap-2 text-sm text-white/[0.68]">
+            <MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            2000 McKinney Ave, Dallas, TX 75201
+          </p>
+          <p className="mt-2 text-sm text-white/[0.68]">
+            For transaction disputes, visit{" "}
+            <Link href="/disputes" className="font-semibold text-light-blue underline">
+              Disputes
+            </Link>
+            .
           </p>
         </div>
 

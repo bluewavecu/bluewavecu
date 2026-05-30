@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeftRight, BadgeCheck, ReceiptText, WalletCards } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeftRight, ReceiptText, Scale, WalletCards } from "lucide-react";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
+import { Amount } from "@/components/ui/Amount";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
-import type { AccountType } from "@/types/banking";
+import type { AccountType, PageAccount } from "@/types/banking";
 
 const quickActions = [
   { label: "Transfer funds", href: "/transfers", icon: ArrowLeftRight },
@@ -38,6 +41,7 @@ function getAccountTypeLabel(accountType: AccountType) {
 
 export function AccountsClient() {
   const { data, error, isLoading, refetch } = useAccounts();
+  const [selectedAccount, setSelectedAccount] = useState<PageAccount | null>(null);
 
   if (isLoading) {
     return <LoadingState title="Loading accounts" message="Retrieving authenticated account data." />;
@@ -104,7 +108,15 @@ export function AccountsClient() {
         {data.accounts.map((account) => (
           <article
             key={account.id}
-            className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            role="button"
+            tabIndex={0}
+            onClick={() => setSelectedAccount(account)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                setSelectedAccount(account);
+              }
+            }}
+            className="cursor-pointer rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.06]"
           >
             <div className="flex items-start justify-between">
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
@@ -134,13 +146,15 @@ export function AccountsClient() {
               <p className="mt-2 text-3xl font-semibold text-primary-navy dark:text-white">
                 {formatCurrency(account.availableBalance)}
               </p>
+              <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.48]">
+                Current balance: {formatCurrency(account.balance)}
+              </p>
               <p className="mt-2 text-xs text-bluewave-gray dark:text-white/[0.48]">
                 Routing {account.routingNumber}
               </p>
             </div>
-            <p className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue dark:text-light-blue">
-              <BadgeCheck size={16} aria-hidden="true" />
-              Live account data
+            <p className="mt-5 text-xs text-bluewave-gray dark:text-white/[0.48]">
+              Tap for details, shortcuts, and activity.
             </p>
           </article>
         ))}
@@ -150,6 +164,66 @@ export function AccountsClient() {
         <AccountActivityTimeline limit={12} />
         <StatementExportCard />
       </section>
+
+      <DetailDrawer
+        open={Boolean(selectedAccount)}
+        title={selectedAccount?.displayName ?? "Account"}
+        subtitle={selectedAccount?.maskedAccountNumber}
+        onClose={() => setSelectedAccount(null)}
+        footer={
+          selectedAccount ? (
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/transfers?from=${selectedAccount.id}`}
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy"
+              >
+                <ArrowLeftRight size={16} aria-hidden="true" />
+                Transfer
+              </Link>
+              <Link
+                href="/statements"
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
+              >
+                Statement
+              </Link>
+              <Link
+                href="/disputes"
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
+              >
+                <Scale size={16} aria-hidden="true" />
+                Dispute
+              </Link>
+            </div>
+          ) : null
+        }
+      >
+        {selectedAccount ? (
+          <div className="space-y-4 text-sm">
+            <p className="text-bluewave-gray dark:text-white/[0.58]">
+              Only approved and posted transactions affect balances.
+            </p>
+            <div className="grid gap-3 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
+              <div className="flex justify-between">
+                <span>Available</span>
+                <Amount value={selectedAccount.availableBalance} showSign={false} />
+              </div>
+              <div className="flex justify-between">
+                <span>Current</span>
+                <Amount value={selectedAccount.balance} showSign={false} />
+              </div>
+              <div className="flex justify-between">
+                <span>Routing</span>
+                <span className="font-semibold">{selectedAccount.routingNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Account</span>
+                <span className="font-semibold">{selectedAccount.maskedAccountNumber}</span>
+              </div>
+            </div>
+            <AccountActivityTimeline accountId={selectedAccount.id} limit={6} />
+          </div>
+        ) : null}
+      </DetailDrawer>
     </section>
   );
 }

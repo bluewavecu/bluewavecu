@@ -861,20 +861,39 @@ Status: Completed
 - Cloudflare DNS to Render.
 - Full DB-backed E2E testing after deploy (see `POST_DEPLOY_QA.md`).
 
-## Step 18: Final Deployment Prep, GitHub Push, Render Launch
+## Step 18: Holistic Member Banking Experience Refinement
 
-Status: In progress
+Status: Completed
 
 ### Files Created Or Updated
 
-- `PRODUCTION_ENV_SETUP.md` — Render env vars, secret generation, staging vs production
-- `POST_DEPLOY_QA.md` — post-deploy member, admin, and security QA checklist
-- `.gitignore` — coverage and log patterns
+- `src/lib/memberRoutes.ts` — grouped member navigation and protected path registry
+- `src/components/layout/AppSidebar.tsx` — sectioned sidebar and mobile nav
+- `src/middleware.ts` — protects `/statements`, `/notifications`, `/settings`, `/payees`
+- Shared UI: `StatusBadge`, `Amount`, `DateTime`, `InfoPanel`, `ActionCard`, `DetailDrawer`
+- Dashboard: `AttentionPanel`, `SecuritySessionCard`, refined `QuickActions`, `DashboardClient`
+- Pages: `/statements`, `/notifications`, `/settings`, `/payees`
+- Clients: `StatementsClient`, `NotificationsClient`, `SettingsClient`, `PayeesClient`, `SecurityClient`
+- Fixed member routes: `/member/loans`, `/member/support`, `/member/security` use banking app shell
+- Refinements: accounts, transactions, transfers, bill pay, cards, loans, support, profile, security
+- APIs: `/api/member/summary`, `/api/cards/actions`, `/api/loans/apply`, notifications read filter, support categories
 
-### Pending
+### Features Added
 
-- Initial Prisma migration (blocked until PostgreSQL reachable)
-- GitHub push to `origin master`
-- Render PostgreSQL + web service creation
-- First production `npx prisma migrate deploy`
+- Complete member information architecture with grouped navigation.
+- Overview dashboard with attention panel, session card, and expanded quick actions.
+- Account detail drawer, transaction search/detail drawer, transfer KYC warnings.
+- Card control demo workflows via support tickets.
+- Loan application request workflow (no credit decision).
+- Dedicated statements, notifications, settings, and payees pages.
+
+### Pending Next Step
+
+- Step 19: visual polish, accessibility audit, empty/loading/error consistency, production database E2E testing.
+
+## Step 18 (Deployment Prep — prior)
+
+Status: Completed (commit `6a00c68`)
+
+- `PRODUCTION_ENV_SETUP.md`, `POST_DEPLOY_QA.md`, deployment checklist updates
 

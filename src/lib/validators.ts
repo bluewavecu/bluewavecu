@@ -29,6 +29,29 @@ export const supportTicketSchema = z.object({
   subject: z.string().trim().min(3).max(160),
   message: z.string().trim().min(10).max(4000),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
+  category: z
+    .enum(["ACCOUNT", "TRANSFER", "BILL_PAY", "CARD", "LOAN", "SECURITY", "OTHER"])
+    .optional(),
+});
+
+export const cardActionSchema = z.object({
+  cardId: z.string().min(1),
+  action: z.enum([
+    "LOCK",
+    "UNLOCK",
+    "REPORT_LOST",
+    "REQUEST_REPLACEMENT",
+    "TRAVEL_NOTICE",
+    "UPDATE_SPENDING_LIMIT",
+  ]),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const loanApplySchema = z.object({
+  loanType: z.string().trim().min(3).max(80),
+  requestedAmount: z.number().positive().max(1_000_000),
+  termMonths: z.number().int().min(6).max(360),
+  purpose: z.string().trim().min(10).max(2000),
 });
 
 export const adminUpdateUserStatusSchema = z.object({
@@ -182,6 +205,8 @@ export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewS
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
+export type CardActionInput = z.infer<typeof cardActionSchema>;
+export type LoanApplyInput = z.infer<typeof loanApplySchema>;
 export type AdminUpdateUserStatusInput = z.infer<typeof adminUpdateUserStatusSchema>;
 export type AdminUpdateTransactionStatusInput = z.infer<typeof adminUpdateTransactionStatusSchema>;
 export type AdminUpdateSupportTicketStatusInput = z.infer<typeof adminUpdateSupportTicketStatusSchema>;

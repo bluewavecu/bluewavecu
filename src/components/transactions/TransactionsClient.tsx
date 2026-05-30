@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, ReceiptText, Repeat2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowDownLeft, ArrowUpRight, Download, ReceiptText, Repeat2 } from "lucide-react";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
+import { Amount } from "@/components/ui/Amount";
+import { DateTime } from "@/components/ui/DateTime";
+import { InfoPanel } from "@/components/ui/InfoPanel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -9,7 +14,7 @@ import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
-import type { TransactionStatus, TransactionType } from "@/types/banking";
+import type { PageTransaction, TransactionStatus, TransactionType } from "@/types/banking";
 
 const statusFilters: Array<{ label: string; value?: TransactionStatus }> = [
   { label: "All statuses" },
@@ -111,6 +116,8 @@ export function TransactionsClient() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTransaction, setSelectedTransaction] = useState<PageTransaction | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -123,6 +130,22 @@ export function TransactionsClient() {
   );
 
   const { data, error, isLoading, refetch } = useTransactions(filters);
+
+  const transactions = useMemo(() => {
+    const rows = data?.transactions ?? [];
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return rows;
+    }
+
+    return rows.filter(
+      (transaction) =>
+        transaction.description.toLowerCase().includes(query) ||
+        (transaction.merchant?.toLowerCase().includes(query) ?? false) ||
+        transaction.reference.toLowerCase().includes(query),
+    );
+  }, [data?.transactions, searchQuery]);
 
   if (isLoading) {
     return (
@@ -137,13 +160,35 @@ export function TransactionsClient() {
     return <ApiErrorState message={error} onRetry={refetch} />;
   }
 
-  const transactions = data?.transactions ?? [];
-
   return (
-    <section className="grid gap-5 xl:grid-cols-[0.68fr_1.32fr]">
+    <section className="grid gap-5">
+      <InfoPanel title="Pending review">
+        Transfer and payment requests remain pending until an administrator reviews and approves
+        ledger posting.
+      </InfoPanel>
+
+      <div className="grid gap-5 xl:grid-cols-[0.68fr_1.32fr]">
       <aside className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
         <ReceiptText size={24} className="text-ocean-blue" aria-hidden="true" />
         <h2 className="mt-5 text-lg font-semibold text-primary-navy dark:text-white">Filters</h2>
+
+        <label className="mt-5 block">
+          <span className="text-sm font-semibold text-primary-navy dark:text-white">Search</span>
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Merchant, description, reference"
+            className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+          />
+        </label>
+
+        <Link
+          href="/statements"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue dark:text-light-blue"
+        >
+          <Download size={16} aria-hidden="true" />
+          Export statements
+        </Link>
 
         <label className="mt-5 block">
           <span className="text-sm font-semibold text-primary-navy dark:text-white">Account</span>
@@ -227,7 +272,15 @@ export function TransactionsClient() {
               return (
                 <article
                   key={transaction.id}
-                  className="flex items-start gap-4 py-4 first:pt-0 last:pb-0"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedTransaction(transaction)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      setSelectedTransaction(transaction);
+                    }
+                  }}
+                  className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 hover:bg-ocean-blue/[0.04]"
                 >
                   <span
                     className={cn(
@@ -294,6 +347,57 @@ export function TransactionsClient() {
           message="Adjust filters or seed demo banking data to review activity."
         />
       )}
+      </div>
+
+      <DetailDrawer
+        open={Boolean(selectedTransaction)}
+        title={selectedTransaction?.description ?? "Transaction"}
+        subtitle={selectedTransaction?.reference}
+        onClose={() => setSelectedTransaction(null)}
+        footer={
+          selectedTransaction?.status === "COMPLETED" ? (
+            <Link
+              href="/disputes"
+              className="inline-flex h-10 items-center rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy"
+            >
+              Dispute transaction
+            </Link>
+          ) : null
+        }
+      >
+        {selectedTransaction ? (
+          <dl className="space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-bluewave-gray dark:text-white/[0.58]">Amount</dt>
+              <dd>
+                <Amount value={selectedTransaction.amount} />
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-bluewave-gray dark:text-white/[0.58]">Status</dt>
+              <dd className="font-semibold">{getDisplayStatus(selectedTransaction)}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-bluewave-gray dark:text-white/[0.58]">Date</dt>
+              <dd>
+                <DateTime value={selectedTransaction.createdAt} variant="datetime" />
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-bluewave-gray dark:text-white/[0.58]">Account</dt>
+              <dd className="font-semibold">{selectedTransaction.maskedAccountNumber}</dd>
+            </div>
+            {selectedTransaction.reviewedAt ? (
+              <div className="flex justify-between gap-4">
+                <dt className="text-bluewave-gray dark:text-white/[0.58]">Reviewed</dt>
+                <dd>
+                  <DateTime value={selectedTransaction.reviewedAt} variant="datetime" />
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
+      </DetailDrawer>
     </section>
   );
 }

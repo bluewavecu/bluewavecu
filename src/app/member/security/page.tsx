@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
-import { SecurityTrustPage } from "@/components/marketing/SecurityTrustPage";
+import { AppShell } from "@/components/layout/AppShell";
+import { SecurityClient } from "@/components/security/SecurityClient";
 
-export const metadata: Metadata = {
-  title: "Security | Bluewave Credit Union",
-  description: "Learn how Bluewave protects members with MFA, session controls, and fraud monitoring.",
-};
-
-export default function SecurityPage() {
-  return <SecurityTrustPage />;
+export default function MemberSecurityPage() {
+  return (
+    <AppShell
+      title="Security"
+      subtitle="Manage sessions, MFA preferences, and review security activity."
+    >
+      <SecurityClient />
+    </AppShell>
+  );
 }

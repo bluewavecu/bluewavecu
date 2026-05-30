@@ -1,28 +1,37 @@
 "use client";
 
-import { CreditCard, KeyRound, LockKeyhole, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import {
+  CreditCard,
+  Globe,
+  KeyRound,
+  LockKeyhole,
+  Plane,
+  RefreshCw,
+  ShieldAlert,
+} from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
+import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { formatStatusLabel, StatusBadge, statusToTone } from "@/components/ui/StatusBadge";
 import { formatCurrency } from "@/data/mockBanking";
 import { useCards } from "@/hooks/useCards";
+import { postJson } from "@/lib/clientApi";
 import { cn } from "@/lib/utils";
 
 const cardControls = [
-  { label: "Lock Card", icon: LockKeyhole },
-  { label: "Replace Card", icon: RefreshCw },
-  { label: "View PIN", icon: KeyRound },
+  { action: "LOCK" as const, label: "Lock Card", icon: LockKeyhole },
+  { action: "REPORT_LOST" as const, label: "Report Lost/Stolen", icon: ShieldAlert },
+  { action: "REQUEST_REPLACEMENT" as const, label: "Request Replacement", icon: RefreshCw },
+  { action: "TRAVEL_NOTICE" as const, label: "Travel Notice", icon: Plane },
+  { action: "UPDATE_SPENDING_LIMIT" as const, label: "Spending Limits", icon: KeyRound },
 ];
-
-function getStatusLabel(status: string) {
-  return status
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 export function CardsClient() {
   const { data, error, isLoading, refetch } = useCards();
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [pendingCardId, setPendingCardId] = useState<string | null>(null);
 
   if (isLoading) {
     return <LoadingState title="Loading cards" message="Retrieving authenticated card data." />;
@@ -41,23 +50,48 @@ export function CardsClient() {
     );
   }
 
+  async function handleCardAction(cardId: string, action: (typeof cardControls)[number]["action"]) {
+    setPendingCardId(cardId);
+    setActionMessage(null);
+
+    const result = await postJson<{ message: string }>("/api/cards/actions", {
+      cardId,
+      action,
+    });
+
+    setPendingCardId(null);
+
+    if (!result.success) {
+      setActionMessage(result.error ?? "Unable to submit card request.");
+      return;
+    }
+
+    setActionMessage(result.data?.message ?? "Request submitted.");
+  }
+
   return (
     <section className="grid gap-5">
+      <InfoPanel title="Card management">
+        Card controls submit support requests for demo workflows. No card status changes automatically
+        and full card numbers are never displayed.
+      </InfoPanel>
+
+      {actionMessage ? (
+        <p className="rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-royal-blue dark:text-light-blue">
+          {actionMessage}
+        </p>
+      ) : null}
+
       {data.cards.map((card) => (
         <div key={card.id} className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
           <div className="rounded-lg bg-[linear-gradient(135deg,#0A2A5E,#0D47A1_62%,#00A8E8)] p-6 text-white shadow-[0_22px_80px_rgba(10,42,94,0.20)]">
             <div className="flex items-start justify-between">
               <CreditCard size={28} className="text-light-blue" aria-hidden="true" />
-              <span
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-semibold",
-                  card.status === "ACTIVE"
-                    ? "bg-white/[0.12]"
-                    : "bg-amber-500/[0.20] text-amber-100",
-                )}
-              >
-                {getStatusLabel(card.status)}
-              </span>
+              <StatusBadge
+                label={formatStatusLabel(card.status)}
+                tone={statusToTone(card.status)}
+                className="bg-white/[0.12] text-white"
+              />
             </div>
             <p className="mt-14 text-sm uppercase tracking-[0.18em] text-white/[0.54]">
               {card.cardType === "CREDIT" ? "Bluewave Rewards Credit" : "Bluewave Debit"}
@@ -86,22 +120,24 @@ export function CardsClient() {
             <div className="mt-5 grid gap-3">
               {cardControls.map((control) => {
                 const Icon = control.icon;
+                const isPending = pendingCardId === card.id;
 
                 return (
                   <button
-                    key={`${card.id}-${control.label}`}
+                    key={`${card.id}-${control.action}`}
                     type="button"
-                    disabled
-                    title="Coming soon"
-                    className="flex items-center justify-between rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] p-4 text-left opacity-70 dark:border-white/[0.08] dark:bg-white/[0.05]"
+                    disabled={isPending}
+                    onClick={() => void handleCardAction(card.id, control.action)}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] p-4 text-left transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.05]",
+                      isPending && "opacity-70",
+                    )}
                   >
                     <span className="flex items-center gap-3 text-sm font-semibold text-primary-navy dark:text-white">
                       <Icon size={18} className="text-royal-blue dark:text-light-blue" aria-hidden="true" />
                       {control.label}
                     </span>
-                    <span className="text-xs font-semibold text-bluewave-gray dark:text-white/[0.48]">
-                      Coming soon
-                    </span>
+                    <Globe size={14} className="text-bluewave-gray dark:text-white/[0.48]" aria-hidden="true" />
                   </button>
                 );
               })}

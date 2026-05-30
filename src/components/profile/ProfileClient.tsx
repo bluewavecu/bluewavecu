@@ -72,6 +72,22 @@ export function ProfileClient() {
   const canSubmitKyc =
     profile.kycStatus === "NOT_STARTED" || profile.kycStatus === "REJECTED";
 
+  const completenessFields = [
+    form.dateOfBirth,
+    form.addressLine1,
+    form.city,
+    form.state,
+    form.postalCode,
+    form.country,
+    form.employmentStatus,
+    form.annualIncome,
+  ];
+  const completenessPercent = Math.round(
+    (completenessFields.filter((value) => value.trim().length > 0).length /
+      completenessFields.length) *
+      100,
+  );
+
   async function handleSave(event: React.FormEvent) {
     event.preventDefault();
     setSuccessMessage(null);
@@ -131,6 +147,19 @@ export function ProfileClient() {
             Review note: {profile.kycReviewNote}
           </p>
         ) : null}
+
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-sm font-semibold">
+            <span>Profile completeness</span>
+            <span>{completenessPercent}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]">
+            <div
+              className="h-full rounded-full bg-ocean-blue transition-all"
+              style={{ width: `${completenessPercent}%` }}
+            />
+          </div>
+        </div>
       </article>
 
       <form

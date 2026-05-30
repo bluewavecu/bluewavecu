@@ -273,6 +273,7 @@ export type CreateSupportTicketInput = {
   subject: string;
   message: string;
   priority: SupportTicketPriority;
+  category?: "ACCOUNT" | "TRANSFER" | "BILL_PAY" | "CARD" | "LOAN" | "SECURITY" | "OTHER";
 };
 
 export type TransferRequestInput = {
@@ -859,4 +860,29 @@ export type AdminComplianceData = {
 export type DashboardKycSummary = {
   kycStatus: KycStatus;
   needsProfileCompletion: boolean;
+};
+
+export type MemberSummary = {
+  totalAvailableBalance: number;
+  pendingTransferCount: number;
+  pendingBillPaymentCount: number;
+  openDisputeCount: number;
+  unreadNotificationCount: number;
+  openSupportTicketCount: number;
+  kycStatus: KycStatus;
+  needsProfileCompletion: boolean;
+  activeSessionCount: number;
+};
+
+export type CardActionResult = {
+  cardId: string;
+  action: string;
+  status: "REQUEST_SUBMITTED";
+  ticketId?: string;
+  message: string;
+};
+
+export type LoanApplyResult = {
+  ticketId: string;
+  message: string;
 };

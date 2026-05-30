@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
-import { SupportHubPage } from "@/components/marketing/SupportHubPage";
+import { AppShell } from "@/components/layout/AppShell";
+import { SupportClient } from "@/components/support/SupportClient";
 
-export const metadata: Metadata = {
-  title: "Support | Bluewave Credit Union",
-  description: "Get help with accounts, transfers, cards, and digital banking at Bluewave Credit Union.",
-};
-
-export default function SupportPage() {
-  return <SupportHubPage />;
+export default function MemberSupportPage() {
+  return (
+    <AppShell
+      title="Support"
+      subtitle="Create tickets, track responses, and contact Bluewave member services."
+    >
+      <SupportClient />
+    </AppShell>
+  );
 }

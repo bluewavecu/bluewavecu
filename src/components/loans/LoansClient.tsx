@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { BadgeCheck, Calculator, Landmark } from "lucide-react";
+import { FormEvent, useMemo, useState } from "react";
+import { BadgeCheck, Calculator, ClipboardList, Landmark } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
+import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useLoans } from "@/hooks/useLoans";
+import { postJson } from "@/lib/clientApi";
 
 function getStatusLabel(status: string) {
   return status
@@ -39,6 +41,12 @@ export function LoansClient() {
   const [estimateTerm, setEstimateTerm] = useState(
     primaryOffer ? String(primaryOffer.termMonths) : "48",
   );
+  const [applyLoanType, setApplyLoanType] = useState("Personal Loan");
+  const [applyAmount, setApplyAmount] = useState("25000");
+  const [applyTerm, setApplyTerm] = useState("48");
+  const [applyPurpose, setApplyPurpose] = useState("");
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
 
   const estimate = useMemo(() => {
     const principal = Number.parseFloat(estimateAmount) || 0;
@@ -76,6 +84,11 @@ export function LoansClient() {
 
   return (
     <section className="grid gap-5">
+      <InfoPanel title="Loan applications">
+        Submissions create a support request for specialist review. This is not a credit approval or
+        lending commitment.
+      </InfoPanel>
+
       {activeLoans.length > 0 ? (
         <div className="grid gap-5 xl:grid-cols-2">
           {activeLoans.map((loan) => (
@@ -220,6 +233,92 @@ export function LoansClient() {
           </div>
         </div>
       </div>
+
+      <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+        <ClipboardList size={26} className="text-ocean-blue" aria-hidden="true" />
+        <h2 className="mt-5 text-2xl font-semibold text-primary-navy dark:text-white">
+          Application request
+        </h2>
+        <p className="mt-2 text-sm text-bluewave-gray dark:text-white/[0.58]">
+          Document checklist: government ID, proof of income, recent statements (demo placeholder).
+        </p>
+        <form
+          className="mt-6 grid gap-4 md:grid-cols-2"
+          onSubmit={async (event: FormEvent) => {
+            event.preventDefault();
+            setIsApplying(true);
+            setApplyMessage(null);
+            const result = await postJson<{ message: string }>("/api/loans/apply", {
+              loanType: applyLoanType,
+              requestedAmount: Number.parseFloat(applyAmount),
+              termMonths: Number.parseInt(applyTerm, 10),
+              purpose: applyPurpose,
+            });
+            setIsApplying(false);
+            if (!result.success) {
+              setApplyMessage(result.error ?? "Unable to submit application.");
+              return;
+            }
+            setApplyMessage(result.data?.message ?? "Application submitted.");
+            setApplyPurpose("");
+          }}
+        >
+          <label className="block">
+            <span className="text-sm font-semibold">Loan type</span>
+            <input
+              required
+              value={applyLoanType}
+              onChange={(e) => setApplyLoanType(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold">Requested amount</span>
+            <input
+              required
+              type="number"
+              min="1000"
+              value={applyAmount}
+              onChange={(e) => setApplyAmount(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold">Term (months)</span>
+            <input
+              required
+              type="number"
+              min="6"
+              value={applyTerm}
+              onChange={(e) => setApplyTerm(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            />
+          </label>
+          <label className="block md:col-span-2">
+            <span className="text-sm font-semibold">Purpose</span>
+            <textarea
+              required
+              minLength={10}
+              rows={3}
+              value={applyPurpose}
+              onChange={(e) => setApplyPurpose(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            />
+          </label>
+          {applyMessage ? (
+            <p className="md:col-span-2 rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm text-royal-blue dark:text-light-blue">
+              {applyMessage}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={isApplying}
+            className="md:col-span-2 inline-flex h-12 w-fit items-center justify-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:opacity-70"
+          >
+            {isApplying ? "Submitting..." : "Submit application request"}
+          </button>
+        </form>
+      </article>
     </section>
   );
 }

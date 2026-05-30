@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import {
   ArrowLeftRight,
@@ -12,9 +13,11 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
+import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useMemberSummary } from "@/hooks/useMemberSummary";
 import { useScheduledTransfers } from "@/hooks/useScheduledTransfers";
 import { useTransfer } from "@/hooks/useTransfer";
 import { cn } from "@/lib/utils";
@@ -108,6 +111,7 @@ export function TransfersClient() {
     createScheduledTransfer,
     updateScheduledTransfer,
   } = useScheduledTransfers();
+  const { summary } = useMemberSummary();
 
   const [fromAccountId, setFromAccountId] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -199,6 +203,20 @@ export function TransfersClient() {
 
   return (
     <section className="grid gap-5">
+      <InfoPanel title="Transfer review workflow">
+        Transfers are reviewed before posting. Submitted requests create pending transactions only —
+        balances change after admin approval and ledger posting.
+      </InfoPanel>
+
+      {summary?.needsProfileCompletion ? (
+        <InfoPanel title="KYC verification recommended" variant="warning">
+          Your profile is not fully verified. High-value transfers may receive elevated risk scoring.{" "}
+          <Link href="/profile" className="font-semibold text-royal-blue underline">
+            Complete profile & KYC
+          </Link>
+        </InfoPanel>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         {[
           { id: "immediate" as const, label: "Immediate Transfer" },
