@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminCompliance } from "@/hooks/useAdminCompliance";
@@ -40,7 +41,12 @@ export function AdminComplianceClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Compliance queue unavailable"
+        message="KYC and compliance records could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   return (

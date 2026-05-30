@@ -3,6 +3,7 @@
 import { PlayCircle } from "lucide-react";
 import { useState } from "react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminJobs } from "@/hooks/useAdminJobs";
@@ -60,7 +61,12 @@ export function AdminJobsClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Jobs unavailable"
+        message="Background job records could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   const queuedCount = data.summary.byStatus.QUEUED ?? 0;

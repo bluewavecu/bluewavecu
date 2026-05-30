@@ -13,7 +13,7 @@ export function AdminDataTable({ columns, children }: AdminDataTableProps) {
           <thead className="border-b border-primary-navy/[0.08] bg-[#f7fbff] dark:border-white/[0.08] dark:bg-white/[0.05]">
             <tr>
               {columns.map((column) => (
-                <th key={column} className="px-4 py-3 font-semibold">
+                <th key={column} scope="col" className="px-4 py-3 font-semibold whitespace-nowrap">
                   {column}
                 </th>
               ))}

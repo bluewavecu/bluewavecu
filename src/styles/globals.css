@@ -52,6 +52,11 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-ocean-blue);
+  outline-offset: 2px;
+}
+
 ::selection {
   background: rgba(0, 168, 232, 0.28);
 }

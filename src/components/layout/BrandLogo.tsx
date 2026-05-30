@@ -1,13 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BRAND_LOGO } from "@/lib/branding";
+import { BRAND_LOGO, BRAND_LOGO_HEIGHT } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-export { BRAND_LOGO };
+export { BRAND_LOGO, BRAND_LOGO_HEIGHT };
 
-export function getBrandLogoDimensions(displayHeight: number) {
+export function getBrandLogoDimensions(
+  displayHeight: number,
+  asset: { width: number; height: number } = BRAND_LOGO,
+) {
   return {
-    width: Math.round((displayHeight * BRAND_LOGO.width) / BRAND_LOGO.height),
+    width: Math.round((displayHeight * asset.width) / asset.height),
     height: displayHeight,
   };
 }
@@ -18,16 +21,17 @@ type BrandLogoProps = {
   className?: string;
   priority?: boolean;
   onClick?: () => void;
-  /** @deprecated Full-color logo includes its own background; tone is ignored. */
+  /** Light page backgrounds — adds a navy badge so the white logo remains visible */
   tone?: "light" | "dark";
 };
 
 export function BrandLogo({
   href = "/",
-  displayHeight = 44,
+  displayHeight = BRAND_LOGO_HEIGHT,
   className,
   priority = false,
   onClick,
+  tone = "light",
 }: BrandLogoProps) {
   const { width, height } = getBrandLogoDimensions(displayHeight);
 
@@ -38,13 +42,28 @@ export function BrandLogo({
       width={width}
       height={height}
       priority={priority}
+      unoptimized
       sizes={`${width}px`}
       className="block h-auto max-w-none object-contain object-left"
     />
   );
 
+  const wrappedLogo =
+    tone === "dark" ? (
+      <span
+        className={cn(
+          "inline-flex rounded-lg bg-brand-navy px-3 py-1.5",
+          "dark:bg-transparent dark:p-0",
+        )}
+      >
+        {logo}
+      </span>
+    ) : (
+      logo
+    );
+
   if (!href) {
-    return <span className={cn("inline-flex shrink-0", className)}>{logo}</span>;
+    return <span className={cn("inline-flex shrink-0", className)}>{wrappedLogo}</span>;
   }
 
   return (
@@ -54,7 +73,7 @@ export function BrandLogo({
       className={cn("inline-flex shrink-0", className)}
       onClick={onClick}
     >
-      {logo}
+      {wrappedLogo}
     </Link>
   );
 }

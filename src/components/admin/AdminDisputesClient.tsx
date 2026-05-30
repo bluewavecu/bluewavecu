@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
@@ -39,7 +40,12 @@ export function AdminDisputesClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Disputes unavailable"
+        message="Dispute records could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   return (

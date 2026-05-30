@@ -14,6 +14,9 @@ export function LoadingState({
 }: LoadingStateProps) {
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
       className={cn(
         "rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]",
         className,
@@ -22,6 +25,7 @@ export function LoadingState({
       <div className="flex items-start gap-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
           <LoaderCircle size={21} className="animate-spin" aria-hidden="true" />
+          <span className="sr-only">{title}</span>
         </span>
         <div>
           <p className="text-base font-semibold text-primary-navy dark:text-white">{title}</p>

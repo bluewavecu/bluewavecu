@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,21 @@ export function DetailDrawer({
   children,
   footer,
 }: DetailDrawerProps) {
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) {
     return null;
   }
@@ -50,6 +66,7 @@ export function DetailDrawer({
           </div>
           <button
             type="button"
+            aria-label="Close panel"
             onClick={onClose}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary-navy/[0.10] text-primary-navy dark:border-white/[0.10] dark:text-white"
           >

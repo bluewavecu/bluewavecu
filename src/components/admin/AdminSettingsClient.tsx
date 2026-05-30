@@ -3,6 +3,7 @@
 import { AdminMetricCard } from "@/components/admin/AdminMetricCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
@@ -24,7 +25,12 @@ export function AdminSettingsClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Settings unavailable"
+        message="System configuration could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   return (

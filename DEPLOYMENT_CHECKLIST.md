@@ -132,6 +132,7 @@ curl -s -o /dev/null -w "%{http_code}\n" "$BASE_URL/api/admin/compliance"
 
 ## Post-deploy functional QA
 
+- [ ] Run local/staging DB readiness: `npm run db:e2e-check` (read-only; requires PostgreSQL + seed)
 - [ ] Member login with demo or real credentials
 - [ ] Admin login and admin dashboard loads
 - [ ] Transfer creates pending transaction (no automatic balance post)
@@ -157,7 +158,39 @@ curl -s -o /dev/null -w "%{http_code}\n" "$BASE_URL/api/admin/compliance"
 
 ## Pending if database unavailable locally
 
-- [ ] Create and commit initial Prisma migration files
+- [ ] Create and commit initial Prisma migration files (`npx prisma migrate dev --name init` when PostgreSQL is reachable)
+- [ ] Run `npm run db:e2e-check` after seed to confirm admin/member users and ledger tables
 - [ ] Run `npx prisma migrate deploy` on Render after first deploy
 - [ ] Run demo seed on staging only (`ALLOW_DEMO_SEED=true`)
 - [ ] Full DB-backed E2E testing (transfers, ledger, KYC, cron worker)
+
+---
+
+## Step 20 — visual polish, accessibility, responsive QA
+
+### Logo and brand
+
+- [ ] Only `/images/logo.webp` is referenced site-wide (`BrandLogo` component)
+- [ ] Logo is not stretched or pixelated at 44px header height
+- [ ] Login/register light panels show logo via `tone="dark"` navy badge
+- [ ] Navbar and footer use default logo on navy backgrounds
+
+### Accessibility
+
+- [ ] Icon-only buttons have `aria-label` (navbar menu, drawer close, etc.)
+- [ ] Form inputs have visible labels
+- [ ] Focus rings visible on keyboard navigation (`:focus-visible` in global styles)
+- [ ] Loading states expose `role="status"` / screen-reader text where practical
+
+### Responsive layouts
+
+Test at ~375px (mobile), ~768px (tablet), and ~1280px (desktop):
+
+- [ ] Public navbar mobile menu opens/closes without overlap
+- [ ] Member sidebar hidden on mobile; bottom nav scrolls horizontally
+- [ ] Admin sidebar hidden on mobile; bottom nav scrolls horizontally
+- [ ] Wide tables scroll horizontally (`overflow-x-auto` on table wrappers)
+- [ ] Detail drawers usable on mobile width
+- [ ] Auth forms remain readable without horizontal scroll
+
+See `POST_DEPLOY_QA.md` for live-domain checks after deploy.

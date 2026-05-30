@@ -107,6 +107,16 @@ Optional seed (staging/demo only):
 ALLOW_DEMO_SEED=true npm run db:seed
 ```
 
+Verify read-only database readiness locally or on staging:
+
+```bash
+npm run db:e2e-check
+```
+
+This confirms Prisma connectivity, demo admin/member users, accounts, and ledger/audit tables without mutating balances.
+
+> **Migration blocked?** If PostgreSQL is not reachable locally, `prisma/migrations/` may still be empty. Create the initial migration when the database is available, commit the files, then run `migrate deploy` on Render.
+
 ---
 
 ## Email (Resend)
@@ -127,6 +137,7 @@ Production startup validation (`src/lib/env.ts`) requires `RESEND_API_KEY` when 
 - [ ] `CRON_SECRET` is set and matches Render Cron Job header
 - [ ] `ALLOW_DEMO_SEED=false`
 - [ ] `npx prisma migrate deploy` completed successfully
+- [ ] `npm run db:e2e-check` passes (staging/local after seed)
 - [ ] Login works at `/login` with seeded or real credentials
 
 See also: `DEPLOYMENT_CHECKLIST.md`, `POST_DEPLOY_QA.md`, and `README.md`.

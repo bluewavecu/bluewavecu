@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
@@ -38,7 +39,12 @@ export function AdminBillPayClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Bill pay queue unavailable"
+        message="Bill payment records could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   const pending = data.billPayments.filter((p) => p.status === "PENDING_REVIEW");

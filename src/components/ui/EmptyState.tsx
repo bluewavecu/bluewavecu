@@ -14,6 +14,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
+      role="status"
       className={cn(
         "rounded-lg border border-dashed border-primary-navy/[0.18] bg-white p-6 text-center shadow-[0_18px_60px_rgba(10,42,94,0.06)] dark:border-white/[0.18] dark:bg-white/[0.06]",
         className,

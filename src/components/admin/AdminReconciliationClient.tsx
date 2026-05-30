@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
@@ -36,7 +37,12 @@ export function AdminReconciliationClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Reconciliation unavailable"
+        message="Reconciliation data could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   return (

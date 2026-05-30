@@ -40,6 +40,7 @@ npm run build
 npm start
 npx prisma generate
 npm run db:seed
+npm run db:e2e-check
 ```
 
 ## Folder Structure
@@ -153,13 +154,23 @@ src/
 
 ## Branding Assets
 
-- Main logo: `/public/images/logo.webp`
+- **Site logo (canonical):** `/public/images/logo.webp` — transparent white mark used everywhere via `BrandLogo`
 - Favicon/app icon: `/public/images/icon.webp`
 - Primary Navy: `#0A2A5E`
 - Royal Blue: `#0D47A1`
 - Ocean Blue: `#00A8E8`
 - Light Blue: `#5ED7FF`
 - Gray: `#6B7280`
+
+### Replacing the logo
+
+1. Export a **transparent WebP** with the white Bluewave mark (recommended height ratio ~3:1).
+2. Replace `public/images/logo.webp` (keep the filename — all pages reference this path only).
+3. Update intrinsic dimensions in `src/lib/branding.ts` (`width` / `height`) if the aspect ratio changes.
+4. Tune display size via `displayHeight` on `<BrandLogo />` usages (default `44px` in headers, sidebars, and auth pages).
+5. On light backgrounds (login/register, member sidebar), `tone="dark"` adds a navy badge so the white logo stays visible; dark nav/footer use the default transparent logo on navy.
+
+`public/images/logo.jpg` is a legacy source file and is **not** loaded by the app.
 
 ## Deployment Note For Render
 

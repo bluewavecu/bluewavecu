@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminEventLogs } from "@/hooks/useAdminEventLogs";
@@ -45,7 +46,12 @@ export function AdminEventLogsClient() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <EmptyState
+        title="Event logs unavailable"
+        message="System event logs could not be loaded. Refresh the page or try again later."
+      />
+    );
   }
 
   const eventTypes = Array.from(new Set(data.events.map((event) => event.eventType))).sort();

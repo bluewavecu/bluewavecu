@@ -4,6 +4,21 @@ Run this checklist after the first successful Render deploy and DNS propagation 
 
 ---
 
+## Local database readiness (before E2E)
+
+After PostgreSQL is running, migrations are applied, and demo seed is loaded (local/staging only):
+
+```bash
+npx prisma generate
+npm run db:e2e-check
+```
+
+The script is **read-only** — it verifies Prisma connectivity, user/account counts, demo admin/member presence, and core ledger/audit tables. It prints next steps if data is missing.
+
+> **Migration note:** If `prisma/migrations/` is still empty, initial migration remains blocked until PostgreSQL is reachable locally. Run `npx prisma migrate dev --name init` then commit migration files before production deploy.
+
+---
+
 ## Public pages
 
 | Check | Pass |
@@ -105,6 +120,18 @@ curl -s -o /dev/null -w "cron: %{http_code}\n" -X POST "$BASE_URL/api/cron/run-j
 - [ ] `https://bluewavecu.com` loads with valid certificate
 - [ ] `www` redirects or resolves correctly
 - [ ] Cloudflare SSL mode: **Full (strict)**
+
+---
+
+## Responsive QA (mobile / tablet / desktop)
+
+| Check | Pass |
+| --- | --- |
+| Public navbar mobile menu usable | [ ] |
+| Member bottom nav scrolls; no sidebar overlap | [ ] |
+| Admin bottom nav scrolls; tables scroll horizontally | [ ] |
+| Login/register forms readable at 375px width | [ ] |
+| Detail drawers close with Escape / overlay tap | [ ] |
 
 ---
 

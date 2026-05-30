@@ -928,6 +928,42 @@ Status: Completed
 - Empty/loading/error consistency pass
 - Real database E2E and deployment staging QA
 
+## Step 20: Visual Polish, Accessibility Audit, and DB E2E Readiness
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `src/lib/branding.ts` — single canonical `/images/logo.webp` asset; default 44px height constant
+- `src/components/layout/BrandLogo.tsx` — webp-only rendering, `tone="dark"` navy badge on light surfaces, `unoptimized` to avoid re-encoding
+- Layout/auth: `Navbar`, `Footer`, `AppSidebar`, `AdminSidebar`, login/register pages — consistent 44px logo height
+- Accessibility: global `:focus-visible` rings, `DetailDrawer` Escape key + dialog semantics, `LoadingState`/`EmptyState` screen-reader hints
+- Admin empty states: `AdminSettingsClient`, `AdminBillPayClient`, `AdminDisputesClient`, `AdminJobsClient`, `AdminComplianceClient`, `AdminAdjustmentsClient`, `AdminEventLogsClient`, `AdminFinanceReportsClient`, `AdminReconciliationClient`
+- `AdminDataTable` — column `scope`, horizontal scroll on wide tables
+- `scripts/e2e-db-check.mjs` — read-only Prisma DB readiness script
+- `package.json` — `db:e2e-check` script
+- Docs: `README.md`, `DEPLOYMENT_CHECKLIST.md`, `POST_DEPLOY_QA.md`, `PRODUCTION_ENV_SETUP.md`, `PROJECT_LOG.md`
+
+### Features Added
+
+- Site-wide logo/brand consistency using only `public/images/logo.webp`
+- Visual polish pass on shared loading/empty/error states across admin consoles
+- Accessibility fixes for focus visibility, drawer keyboard use, and status announcements
+- Responsive QA refinements (table overflow, consistent spacing)
+- Local database E2E readiness verification without balance mutation
+
+### Safety Preserved
+
+- No ledger workflow changes; read-only DB check script
+- No new balance mutation paths or admin approval bypasses
+
+### Pending Step 21
+
+- Production database migration (`npx prisma migrate dev --name init` when PostgreSQL is reachable)
+- GitHub remote push
+- Render deployment
+- Live domain QA (`POST_DEPLOY_QA.md`)
+
 ## Step 18 (Deployment Prep — prior)
 
 Status: Completed (commit `6a00c68`)

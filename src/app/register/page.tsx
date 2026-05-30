@@ -8,7 +8,7 @@ export default function RegisterPage() {
       <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
         <section className="flex items-center justify-center px-4 py-10 sm:px-6">
           <div className="w-full max-w-md">
-            <BrandLogo displayHeight={48} priority tone="dark" className="mb-10" />
+            <BrandLogo displayHeight={44} priority tone="dark" className="mb-10" />
 
             <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_24px_90px_rgba(10,42,94,0.12)] dark:border-white/[0.08] dark:bg-white/[0.06] sm:p-8">
               <div className="mb-7">
