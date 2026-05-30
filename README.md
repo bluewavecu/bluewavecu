@@ -384,7 +384,32 @@ npm run db:seed
 
 Safety note: Bluewave bill pay is simulation-only. No real external payments are created or sent.
 
-- Pending Step 14: production worker runner, recurring processor, statement PDF export, admin finance reports, reconciliation dashboard.
+## Step 14 Notes
+
+### Worker Runner
+
+- `src/lib/worker.ts` with `runDueJobs`, `processScheduledTransferReviewJob`, and `processBillPaymentReviewJob`.
+- Admin manual trigger: `POST /api/admin/jobs/run` (admin-only).
+- Job listing: `GET /api/admin/jobs` with status and jobType filters.
+- Worker creates review-ready pending transactions only — never posts balances.
+
+### Reconciliation
+
+- `GET /api/admin/reconciliation` compares account balances vs ledger-derived totals.
+- Admin UI at `/admin/reconciliation` with mismatch badges and debit/credit totals.
+- Read-only — no automatic corrections.
+
+### Finance Reports
+
+- `GET /api/admin/finance-reports` with optional `from` and `to` date filters.
+- Admin UI at `/admin/finance-reports` for balances, ledger totals, review queues, support, and risk summaries.
+
+### Statement PDF Placeholder
+
+- CSV statement export remains active.
+- PDF export button is disabled with “PDF Statement Coming Soon” — full PDF export is planned.
+
+- Pending Step 15: controlled adjustment workflow, dispute handling, webhook/event log, production cron setup.
 
 ## Project Safety Note
 
@@ -406,6 +431,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 11: Notifications center, statement exports, and account activity timeline.
 - Step 12: Scheduled transfers, risk engine, session security, and MFA foundation.
 - Step 13: Bill pay, payees, and job queue foundation.
+- Step 14: Worker runner, reconciliation dashboard, and finance reports.
 
 ## Step 2 Notes
 

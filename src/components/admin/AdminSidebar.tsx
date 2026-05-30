@@ -3,17 +3,20 @@
 import {
   ArrowLeft,
   ClipboardList,
+  Cog,
+  FileBarChart,
   LayoutDashboard,
   Receipt,
   ReceiptText,
+  Scale,
   Shield,
   ShieldAlert,
   Users,
   WalletCards,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { cn } from "@/lib/utils";
 
 const adminRoutes = [
@@ -22,6 +25,9 @@ const adminRoutes = [
   { label: "Accounts", href: "/admin/accounts", icon: WalletCards },
   { label: "Transactions", href: "/admin/transactions", icon: ReceiptText },
   { label: "Bill Pay Review", href: "/admin/bill-pay", icon: Receipt },
+  { label: "Jobs", href: "/admin/jobs", icon: Cog },
+  { label: "Reconciliation", href: "/admin/reconciliation", icon: Scale },
+  { label: "Finance Reports", href: "/admin/finance-reports", icon: FileBarChart },
   { label: "Support", href: "/admin/support", icon: Shield },
   { label: "Risk Monitoring", href: "/admin/risk", icon: ShieldAlert },
   { label: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList },
@@ -33,18 +39,7 @@ export function AdminSidebar() {
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-primary-navy/[0.08] bg-white/92 p-5 shadow-[12px_0_60px_rgba(10,42,94,0.08)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#071526]/92 lg:flex lg:flex-col">
-        <Link href="/admin" aria-label="Bluewave admin dashboard" className="flex h-14 items-center">
-          <span className="relative block h-11 w-48 overflow-hidden">
-            <Image
-              src="/images/logo.webp"
-              alt="Bluewave Credit Union"
-              fill
-              priority
-              sizes="192px"
-              className="object-contain object-left"
-            />
-          </span>
-        </Link>
+        <BrandLogo href="/admin" displayHeight={44} priority className="h-14 items-center" />
 
         <div className="mt-8 rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-4 text-white">
           <p className="text-sm font-semibold">Admin Console</p>

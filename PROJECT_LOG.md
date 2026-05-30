@@ -699,3 +699,50 @@ Status: Completed
 ### Pending Next Step
 
 - Production worker runner, recurring processor, statement PDF export, admin finance reports, reconciliation dashboard.
+
+## Step 14: Worker Runner, Reconciliation, And Finance Reports
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `src/lib/worker.ts`
+- `src/lib/reconciliation.ts`
+- `src/lib/financeReports.ts`
+- `src/app/api/admin/jobs/route.ts`
+- `src/app/api/admin/jobs/run/route.ts`
+- `src/app/api/admin/reconciliation/route.ts`
+- `src/app/api/admin/finance-reports/route.ts`
+- `src/app/admin/jobs/page.tsx`
+- `src/app/admin/reconciliation/page.tsx`
+- `src/app/admin/finance-reports/page.tsx`
+- `src/hooks/useAdminJobs.ts`
+- `src/hooks/useAdminReconciliation.ts`
+- `src/hooks/useAdminFinanceReports.ts`
+- `src/components/admin/AdminJobsClient.tsx`
+- `src/components/admin/AdminReconciliationClient.tsx`
+- `src/components/admin/AdminFinanceReportsClient.tsx`
+- `src/components/admin/AdminSidebar.tsx`
+- `src/components/accounts/StatementExportCard.tsx`
+- `src/types/banking.ts`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- Internal worker runner with manual admin trigger for due queued jobs.
+- Scheduled transfer and bill payment jobs create review-ready records only.
+- Read-only reconciliation dashboard comparing account vs ledger balances.
+- Admin finance reports with date filters and review/support/risk summaries.
+- PDF statement export placeholder (CSV remains active).
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–13 ledger safety, admin review posting, and job queue foundation.
+- Worker never posts balances automatically.
+- Reconciliation is read-only with no automatic corrections.
+
+### Pending Next Step
+
+- Controlled adjustment workflow, dispute handling, webhook/event log, production cron setup.
+

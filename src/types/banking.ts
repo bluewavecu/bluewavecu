@@ -624,3 +624,97 @@ export type AdminBillPaymentsData = {
     total: number;
   };
 };
+
+export type JobStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
+
+export type JobRecord = {
+  id: string;
+  jobType: string;
+  status: JobStatus;
+  runAt: string;
+  attempts: number;
+  maxAttempts: number;
+  payload: unknown;
+  error: string | null;
+  lockedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminJobsData = {
+  jobs: JobRecord[];
+  summary: {
+    byStatus: Record<string, number>;
+    total: number;
+  };
+};
+
+export type WorkerRunSummary = {
+  processed: number;
+  completed: number;
+  failed: number;
+  results: Array<{
+    jobId: string;
+    jobType: string;
+    status: "COMPLETED" | "FAILED";
+    error?: string;
+  }>;
+};
+
+export type ReconciliationAccountRecord = {
+  accountId: string;
+  accountNumber: string;
+  accountType: string;
+  userId: string;
+  userName: string;
+  accountBalance: number;
+  ledgerBalance: number;
+  delta: number;
+  totalDebits: number;
+  totalCredits: number;
+  status: "MATCH" | "MISMATCH" | "NO_LEDGER";
+};
+
+export type ReconciliationSummary = {
+  accounts: ReconciliationAccountRecord[];
+  totals: {
+    accountBalance: number;
+    ledgerBalance: number;
+    totalDebits: number;
+    totalCredits: number;
+    mismatchCount: number;
+    accountCount: number;
+  };
+};
+
+export type FinanceReportsData = {
+  period: {
+    from: string | null;
+    to: string | null;
+  };
+  totals: {
+    userBalances: number;
+    ledgerDebits: number;
+    ledgerCredits: number;
+    pendingReviewAmount: number;
+  };
+  transactionsByStatus: Record<string, number>;
+  billPaymentsByStatus: Record<string, number>;
+  pendingReview: {
+    transfers: number;
+    billPayments: number;
+    transferAmount: number;
+    billPaymentAmount: number;
+  };
+  support: {
+    total: number;
+    byStatus: Record<string, number>;
+    byPriority: Record<string, number>;
+  };
+  risk: {
+    total: number;
+    bySeverity: Record<string, number>;
+    recentHighSeverity: number;
+  };
+};

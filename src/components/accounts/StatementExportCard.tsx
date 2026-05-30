@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileSpreadsheet } from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { useState } from "react";
 import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
@@ -143,15 +143,27 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
         <p className="mt-4 text-sm text-emerald-700 dark:text-emerald-300">{successMessage}</p>
       ) : null}
 
-      <button
-        type="button"
-        disabled={isExporting}
-        onClick={() => void handleExport()}
-        className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <Download size={16} aria-hidden="true" />
-        {isExporting ? "Preparing CSV..." : "Download CSV Statement"}
-      </button>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={isExporting}
+          onClick={() => void handleExport()}
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <Download size={16} aria-hidden="true" />
+          {isExporting ? "Preparing CSV..." : "Download CSV Statement"}
+        </button>
+
+        <button
+          type="button"
+          disabled
+          title="PDF statement export is planned for a future release"
+          className="inline-flex h-11 cursor-not-allowed items-center gap-2 rounded-full border border-primary-navy/[0.12] bg-primary-navy/[0.04] px-5 text-sm font-semibold text-primary-navy/50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-white/40"
+        >
+          <FileText size={16} aria-hidden="true" />
+          PDF Statement Coming Soon
+        </button>
+      </div>
     </section>
   );
 }
