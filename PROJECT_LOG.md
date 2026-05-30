@@ -855,9 +855,26 @@ Status: Completed
 
 ### Pending Manual Steps
 
-- Create initial Prisma migration when PostgreSQL is reachable.
+- Create initial Prisma migration when PostgreSQL is reachable (`npx prisma migrate dev --name init`).
 - GitHub push and Render first deploy.
 - `npx prisma migrate deploy` on production database.
 - Cloudflare DNS to Render.
-- Full DB-backed E2E testing after deploy.
+- Full DB-backed E2E testing after deploy (see `POST_DEPLOY_QA.md`).
+
+## Step 18: Final Deployment Prep, GitHub Push, Render Launch
+
+Status: In progress
+
+### Files Created Or Updated
+
+- `PRODUCTION_ENV_SETUP.md` — Render env vars, secret generation, staging vs production
+- `POST_DEPLOY_QA.md` — post-deploy member, admin, and security QA checklist
+- `.gitignore` — coverage and log patterns
+
+### Pending
+
+- Initial Prisma migration (blocked until PostgreSQL reachable)
+- GitHub push to `origin master`
+- Render PostgreSQL + web service creation
+- First production `npx prisma migrate deploy`
 
