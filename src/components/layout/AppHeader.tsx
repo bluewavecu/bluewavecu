@@ -1,5 +1,6 @@
-import { Bell, Search, ShieldCheck } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 import { AppUserBadge } from "@/components/layout/AppUserBadge";
+import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 
 type AppHeaderProps = {
   title: string;
@@ -36,14 +37,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
             />
           </label>
 
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary-navy/[0.08] bg-white text-primary-navy shadow-[0_12px_34px_rgba(10,42,94,0.07)] transition hover:text-ocean-blue dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-white"
-          >
-            <Bell size={19} aria-hidden="true" />
-            <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-ocean-blue" />
-          </button>
+          <NotificationsBell />
 
           <AppUserBadge />
         </div>

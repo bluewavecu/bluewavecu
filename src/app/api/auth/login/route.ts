@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { createAuthCookie, sanitizeUser, signAuthToken, verifyPassword } from "@/lib/auth";
 import { sendLoginAlertEmail } from "@/lib/email";
+import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { loginSchema } from "@/lib/validators";
@@ -52,6 +53,10 @@ export async function POST(request: NextRequest) {
       email: user.email,
       fullName: user.fullName,
       userId: user.id,
+    });
+    void createSecurityNotification({
+      userId: user.id,
+      metadata: { href: "/dashboard" },
     });
 
     return response;

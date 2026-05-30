@@ -26,6 +26,13 @@ export type CardStatus = "ACTIVE" | "LOCKED" | "CANCELLED" | "EXPIRED";
 export type LoanStatus = "PENDING" | "ACTIVE" | "PAID_OFF" | "DEFAULTED" | "DENIED";
 export type SupportTicketStatus = "OPEN" | "PENDING" | "RESOLVED" | "CLOSED";
 export type SupportTicketPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT";
+export type NotificationType =
+  | "SYSTEM"
+  | "TRANSFER"
+  | "ACCOUNT"
+  | "SECURITY"
+  | "SUPPORT"
+  | "ADMIN";
 
 export type SafeUser = {
   id: string;
@@ -422,4 +429,52 @@ export type AdminAuditLogRecord = {
 
 export type AdminAuditLogsData = {
   logs: AdminAuditLogRecord[];
+};
+
+export type NotificationRecord = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  metadata: Record<string, string | number | boolean | null> | null;
+  createdAt: string;
+};
+
+export type NotificationsData = {
+  notifications: NotificationRecord[];
+  unreadCount: number;
+};
+
+export type ActivityTimelineItem = {
+  id: string;
+  kind: "LEDGER" | "TRANSACTION" | "SUPPORT";
+  title: string;
+  description: string;
+  status?: string;
+  amount?: number;
+  direction?: "DEBIT" | "CREDIT";
+  balanceAfter?: number;
+  maskedAccountNumber?: string;
+  reference?: string;
+  createdAt: string;
+  href?: string;
+};
+
+export type ActivityTimelineData = {
+  items: ActivityTimelineItem[];
+};
+
+export type AdminOperationalAlert = {
+  id: string;
+  type: NotificationType;
+  severity: "info" | "warning";
+  title: string;
+  message: string;
+  href: string;
+  createdAt: string;
+};
+
+export type AdminOperationalAlertsData = {
+  alerts: AdminOperationalAlert[];
 };

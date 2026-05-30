@@ -3,6 +3,7 @@ import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sanitizeUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { createAccountNotification } from "@/lib/notifications";
 import { adminUpdateUserStatusSchema } from "@/lib/validators";
 import type { AdminUserSummary, UserRole, UserStatus } from "@/types/banking";
 
@@ -101,6 +102,16 @@ export async function PATCH(request: NextRequest) {
         previousStatus: existing.status,
         nextStatus: updated.status,
         email: updated.email,
+      },
+    });
+
+    void createAccountNotification({
+      userId: updated.id,
+      title: "Account status updated",
+      message: `Your Bluewave membership status is now ${updated.status.toLowerCase()}.`,
+      metadata: {
+        status: updated.status,
+        href: "/dashboard",
       },
     });
 

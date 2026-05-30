@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { AlertTriangle, BellRing, RefreshCw } from "lucide-react";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/data/mockBanking";
+import { useAdminOperationalAlerts } from "@/hooks/useNotifications";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,12 @@ function formatDate(value: string) {
 
 export function AdminOverviewClient() {
   const { data, error, isLoading, isForbidden, refetch } = useAdminOverview();
+  const {
+    alerts,
+    error: alertsError,
+    isLoading: alertsLoading,
+    refetch: refetchAlerts,
+  } = useAdminOperationalAlerts();
 
   if (isLoading) {
     return <LoadingState title="Loading admin overview" message="Retrieving platform metrics." />;
@@ -62,6 +70,78 @@ export function AdminOverviewClient() {
           },
         ]}
       />
+
+      <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BellRing size={18} className="text-ocean-blue" aria-hidden="true" />
+            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+              Operational alerts
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => void refetchAlerts()}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-royal-blue dark:text-light-blue"
+          >
+            <RefreshCw size={14} aria-hidden="true" />
+            Refresh
+          </button>
+        </div>
+        <p className="mt-2 text-sm text-bluewave-gray dark:text-white/[0.58]">
+          Pending transfers, failed reviews, open support tickets, and recent security events.
+        </p>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          {alertsLoading ? (
+            <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">Loading alerts...</p>
+          ) : alertsError ? (
+            <p className="text-sm text-red-700 dark:text-red-300">{alertsError}</p>
+          ) : alerts.length > 0 ? (
+            alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={cn(
+                  "rounded-lg border p-4",
+                  alert.severity === "warning"
+                    ? "border-amber-500/[0.30] bg-amber-500/[0.06]"
+                    : "border-primary-navy/[0.08] bg-[#f7fbff] dark:border-white/[0.08] dark:bg-white/[0.04]",
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <AlertTriangle
+                    size={18}
+                    className={cn(
+                      "mt-0.5 shrink-0",
+                      alert.severity === "warning"
+                        ? "text-amber-600 dark:text-amber-300"
+                        : "text-ocean-blue",
+                    )}
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <p className="font-semibold text-primary-navy dark:text-white">{alert.title}</p>
+                    <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+                      {alert.message}
+                    </p>
+                    {alert.href ? (
+                      <Link
+                        href={alert.href}
+                        className="mt-2 inline-block text-xs font-semibold text-royal-blue dark:text-light-blue"
+                      >
+                        Review
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
+              No operational alerts right now.
+            </p>
+          )}
+        </div>
+      </article>
 
       <div className="grid gap-5 xl:grid-cols-3">
         <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sendSupportTicketUpdatedEmail } from "@/lib/email";
+import { createSupportNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateSupportTicketStatusSchema } from "@/lib/validators";
 import type {
@@ -112,6 +113,13 @@ export async function PATCH(request: NextRequest) {
     void sendSupportTicketUpdatedEmail({
       email: updated.user.email,
       fullName: updated.user.fullName,
+      ticketId: updated.id,
+      subject: updated.subject,
+      status: updated.status,
+    });
+    void createSupportNotification({
+      userId: updated.user.id,
+      event: "updated",
       ticketId: updated.id,
       subject: updated.subject,
       status: updated.status,

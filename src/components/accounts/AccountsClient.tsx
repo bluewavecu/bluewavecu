@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ArrowLeftRight, BadgeCheck, ReceiptText, WalletCards } from "lucide-react";
+import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
+import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -143,6 +145,11 @@ export function AccountsClient() {
           </article>
         ))}
       </div>
+
+      <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+        <AccountActivityTimeline limit={12} />
+        <StatementExportCard />
+      </section>
     </section>
   );
 }

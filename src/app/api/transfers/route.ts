@@ -7,6 +7,7 @@ import {
   sendAdminAlertEmail,
   sendTransferCreatedEmail,
 } from "@/lib/email";
+import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { transferSchema } from "@/lib/validators";
@@ -119,6 +120,13 @@ export async function POST(request: NextRequest) {
       subject: "Pending transfer review",
       message: `${user.fullName} submitted transfer ${transaction.reference} for $${Math.abs(transaction.amount.toNumber()).toFixed(2)}.`,
       idempotencyKey: `admin-alert/transfer-created/${transaction.reference}`,
+    });
+    void createTransferNotification({
+      userId: payload.userId,
+      event: "created",
+      reference: transaction.reference,
+      amount: transaction.amount.toNumber(),
+      metadata: { href: "/transfers" },
     });
 
     return apiSuccess(

@@ -274,6 +274,48 @@ npm run db:seed
 - Insufficient funds on CHECKING/SAVINGS blocks approval with a readable API error.
 - Pending Step 11: notifications center, statement export, account activity timeline, production audit/event logs.
 
+## Step 11 Notes
+
+### Notification System
+
+- Added `Notification` model with types: `SYSTEM`, `TRANSFER`, `ACCOUNT`, `SECURITY`, `SUPPORT`, `ADMIN`.
+- Added `src/lib/notifications.ts` with reusable create/mark-read helpers and safe metadata sanitization.
+- Auto-notifications fire on login, transfer create/review, support create/update, and admin account status changes.
+- Member APIs: `GET /api/notifications`, `POST /api/notifications/read`.
+- Header bell (`NotificationsBell`) shows unread badge, dropdown panel, and mark-as-read actions.
+- Dashboard includes a recent notifications widget via `NotificationsPanel`.
+
+Apply the notifications migration when PostgreSQL is available:
+
+```bash
+npx prisma migrate dev --name add_notifications
+npm run db:seed
+```
+
+### Statement Export
+
+- `GET /api/statements?month=&year=&accountId=` returns a downloadable CSV for authenticated members.
+- CSV columns: date, description, type, amount, status, balance snapshot (when ledger data exists).
+- Uses ledger postings and transaction records; no sensitive account numbers in export filenames beyond masked labels.
+- `StatementExportCard` on dashboard and accounts pages supports month/year/account selection with loading and error states.
+
+### Account Activity Timeline
+
+- `GET /api/activity?accountId=&limit=` returns a ledger-driven chronological timeline.
+- Includes posted transactions, pending transfer reviews, and support/account events where useful.
+- `AccountActivityTimeline` renders status indicators and responsive timeline UI on dashboard and accounts pages.
+
+### Admin Operational Alerts
+
+- `GET /api/admin/notifications` (admin-only) returns dashboard-ready operational alerts:
+  - Pending transfers
+  - Failed transfer reviews
+  - Open support tickets
+  - Recent security notifications
+- Admin overview page includes an operational alerts section with severity styling and review links.
+
+- Pending Step 12: recurring payments, scheduled transfers, fraud/risk engine, device/session management, MFA foundation.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -291,6 +333,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 8: Deployment hardening, Render config, middleware protection, and production safeguards.
 - Step 9: Email notifications and admin transfer review workflow.
 - Step 10: Balance ledger and admin-approved transfer posting.
+- Step 11: Notifications center, statement exports, and account activity timeline.
 
 ## Step 2 Notes
 

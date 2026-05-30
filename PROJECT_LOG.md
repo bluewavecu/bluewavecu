@@ -534,3 +534,56 @@ Status: Completed
 ### Pending Next Step
 
 - Notifications center, statement export, account activity timeline, and production audit/event logs.
+
+## Step 11: Notifications Center, Statements, And Activity Timeline
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `src/lib/notifications.ts`
+- `src/types/banking.ts`
+- `src/app/api/notifications/route.ts`
+- `src/app/api/notifications/read/route.ts`
+- `src/app/api/statements/route.ts`
+- `src/app/api/activity/route.ts`
+- `src/app/api/admin/notifications/route.ts`
+- `src/app/api/auth/login/route.ts`
+- `src/app/api/transfers/route.ts`
+- `src/app/api/admin/transactions/route.ts`
+- `src/app/api/support/route.ts`
+- `src/app/api/admin/support/route.ts`
+- `src/app/api/admin/users/route.ts`
+- `src/hooks/useNotifications.ts`
+- `src/components/notifications/NotificationsBell.tsx`
+- `src/components/notifications/NotificationsPanel.tsx`
+- `src/components/notifications/NotificationItem.tsx`
+- `src/components/accounts/AccountActivityTimeline.tsx`
+- `src/components/accounts/StatementExportCard.tsx`
+- `src/components/layout/AppHeader.tsx`
+- `src/components/dashboard/DashboardClient.tsx`
+- `src/components/accounts/AccountsClient.tsx`
+- `src/components/admin/AdminOverviewClient.tsx`
+- `README.md`
+- `PROJECT_LOG.md`
+
+### Features Added
+
+- In-app notification model, service, and member/admin APIs.
+- Auto-generated notifications for auth, transfers, support, and admin account actions.
+- Header notification bell with unread badge, dropdown panel, and mark-as-read flows.
+- Ledger-driven account activity timeline on dashboard and accounts pages.
+- CSV bank statement export with month/year/account filters.
+- Admin operational alerts for pending transfers, failed reviews, support tickets, and security events.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–10 auth, email, ledger, middleware, admin review posting, and audit logging.
+- User transfer POST must remain pending-only; balances change only via admin approve + ledger service.
+- Notifications are fire-and-forget and must not block API success responses.
+
+### Pending Next Step
+
+- Recurring payments, scheduled transfers, fraud/risk engine, device/session management, MFA foundation.

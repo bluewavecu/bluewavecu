@@ -1,13 +1,17 @@
 "use client";
 
 import { AlertTriangle, CircleHelp, RefreshCw, ShieldCheck } from "lucide-react";
+import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
+import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
 import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { formatCurrency } from "@/data/mockBanking";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const skeletonCards = ["balance", "savings", "card"];
@@ -66,10 +70,15 @@ export function DashboardClient() {
     );
   }
 
+  const totalAvailable = data.accounts.reduce(
+    (sum, account) => sum + account.availableBalance,
+    0,
+  );
+
   return (
     <div className="space-y-5">
       <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
               <ShieldCheck size={14} aria-hidden="true" />
@@ -79,7 +88,7 @@ export function DashboardClient() {
               Welcome back, {data.user.firstName}
             </h2>
             <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-              Live account summaries are loaded from the protected dashboard API.
+              Total available across your accounts: {formatCurrency(totalAvailable)}
             </p>
           </div>
           <button
@@ -110,6 +119,8 @@ export function DashboardClient() {
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
         <AccountOverview accounts={data.accounts} loans={data.loans} />
         <div className="grid gap-5">
+          <NotificationsPanel limit={5} compact />
+
           <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
             <div className="flex gap-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
@@ -143,6 +154,11 @@ export function DashboardClient() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+        <AccountActivityTimeline limit={8} />
+        <StatementExportCard />
       </section>
     </div>
   );

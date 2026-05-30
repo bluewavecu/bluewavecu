@@ -391,6 +391,46 @@ async function main() {
 
     logStep("Refreshed demo support tickets.");
 
+    await prisma.notification.deleteMany({
+      where: { userId: demoUser.id },
+    });
+    await prisma.notification.createMany({
+      data: [
+        {
+          userId: demoUser.id,
+          type: "SYSTEM",
+          title: "Welcome to Bluewave",
+          message: "Your demo membership is active. Explore accounts, transfers, and support.",
+          isRead: true,
+        },
+        {
+          userId: demoUser.id,
+          type: "TRANSFER",
+          title: "Transfer submitted for review",
+          message: "Your $250.00 transfer is pending admin approval.",
+          isRead: false,
+          metadata: { href: "/transactions", reference: "DEMO-TXN-1006" },
+        },
+        {
+          userId: demoUser.id,
+          type: "SUPPORT",
+          title: "Support ticket received",
+          message: "We received your card travel notice request.",
+          isRead: false,
+          metadata: { href: "/support" },
+        },
+        {
+          userId: demoUser.id,
+          type: "SECURITY",
+          title: "New sign-in detected",
+          message: "A successful sign-in was recorded on your demo account.",
+          isRead: false,
+        },
+      ],
+    });
+
+    logStep("Refreshed demo notifications.");
+
     const auditSeedActions = [
       {
         action: "SEED_DEMO_DATA",

@@ -5,6 +5,7 @@ import {
   sendAdminAlertEmail,
   sendSupportTicketCreatedEmail,
 } from "@/lib/email";
+import { createSupportNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { supportTicketSchema } from "@/lib/validators";
@@ -101,6 +102,13 @@ export async function POST(request: NextRequest) {
       subject: "New support ticket",
       message: `${user.fullName} opened ticket "${ticket.subject}".`,
       idempotencyKey: `admin-alert/support-created/${ticket.id}`,
+    });
+    void createSupportNotification({
+      userId: payload.userId,
+      event: "created",
+      ticketId: ticket.id,
+      subject: ticket.subject,
+      status: ticket.status,
     });
 
     return apiSuccess({ ticket: serializeTicket(ticket) }, { status: 201 });

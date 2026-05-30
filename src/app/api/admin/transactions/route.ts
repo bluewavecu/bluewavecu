@@ -7,6 +7,7 @@ import {
   sendTransferStatusEmail,
 } from "@/lib/email";
 import { failReviewedTransferTransaction, LedgerError, postApprovedTransferTransaction } from "@/lib/ledger";
+import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { adminUpdateTransactionStatusSchema } from "@/lib/validators";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
@@ -232,6 +233,19 @@ export async function PATCH(request: NextRequest) {
         idempotencyKey: `admin-alert/transfer-review/${ledgerResult.reference}/${input.status}`,
       });
     }
+
+    void createTransferNotification({
+      userId: existing.user.id,
+      event:
+        input.status === "COMPLETED"
+          ? "approved"
+          : input.status === "FAILED"
+            ? "failed"
+            : "reversed",
+      reference: ledgerResult.reference,
+      amount: ledgerResult.amount,
+      metadata: { href: "/transactions" },
+    });
 
     return apiSuccess({ transaction: serializeTransaction(updated) });
   } catch (error) {
