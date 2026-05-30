@@ -168,6 +168,14 @@ enum EventSeverity {
   CRITICAL
 }
 
+enum KycStatus {
+  NOT_STARTED
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
 model User {
   id             String          @id @default(cuid())
   fullName       String
@@ -196,6 +204,7 @@ model User {
   adjustmentRequests  AdjustmentRequest[] @relation("MemberAdjustments")
   adminAdjustments    AdjustmentRequest[] @relation("AdminAdjustments")
   disputes            Dispute[]
+  customerProfile     CustomerProfile?
 
   @@index([email])
   @@index([role])
@@ -596,5 +605,31 @@ model EventLog {
   @@index([entityType])
   @@index([entityId])
   @@index([severity])
+  @@index([createdAt])
+}
+
+model CustomerProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  dateOfBirth      DateTime?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  postalCode       String?
+  country          String?   @default("US")
+  employmentStatus String?
+  annualIncome     Decimal?  @db.Decimal(14, 2)
+  kycStatus        KycStatus @default(NOT_STARTED)
+  kycSubmittedAt   DateTime?
+  kycReviewedAt    DateTime?
+  kycReviewedBy    String?
+  kycReviewNote    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([kycStatus])
   @@index([createdAt])
 }

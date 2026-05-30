@@ -404,10 +404,34 @@ Safety note: Bluewave bill pay is simulation-only. No real external payments are
 - `GET /api/admin/finance-reports` with optional `from` and `to` date filters.
 - Admin UI at `/admin/finance-reports` for balances, ledger totals, review queues, support, and risk summaries.
 
-### Statement PDF Placeholder
+### Statement Export
 
-- CSV statement export remains active.
-- PDF export button is disabled with “PDF Statement Coming Soon” — full PDF export is planned.
+- `GET /api/statements?month=&year=&accountId=&format=csv|pdf` returns downloadable statements for authenticated members.
+- Default format is CSV; pass `format=pdf` for PDF output.
+- Account numbers are masked in exports; opening/closing ledger balances appear in PDF when available.
+
+### Production Cron
+
+- `POST /api/cron/run-jobs` processes due queue jobs into review-ready workflows only — never posts balances directly.
+- Requires header: `Authorization: Bearer <CRON_SECRET>`.
+- If `CRON_SECRET` is missing in production, the endpoint returns a safe `500` error.
+- Cron start/completion/failure events are written to the append-only event log.
+
+Set `CRON_SECRET` in `.env` and Render env vars. Example Render Cron Job command:
+
+```bash
+curl -X POST "$NEXT_PUBLIC_APP_URL/api/cron/run-jobs" \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Manual local test (with dev server running):
+
+```bash
+curl -X POST "http://localhost:3000/api/cron/run-jobs" \
+  -H "Authorization: Bearer your-local-cron-secret"
+```
+
+Without a valid secret, expect `401 Unauthorized`.
 
 - Pending Step 15: controlled adjustment workflow, dispute handling, webhook/event log, production cron setup.
 
@@ -440,6 +464,46 @@ npm run db:seed
 
 - Pending Step 16: production cron setup, PDF statements, customer profile/KYC settings, admin compliance dashboard.
 
+## Step 16 Notes
+
+### Production Cron
+
+- Protected `POST /api/cron/run-jobs` endpoint calls `runDueJobs()` for due queue jobs only.
+- Bearer `CRON_SECRET` required; missing secret in production returns safe `500`.
+- See cron setup examples above.
+
+### PDF Statements
+
+- `jspdf` + `jspdf-autotable` generate member PDF statements.
+- Dashboard and accounts export card support CSV (default) and PDF via `format=pdf`.
+
+### Customer Profile / KYC
+
+- Members manage profile at `/profile` and submit KYC for review.
+- Status flow: `NOT_STARTED` → `SUBMITTED` → `UNDER_REVIEW` → `VERIFIED` or `REJECTED`.
+- Members cannot self-verify; submission creates notifications and event logs.
+
+### Admin Compliance
+
+- Admin compliance dashboard at `/admin/compliance`.
+- Filter by KYC status, review profiles, update status with audit/event logs and member notifications.
+- Rejection requires a review note.
+
+### Risk Engine KYC Integration
+
+- Transfers and bill payments score higher when KYC is not `VERIFIED`.
+- High-value actions by unverified members create dedicated risk events.
+- Only `CRITICAL` severity blocks actions.
+
+Apply the Step 16 migration when PostgreSQL is available:
+
+```bash
+npx prisma migrate dev --name add_customer_profiles
+npm run db:seed
+```
+
+- Pending Step 17: deployment checklist, Render database setup, production env verification, final QA pass, GitHub push/deploy instructions.
+
 ## Project Safety Note
 
 Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making changes. Do not overwrite completed work unless specifically instructed. Extend the existing foundation and components instead of rebuilding from scratch.
@@ -462,6 +526,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 13: Bill pay, payees, and job queue foundation.
 - Step 14: Worker runner, reconciliation dashboard, and finance reports.
 - Step 15: Controlled adjustments, disputes, and event logs.
+- Step 16: Production cron, PDF statements, customer profile/KYC, and admin compliance dashboard.
 
 ## Step 2 Notes
 
@@ -530,6 +595,8 @@ After seeding demo data and signing in, these member routes load live API data:
 - `/cards`
 - `/loans`
 - `/support`
+- `/profile`
+- `/security`
 
 ## Local Testing (Step 6)
 
@@ -553,6 +620,7 @@ After signing in with the demo admin account, these role-guarded routes are avai
 - `/admin/transactions`
 - `/admin/support`
 - `/admin/audit-logs`
+- `/admin/compliance`
 
 ## Step 7 Notes
 

@@ -473,3 +473,29 @@ export async function sendDisputeUpdatedEmail(params: {
     "sendDisputeUpdatedEmail",
   );
 }
+
+export async function sendKycStatusEmail(params: {
+  email: string;
+  fullName: string;
+  status: string;
+  reviewNote?: string;
+}) {
+  const statusLabel = params.status.replaceAll("_", " ").toLowerCase();
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: `KYC review ${statusLabel}`,
+      text: `Hi ${params.fullName}, your identity verification status is now ${statusLabel}. ${params.reviewNote ?? ""}`,
+      html: buildEmailHtml(
+        "KYC status update",
+        `<p>Hi ${escapeHtml(params.fullName)},</p>
+         <p>Your identity verification status is now <strong>${escapeHtml(statusLabel)}</strong>.</p>
+         ${params.reviewNote ? `<p>${escapeHtml(params.reviewNote)}</p>` : ""}
+         <p>Visit your profile page to review details or resubmit if needed.</p>`,
+      ),
+      idempotencyKey: `kyc-status/${params.email}/${params.status}`,
+    },
+    "sendKycStatusEmail",
+  );
+}

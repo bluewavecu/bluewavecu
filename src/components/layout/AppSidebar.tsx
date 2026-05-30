@@ -12,6 +12,7 @@ import {
   ReceiptText,
   Scale,
   Shield,
+  UserRound,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +30,7 @@ const appRoutes = [
   { label: "Cards", href: "/cards", icon: CreditCard },
   { label: "Loans", href: "/loans", icon: Landmark },
   { label: "Support", href: "/support", icon: CircleHelp },
+  { label: "Profile", href: "/profile", icon: UserRound },
   { label: "Security", href: "/security", icon: Shield },
 ];
 

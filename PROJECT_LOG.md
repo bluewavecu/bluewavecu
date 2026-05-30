@@ -786,3 +786,45 @@ Status: Completed
 
 - Production cron setup, PDF statements, customer profile/KYC settings, admin compliance dashboard.
 
+## Step 16: Production Cron, PDF Statements, Customer Profile/KYC, Admin Compliance
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `prisma/schema.prisma` — `CustomerProfile` model and `KycStatus` enum
+- `.env.example`, `src/lib/env.ts`, `render.yaml` — `CRON_SECRET`
+- `src/lib/cronAuth.ts`, `src/app/api/cron/run-jobs/route.ts`
+- `src/lib/statementExport.ts`, `src/lib/statementsPdf.ts`
+- `src/app/api/statements/route.ts` — `format=csv|pdf`
+- `src/components/accounts/StatementExportCard.tsx` — working PDF export
+- `src/lib/customerProfile.ts`, `src/app/api/profile/route.ts`
+- `src/app/profile/page.tsx`, `src/components/profile/ProfileClient.tsx`, `src/hooks/useProfile.ts`
+- `src/app/api/admin/compliance/route.ts`
+- `src/app/admin/compliance/page.tsx`, `src/components/admin/AdminComplianceClient.tsx`, `src/hooks/useAdminCompliance.ts`
+- `src/lib/risk.ts` — KYC-aware transfer and bill pay scoring
+- `src/app/api/dashboard/route.ts`, `src/components/dashboard/DashboardClient.tsx` — KYC status card
+- `src/lib/email.ts` — KYC status emails
+- `src/lib/clientApi.ts` — `putJson` helper
+- `src/lib/validators.ts`, `src/types/banking.ts`
+- `src/components/layout/AppSidebar.tsx`, `src/components/admin/AdminSidebar.tsx`, `src/middleware.ts`
+- `README.md`, `PROJECT_LOG.md`
+
+### Features Added
+
+- Production cron endpoint with bearer secret protection and event logging.
+- PDF statement generation alongside existing CSV export.
+- Customer profile and KYC submission workflow for members.
+- Admin compliance dashboard for KYC review with audit logs and notifications.
+- Risk engine integration for unverified members on transfers and bill pay.
+
+### What Should Not Be Rebuilt
+
+- Preserve Steps 1–15 ledger safety, worker runner, adjustments, disputes, and event logs.
+- Cron/worker never posts balances directly.
+- Members cannot self-verify KYC.
+
+### Pending Next Step
+
+- Deployment checklist, Render database setup, production env verification, final QA pass, GitHub push/deploy instructions.
+

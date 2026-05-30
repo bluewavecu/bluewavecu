@@ -138,6 +138,33 @@ export const adminAdjustmentActionSchema = z.object({
   reviewNote: z.string().trim().max(500).optional(),
 });
 
+export const profileUpdateSchema = z.object({
+  dateOfBirth: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format").optional(),
+  addressLine1: z.string().trim().min(3).max(120).optional(),
+  addressLine2: z.string().trim().max(120).optional(),
+  city: z.string().trim().min(2).max(80).optional(),
+  state: z.string().trim().min(2).max(80).optional(),
+  postalCode: z.string().trim().min(3).max(20).optional(),
+  country: z.string().trim().min(2).max(80).optional(),
+  employmentStatus: z.string().trim().min(2).max(80).optional(),
+  annualIncome: z.coerce.number().nonnegative().optional(),
+});
+
+export const profileSubmitSchema = z.object({
+  action: z.literal("submit_kyc"),
+});
+
+export const adminKycUpdateSchema = z
+  .object({
+    profileId: z.string().min(1),
+    status: z.enum(["UNDER_REVIEW", "VERIFIED", "REJECTED"]),
+    reviewNote: z.string().trim().max(2000).optional(),
+  })
+  .refine((data) => data.status !== "REJECTED" || Boolean(data.reviewNote?.trim()), {
+    message: "Review note is required when rejecting KYC",
+    path: ["reviewNote"],
+  });
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;
 export type PayeeUpdateInput = z.infer<typeof payeeUpdateSchema>;

@@ -15,18 +15,21 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
   const [accountId, setAccountId] = useState("");
   const [month, setMonth] = useState(String(now.getMonth() + 1));
   const [year, setYear] = useState(String(now.getFullYear()));
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  async function handleExport() {
-    setIsExporting(true);
+  async function handleExport(format: "csv" | "pdf") {
+    const setExporting = format === "csv" ? setIsExportingCsv : setIsExportingPdf;
+    setExporting(true);
     setError(null);
     setSuccessMessage(null);
 
     const params = new URLSearchParams({
       month,
       year,
+      format,
     });
 
     if (accountId) {
@@ -40,27 +43,40 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
-        setError(payload.error ?? "Unable to export statement.");
-        setIsExporting(false);
+        const contentType = response.headers.get("Content-Type") ?? "";
+
+        if (contentType.includes("application/json")) {
+          const payload = (await response.json()) as { error?: string };
+          setError(payload.error ?? "Unable to export statement.");
+        } else {
+          setError("Unable to export statement.");
+        }
+
+        setExporting(false);
         return;
       }
 
       const blob = await response.blob();
       const disposition = response.headers.get("Content-Disposition");
       const filenameMatch = disposition?.match(/filename="(.+)"/);
-      const filename = filenameMatch?.[1] ?? `bluewave-statement-${year}-${month}.csv`;
+      const defaultExt = format === "pdf" ? "pdf" : "csv";
+      const filename =
+        filenameMatch?.[1] ?? `bluewave-statement-${year}-${month}.${defaultExt}`;
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
-      setSuccessMessage("Statement CSV downloaded successfully.");
+      setSuccessMessage(
+        format === "pdf"
+          ? "Statement PDF downloaded successfully."
+          : "Statement CSV downloaded successfully.",
+      );
     } catch {
       setError("Unable to export statement.");
     } finally {
-      setIsExporting(false);
+      setExporting(false);
     }
   }
 
@@ -80,7 +96,7 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
             Export bank statement
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Download a CSV statement using ledger postings and pending transaction records.
+            Download CSV or PDF statements using ledger postings and pending transaction records.
           </p>
         </div>
       </div>
@@ -146,22 +162,22 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
       <div className="mt-5 flex flex-wrap gap-3">
         <button
           type="button"
-          disabled={isExporting}
-          onClick={() => void handleExport()}
+          disabled={isExportingCsv || isExportingPdf}
+          onClick={() => void handleExport("csv")}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
         >
           <Download size={16} aria-hidden="true" />
-          {isExporting ? "Preparing CSV..." : "Download CSV Statement"}
+          {isExportingCsv ? "Preparing CSV..." : "Download CSV Statement"}
         </button>
 
         <button
           type="button"
-          disabled
-          title="PDF statement export is planned for a future release"
-          className="inline-flex h-11 cursor-not-allowed items-center gap-2 rounded-full border border-primary-navy/[0.12] bg-primary-navy/[0.04] px-5 text-sm font-semibold text-primary-navy/50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-white/40"
+          disabled={isExportingCsv || isExportingPdf}
+          onClick={() => void handleExport("pdf")}
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-primary-navy/[0.12] bg-white px-5 text-sm font-semibold text-primary-navy transition hover:border-ocean-blue hover:text-royal-blue disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white"
         >
           <FileText size={16} aria-hidden="true" />
-          PDF Statement Coming Soon
+          {isExportingPdf ? "Preparing PDF..." : "Download PDF Statement"}
         </button>
       </div>
     </section>

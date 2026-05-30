@@ -21,3 +21,5 @@ services:
         sync: false
       - key: ADMIN_ALERT_EMAIL
         sync: false
+      - key: CRON_SECRET
+        sync: false

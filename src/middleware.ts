@@ -13,6 +13,7 @@ const memberRoutes = [
   "/cards",
   "/loans",
   "/support",
+  "/profile",
   "/security",
 ];
 
@@ -59,6 +60,7 @@ export const config = {
     "/cards/:path*",
     "/loans/:path*",
     "/support/:path*",
+    "/profile/:path*",
     "/security/:path*",
     "/admin/:path*",
   ],

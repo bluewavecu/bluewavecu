@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { getUserKycStatus } from "@/lib/customerProfile";
 import { getPrisma } from "@/lib/prisma";
 import type {
   AccountType,
@@ -178,6 +179,7 @@ export async function GET(request: NextRequest) {
     }));
 
     const ticketCounts = countTickets(serializedTickets);
+    const kycStatus = await getUserKycStatus(user.id);
 
     const dashboardData: DashboardData = {
       user: {
@@ -198,6 +200,11 @@ export async function GET(request: NextRequest) {
       supportTicketSummary: {
         ...ticketCounts,
         recentTickets: serializedTickets.slice(0, 3),
+      },
+      kycSummary: {
+        kycStatus,
+        needsProfileCompletion:
+          kycStatus === "NOT_STARTED" || kycStatus === "REJECTED",
       },
     };
 

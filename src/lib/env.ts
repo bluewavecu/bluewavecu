@@ -10,6 +10,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
   ADMIN_ALERT_EMAIL: z.string().email("ADMIN_ALERT_EMAIL must be a valid email").optional(),
+  CRON_SECRET: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof envSchema>;
@@ -35,6 +36,7 @@ export function getServerEnv(): ServerEnv {
     RESEND_API_KEY: process.env.RESEND_API_KEY?.trim() || undefined,
     EMAIL_FROM: process.env.EMAIL_FROM?.trim() || undefined,
     ADMIN_ALERT_EMAIL: process.env.ADMIN_ALERT_EMAIL?.trim() || undefined,
+    CRON_SECRET: process.env.CRON_SECRET?.trim() || undefined,
   });
 
   if (!result.success) {

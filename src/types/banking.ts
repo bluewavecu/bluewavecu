@@ -175,6 +175,7 @@ export type DashboardData = {
   cards: DashboardCard[];
   loans: DashboardLoan[];
   supportTicketSummary: DashboardSupportTicketSummary;
+  kycSummary: DashboardKycSummary;
 };
 
 export type PageAccount = {
@@ -806,4 +807,56 @@ export type EventLogsData = {
     total: number;
     bySeverity: Record<string, number>;
   };
+};
+
+export type KycStatus =
+  | "NOT_STARTED"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "VERIFIED"
+  | "REJECTED";
+
+export type CustomerProfileRecord = {
+  id: string;
+  userId: string;
+  dateOfBirth: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
+  employmentStatus: string | null;
+  annualIncome: number | null;
+  kycStatus: KycStatus;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
+  kycReviewedBy: string | null;
+  kycReviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
+};
+
+export type ProfileData = {
+  profile: CustomerProfileRecord;
+};
+
+export type AdminComplianceData = {
+  profiles: CustomerProfileRecord[];
+  summary: {
+    notStarted: number;
+    submitted: number;
+    underReview: number;
+    verified: number;
+    rejected: number;
+    total: number;
+  };
+};
+
+export type DashboardKycSummary = {
+  kycStatus: KycStatus;
+  needsProfileCompletion: boolean;
 };

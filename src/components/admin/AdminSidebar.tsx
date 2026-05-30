@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  BadgeCheck,
   ClipboardList,
   Cog,
   FileBarChart,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 const adminRoutes = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard },
   { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Compliance", href: "/admin/compliance", icon: BadgeCheck },
   { label: "Accounts", href: "/admin/accounts", icon: WalletCards },
   { label: "Transactions", href: "/admin/transactions", icon: ReceiptText },
   { label: "Bill Pay Review", href: "/admin/bill-pay", icon: Receipt },

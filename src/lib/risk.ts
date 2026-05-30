@@ -1,4 +1,5 @@
 import type { Prisma, RiskSeverity } from "@/generated/prisma/client";
+import { getUserKycStatus } from "@/lib/customerProfile";
 import { sendAdminAlertEmail } from "@/lib/email";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
@@ -185,6 +186,18 @@ export async function scoreTransferRisk(params: {
   const prisma = getPrisma();
   let score = 15;
   const reasons: string[] = [];
+  const kycStatus = await getUserKycStatus(params.userId);
+  const kycVerified = kycStatus === "VERIFIED";
+
+  if (!kycVerified) {
+    score += 25;
+    reasons.push("Member identity verification is not complete.");
+
+    if (params.amount >= HIGH_AMOUNT_THRESHOLD) {
+      score += 20;
+      reasons.push("High-value transfer by an unverified member.");
+    }
+  }
 
   if (params.amount >= HIGH_AMOUNT_THRESHOLD) {
     score += 45;
@@ -233,15 +246,22 @@ export async function scoreTransferRisk(params: {
   }
 
   const severity = getRiskSeverity(score);
+  const eventType =
+    !kycVerified && params.amount >= HIGH_AMOUNT_THRESHOLD
+      ? "KYC_UNVERIFIED_TRANSFER"
+      : params.isScheduled
+        ? "SCHEDULED_TRANSFER"
+        : "TRANSFER";
 
   return {
     score,
     severity,
     reason: reasons.join(" ") || "Routine transfer activity.",
-    eventType: params.isScheduled ? "SCHEDULED_TRANSFER" : "TRANSFER",
+    eventType,
     metadata: {
       amount: params.amount,
       isScheduled: Boolean(params.isScheduled),
+      kycStatus,
     },
   } satisfies RiskAssessment;
 }
@@ -254,6 +274,18 @@ export async function scoreBillPaymentRisk(params: {
   const prisma = getPrisma();
   let score = 20;
   const reasons: string[] = [];
+  const kycStatus = await getUserKycStatus(params.userId);
+  const kycVerified = kycStatus === "VERIFIED";
+
+  if (!kycVerified) {
+    score += 25;
+    reasons.push("Member identity verification is not complete.");
+
+    if (params.amount >= HIGH_AMOUNT_THRESHOLD) {
+      score += 20;
+      reasons.push("High-value bill payment by an unverified member.");
+    }
+  }
 
   if (params.amount >= HIGH_AMOUNT_THRESHOLD) {
     score += 40;
@@ -286,13 +318,17 @@ export async function scoreBillPaymentRisk(params: {
   }
 
   const severity = getRiskSeverity(score);
+  const eventType =
+    !kycVerified && params.amount >= HIGH_AMOUNT_THRESHOLD
+      ? "KYC_UNVERIFIED_BILL_PAYMENT"
+      : "BILL_PAYMENT";
 
   return {
     score,
     severity,
     reason: reasons.join(" ") || "Routine bill payment activity.",
-    eventType: "BILL_PAYMENT",
-    metadata: { amount: params.amount, payeeId: params.payeeId },
+    eventType,
+    metadata: { amount: params.amount, payeeId: params.payeeId, kycStatus },
   } satisfies RiskAssessment;
 }
 

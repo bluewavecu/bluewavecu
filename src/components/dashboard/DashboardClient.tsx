@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle, CircleHelp, RefreshCw, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import Link from "next/link";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
@@ -109,6 +110,51 @@ export function DashboardClient() {
           title="No accounts found"
           message="Seed demo banking data or wait for account creation flows before reviewing balances."
         />
+      )}
+
+      {data.kycSummary.needsProfileCompletion ? (
+        <section className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-5 dark:border-amber-400/30 dark:bg-amber-500/10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-800 dark:text-amber-200">
+                <UserRound size={21} aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+                  Complete your profile
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
+                  Your KYC status is {data.kycSummary.kycStatus.replaceAll("_", " ").toLowerCase()}.
+                  Complete and submit your profile to reduce transfer and bill pay risk flags.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/profile"
+              className="inline-flex h-11 items-center justify-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy"
+            >
+              Go to profile
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+          <div className="flex gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+              <ShieldCheck size={21} aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+                KYC status: {data.kycSummary.kycStatus.replaceAll("_", " ")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
+                {data.kycSummary.kycStatus === "VERIFIED"
+                  ? "Your identity verification is complete."
+                  : "Your profile is in the compliance review workflow."}
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
       <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
