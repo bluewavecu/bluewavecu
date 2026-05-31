@@ -11,8 +11,8 @@ export function CareersPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Careers"
-        headline="Build thoughtful financial experiences with us"
-        description="Join a team focused on secure digital banking, member support, and products that feel premium without being complicated."
+        headline="Build thoughtful interface experiences with us"
+        description="Join a team focused on demo design, support content, and products that feel premium without implying a real financial institution."
         heroImage={marketingImages.careersHero}
         heroImageAlt="Team collaborating in a modern office"
         primaryCta={{ label: "View open roles", href: "#open-roles" }}

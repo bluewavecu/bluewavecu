@@ -10,8 +10,8 @@ export function NewsroomPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Newsroom"
-        headline="Updates from Bluewave Credit Union"
-        description="Product releases, community initiatives, rate changes, and security improvements — all in one place."
+        headline="Updates from the Bluewave demo project"
+        description="Product notes, interface releases, and security improvements for the demonstration environment."
         heroImage={marketingImages.newsroomHero}
         heroImageAlt="News and updates on a desk"
         primaryCta={{ label: "Contact media team", href: "/contact?topic=newsroom" }}

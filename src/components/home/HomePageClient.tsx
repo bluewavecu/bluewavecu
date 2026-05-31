@@ -30,10 +30,10 @@ import { SiteTrustNotice } from "@/components/layout/SiteTrustNotice";
 import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 
 const trustBadges = [
-  { key: "marketing.home.trustMemberOwned", icon: Landmark },
-  { key: "marketing.home.trustNcua", icon: ShieldCheck },
-  { key: "marketing.home.trustLocal", icon: Landmark },
-  { key: "marketing.home.trustEstablished", icon: Landmark },
+  { key: "marketing.home.trustDemo", icon: Landmark },
+  { key: "marketing.home.trustDesign", icon: ShieldCheck },
+  { key: "marketing.home.trustExplore", icon: Landmark },
+  { key: "marketing.home.trustSample", icon: Landmark },
 ] as const;
 
 const heritageBullets = [
@@ -43,8 +43,8 @@ const heritageBullets = [
 ] as const;
 
 function productHref(title: string) {
-  if (title === "Personal Banking") return "/personal";
-  if (title === "Business Banking") return "/business";
+  if (title === "Personal workspace") return "/personal";
+  if (title === "Team workspace") return "/business";
   return "/loans";
 }
 
@@ -137,9 +137,9 @@ export function HomePageClient() {
             </div>
             <div className="absolute -bottom-5 -left-5 rounded-sm border border-classic-gold/35 bg-primary-navy/95 px-5 py-4 shadow-[0_20px_60px_rgba(10,42,94,0.35)] backdrop-blur-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-classic-gold">
-                {t("marketing.home.trustMemberOwned")}
+                {t("marketing.home.trustDemo")}
               </p>
-              <p className="mt-1 font-display text-2xl text-white">{t("marketing.home.trustLocal")}</p>
+              <p className="mt-1 font-display text-2xl text-white">{t("marketing.home.trustSample")}</p>
             </div>
           </MotionReveal>
         </div>
@@ -200,7 +200,7 @@ export function HomePageClient() {
                   {t("marketing.home.heritageEyebrow")}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-primary-navy">
-                  {t("marketing.home.trustMemberOwned")}
+                  {t("marketing.home.trustDemo")}
                 </p>
               </div>
             </MotionReveal>

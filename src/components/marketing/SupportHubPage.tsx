@@ -15,12 +15,12 @@ export function SupportHubPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Support"
-        headline="Help that meets you where you manage your membership"
-        description="Browse common answers, contact the Bluewave team, or sign in to create and track support requests from your member dashboard."
+        headline="Help for exploring the Bluewave demo"
+        description="Browse common answers, contact the team, or sign in to create and track sample support requests from the demo dashboard."
         heroImage={marketingImages.supportHero}
-        heroImageAlt="Support specialist ready to help a member"
-        primaryCta={{ label: "Contact support", href: "/contact" }}
-        secondaryCta={{ label: "Sign in for ticket tracking", href: "/auth/login" }}
+        heroImageAlt="Support specialist ready to help a demo user"
+        primaryCta={{ label: "Contact the team", href: "/contact" }}
+        secondaryCta={{ label: "Demo sign-in for tickets", href: "/auth/login" }}
       />
 
       <section className="bg-background py-16 sm:py-20">
@@ -69,17 +69,17 @@ export function SupportHubPage() {
 
       <MarketingSplitSection
         block={{
-          eyebrow: "Member-first support",
-          title: "Real people for account questions and online banking help",
+          eyebrow: "Demo support",
+          title: "Real people for questions about the interface",
           description:
-            "Whether you need help with transfers, cards, statements, or sign-in, Bluewave member services connects you to specialists who know your accounts.",
+            "Whether you need help with demo transfers, cards, statements, or sign-in, the Bluewave team can walk you through the sample environment.",
           bullets: [
-            "Phone and email support during business hours",
-            "Signed-in ticket tracking for members",
+            "Phone and email contact during business hours",
+            "Signed-in ticket tracking in the demo",
             "Escalation paths for urgent security concerns",
           ],
           image: marketingImages.supportSplit,
-          imageAlt: "Member support representative assisting a credit union member",
+          imageAlt: "Support representative assisting a demo user",
         }}
       />
 

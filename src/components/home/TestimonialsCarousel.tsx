@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Quote } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { testimonials } from "@/data/home";
+import { useTranslation } from "@/i18n/LocaleProvider";
 
 function getVisibleCount() {
   if (typeof window === "undefined") {
@@ -14,6 +15,7 @@ function getVisibleCount() {
 }
 
 export function TestimonialsCarousel() {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(1);
 
@@ -46,10 +48,15 @@ export function TestimonialsCarousel() {
   );
 
   return (
-    <section className="classic-marble border-t border-classic-gold/20 pb-16 sm:pb-20" aria-label="Member stories">
+    <section
+      className="classic-marble border-t border-classic-gold/20 pb-16 sm:pb-20"
+      aria-label="Demo feedback"
+    >
       <div className="section-shell">
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-ocean-blue">Member stories</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-ocean-blue">
+            {t("marketing.home.memberStoriesEyebrow")}
+          </p>
           <div className="gold-rule mt-4 max-w-xs" aria-hidden="true" />
         </div>
 

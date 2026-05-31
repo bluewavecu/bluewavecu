@@ -398,7 +398,12 @@ export const es = {
       trustMemberOwned: "Propiedad de los miembros",
       trustNcua: "Asegurado por NCUA",
       trustLocal: "Sirviendo Dallas–Fort Worth",
+      trustDemo: "Plataforma demo",
+      trustDesign: "Showcase UI",
+      trustExplore: "Explora libremente",
+      trustSample: "Datos de ejemplo",
       trustEstablished: "Est. 1987",
+      memberStoriesEyebrow: "Comentarios del demo",
     },
   },
   status: {

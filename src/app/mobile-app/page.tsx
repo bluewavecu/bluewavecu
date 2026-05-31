@@ -33,16 +33,16 @@ export default function MobileAppPage() {
               Mobile app
             </div>
             <h1 className="font-display mt-8 max-w-3xl text-5xl font-semibold leading-[1.06] sm:text-6xl">
-              Mobile banking for Bluewave members
+              Mobile layout preview for the Bluewave demo
             </h1>
             <div className="gold-rule mt-8 max-w-xl" aria-hidden="true" />
             <p className="mt-8 max-w-2xl text-lg leading-8 text-white/[0.82]">
-              The Bluewave mobile app is in active development with biometric sign-in, card controls,
-              and the same secure transfer workflows you use online.
+              The Bluewave mobile experience is in active development with biometric sign-in samples,
+              card-control screens, and the same transfer flows shown in the web demo.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/auth/login" size="lg">
-                Use Online Banking
+                Try demo sign-in
                 <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
               <ButtonLink
@@ -60,7 +60,7 @@ export default function MobileAppPage() {
             <div className="relative overflow-hidden rounded-sm border border-white/15 shadow-[0_22px_80px_rgba(10,42,94,0.20)]">
               <Image
                 src={marketingImages.mobileHero}
-                alt="Bluewave mobile banking on a phone"
+                alt="Bluewave mobile demo on a phone"
                 width={1200}
                 height={800}
                 className="h-[260px] w-full object-cover sm:h-[320px]"
@@ -96,15 +96,15 @@ export default function MobileAppPage() {
           <MotionReveal>
             <MarketingSectionHeader
               eyebrow="Early access"
-              title="Join the waitlist through your Bluewave profile"
-              description="Existing members can sign in today while we finish the native app experience. New members can open an account and opt in for launch updates."
+              title="Join the waitlist through your demo profile"
+              description="Existing demo users can sign in today while we finish the native app experience. New visitors can create a demo profile and opt in for launch updates."
             />
             <Link
               href="/auth/register"
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue hover:text-ocean-blue"
             >
               <Landmark size={16} aria-hidden="true" />
-              Apply for membership
+              Try the demo
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </MotionReveal>

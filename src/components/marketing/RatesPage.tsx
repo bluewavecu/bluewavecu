@@ -3,19 +3,20 @@ import { MarketingHero } from "@/components/marketing/MarketingHero";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { marketingImages, rateRows } from "@/data/marketingPages";
+import { INSTITUTION } from "@/lib/institution";
 import { ButtonLink } from "@/components/ui/Button";
 
 export function RatesPage() {
   return (
     <MarketingShell>
       <MarketingHero
-        eyebrow="Rates"
-        headline="Transparent rates across core products"
-        description="Compare checking, savings, certificate, and lending starting rates before you open an account or apply."
+        eyebrow="Sample rates"
+        headline="Placeholder rates for UI demonstration"
+        description="These tables show how product rates could be presented. They are fictional and not offers of credit or deposit products."
         heroImage={marketingImages.ratesHero}
         heroImageAlt="Financial charts on a screen"
-        primaryCta={{ label: "Apply for membership", href: "/auth/register" }}
-        secondaryCta={{ label: "Talk to a specialist", href: "/contact?topic=rates" }}
+        primaryCta={{ label: "Try the demo", href: "/auth/register" }}
+        secondaryCta={{ label: "Ask a question", href: "/contact?topic=rates" }}
       />
 
       <section className="bg-background py-16 sm:py-20">
@@ -25,7 +26,7 @@ export function RatesPage() {
               <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-classic-gold/25 bg-classic-marble">
                   <tr>
-                    <th className="px-5 py-4 font-semibold text-primary-navy">Product</th>
+                    <th className="px-5 py-4 font-semibold text-primary-navy">Sample product</th>
                     <th className="px-5 py-4 font-semibold text-primary-navy">Rate</th>
                     <th className="px-5 py-4 font-semibold text-primary-navy">Minimum</th>
                     <th className="px-5 py-4 font-semibold text-primary-navy">Notes</th>
@@ -45,14 +46,11 @@ export function RatesPage() {
             </div>
           </MotionReveal>
 
-          <p className="mt-4 text-xs leading-5 text-bluewave-gray">
-            *Rates are subject to change. APR/APY, terms, and eligibility may vary by product and
-            member qualification. Federally insured by NCUA.
-          </p>
+          <p className="mt-4 text-xs leading-5 text-bluewave-gray">{INSTITUTION.publicDisclaimer}</p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/savings" size="lg">
-              Explore savings
+              Explore savings screens
             </ButtonLink>
             <ButtonLink
               href="/loans"
@@ -60,7 +58,7 @@ export function RatesPage() {
               size="lg"
               className="border border-primary-navy/10"
             >
-              View lending
+              View lending screens
             </ButtonLink>
           </div>
         </div>
