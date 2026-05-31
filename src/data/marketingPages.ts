@@ -58,7 +58,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
       "Checking, savings, digital cards, and member-first tools that keep daily money management clear, secure, and mobile-ready.",
     heroImage: marketingImages.personalHero,
     heroImageAlt: "Member reviewing finances on a laptop at home",
-    primaryCta: { label: "Open an account", href: "/auth/register" },
+    primaryCta: { label: "Apply for membership", href: "/auth/register" },
     secondaryCta: { label: "Online banking", href: "/auth/login" },
     stats: [
       { value: "$0", label: "Everyday checking fees" },

@@ -26,6 +26,7 @@ import {
   stats,
 } from "@/data/home";
 import { useTranslation } from "@/i18n/LocaleProvider";
+import { SiteTrustNotice } from "@/components/layout/SiteTrustNotice";
 import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 
 const trustBadges = [
@@ -104,19 +105,21 @@ export function HomePageClient() {
               {t("marketing.home.description")}
             </p>
 
-            <div className="mt-10 flex flex-col gap-3 sm:max-w-md sm:flex-row">
-              <ButtonLink href={MEMBER_LOGIN_PATH} size="lg" className="w-full justify-center sm:flex-1">
-                {t("marketing.home.loginToOnlineBanking")}
-                <LogIn size={18} aria-hidden="true" />
+            <SiteTrustNotice variant="marketing" className="mt-8 max-w-2xl" />
+
+            <div className="mt-8 flex flex-col gap-3 sm:max-w-md sm:flex-row">
+              <ButtonLink href={MEMBER_REGISTER_PATH} size="lg" className="w-full justify-center sm:flex-1">
+                {t("marketing.home.primaryCta")}
+                <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
               <ButtonLink
-                href={MEMBER_REGISTER_PATH}
+                href={MEMBER_LOGIN_PATH}
                 variant="secondary"
                 size="lg"
                 className="w-full justify-center border-classic-gold/30 bg-black/20 sm:flex-1"
               >
-                {t("marketing.home.primaryCta")}
-                <ArrowRight size={18} aria-hidden="true" />
+                {t("marketing.home.loginToOnlineBanking")}
+                <LogIn size={18} aria-hidden="true" />
               </ButtonLink>
             </div>
           </MotionReveal>
@@ -134,9 +137,9 @@ export function HomePageClient() {
             </div>
             <div className="absolute -bottom-5 -left-5 rounded-sm border border-classic-gold/35 bg-primary-navy/95 px-5 py-4 shadow-[0_20px_60px_rgba(10,42,94,0.35)] backdrop-blur-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-classic-gold">
-                {t("marketing.home.trustNcua")}
+                {t("marketing.home.trustMemberOwned")}
               </p>
-              <p className="mt-1 font-display text-2xl text-white">{t("marketing.home.trustEstablished")}</p>
+              <p className="mt-1 font-display text-2xl text-white">{t("marketing.home.trustLocal")}</p>
             </div>
           </MotionReveal>
         </div>

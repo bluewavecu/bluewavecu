@@ -274,7 +274,7 @@ export const fr = {
       description: "Bluewave Credit Union offre comptes, virements, cartes et assistance.",
       primaryCta: "Ouvrir un compte",
       secondaryCta: "Connexion",
-      loginToOnlineBanking: "Connexion à la banque en ligne",
+      loginToOnlineBanking: "Connexion membre",
       learnMore: "En savoir plus",
       availableBalance: "Solde disponible",
       cardControls: "Contrôles de carte",

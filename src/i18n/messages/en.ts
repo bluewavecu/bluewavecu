@@ -9,8 +9,8 @@ export const en = {
     loans: "Loans",
     about: "About",
     support: "Support",
-    login: "Log in",
-    openAccount: "Open account",
+    login: "Sign in",
+    openAccount: "Apply for membership",
     openMenu: "Open menu",
     closeMenu: "Close menu",
   },
@@ -24,7 +24,7 @@ export const en = {
     business: "Business",
     savings: "Savings",
     loans: "Loans",
-    onlineBanking: "Online banking",
+    onlineBanking: "Member sign-in",
     support: "Support",
     security: "Security",
     mobileApp: "Mobile App",
@@ -57,7 +57,7 @@ export const en = {
     apply: "Apply",
     close: "Close",
     viewAccount: "View account",
-    openAccount: "Open account",
+    openAccount: "Apply for membership",
     backToAccounts: "Back to accounts",
     viewAccountDetails: "View account details",
   },
@@ -75,7 +75,7 @@ export const en = {
       marketingHighlight1: "256-bit encryption",
       marketingHighlight2: "Account activity monitoring",
       alternatePrompt: "New to Bluewave?",
-      alternateLabel: "Open an account",
+      alternateLabel: "Apply for membership",
     },
     adminLogin: {
       eyebrow: "Operations access",
@@ -96,7 +96,7 @@ export const en = {
       marketingHeadline: "Join Bluewave Credit Union.",
       marketingBody:
         "Open share draft and share savings accounts with digital tools built for everyday banking.",
-      marketingHighlight1: "NCUA insured",
+      marketingHighlight1: "Member-owned structure",
       marketingHighlight2: "Digital-first experience",
       alternatePrompt: "Already a member?",
       alternateLabel: "Sign in",
@@ -399,7 +399,7 @@ export const en = {
   marketing: {
     ctaHeadline: "Ready to bank with Bluewave?",
     ctaBody: "Open membership online or sign in to manage your accounts today.",
-    ctaPrimary: "Open an account",
+    ctaPrimary: "Apply for membership",
     ctaSecondary: "Sign in",
     pages: {
       personal: {
@@ -408,8 +408,8 @@ export const en = {
         headline: "Everyday accounts designed for modern life",
         description:
           "Checking, savings, digital cards, and member-first tools that keep daily money management clear, secure, and mobile-ready.",
-        primaryCta: "Open an account",
-        secondaryCta: "Online banking",
+        primaryCta: "Apply for membership",
+        secondaryCta: "Member sign-in",
       },
       business: {
         eyebrow: "Business banking",
@@ -449,13 +449,13 @@ export const en = {
       },
     },
     home: {
-      badge: "Member-owned · NCUA insured",
+      badge: "Member-owned credit union",
       headline: "The trust of traditional banking, with the ease of digital.",
       description:
         "Bluewave Credit Union pairs the trust of traditional core banking with secure online tools for accounts, transfers, cards, and member service.",
-      primaryCta: "Open an account",
+      primaryCta: "Apply for membership",
       secondaryCta: "Sign in",
-      loginToOnlineBanking: "Login To Online Banking",
+      loginToOnlineBanking: "Member sign-in",
       learnMore: "Learn more",
       availableBalance: "Available balance",
       cardControls: "Card controls",
@@ -474,7 +474,7 @@ export const en = {
       heritageBullet2: "Deposits insured by NCUA",
       heritageBullet3: "Local service with nationwide digital access",
       trustMemberOwned: "Member-owned",
-      trustNcua: "NCUA insured",
+      trustNcua: "Secure member access",
       trustLocal: "Serving Dallas–Fort Worth",
       trustEstablished: "Est. 1987",
     },

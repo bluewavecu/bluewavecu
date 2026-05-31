@@ -104,7 +104,7 @@ export default function MobileAppPage() {
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue hover:text-ocean-blue"
             >
               <Landmark size={16} aria-hidden="true" />
-              Open an account
+              Apply for membership
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </MotionReveal>

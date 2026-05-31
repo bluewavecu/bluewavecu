@@ -271,7 +271,7 @@ export const ar = {
       description: "تقدّم Bluewave Credit Union حسابات وتحويلات وبطاقات ودعمًا.",
       primaryCta: "افتح حسابًا",
       secondaryCta: "تسجيل الدخول",
-      loginToOnlineBanking: "تسجيل الدخول إلى الخدمات المصرفية عبر الإنترنت",
+      loginToOnlineBanking: "تسجيل دخول الأعضاء",
       learnMore: "اعرف المزيد",
       availableBalance: "الرصيد المتاح",
       cardControls: "ضوابط البطاقة",

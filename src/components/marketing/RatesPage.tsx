@@ -14,7 +14,7 @@ export function RatesPage() {
         description="Compare checking, savings, certificate, and lending starting rates before you open an account or apply."
         heroImage={marketingImages.ratesHero}
         heroImageAlt="Financial charts on a screen"
-        primaryCta={{ label: "Open an account", href: "/auth/register" }}
+        primaryCta={{ label: "Apply for membership", href: "/auth/register" }}
         secondaryCta={{ label: "Talk to a specialist", href: "/contact?topic=rates" }}
       />
 
