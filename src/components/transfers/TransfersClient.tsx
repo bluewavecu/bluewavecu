@@ -124,7 +124,7 @@ export function TransfersClient() {
 
   if (accountsLoading) {
     return (
-      <LoadingState title="Loading transfer accounts" message="Retrieving authenticated accounts." />
+      <LoadingState title="Loading transfer accounts" message="Retrieving your accounts." />
     );
   }
 
@@ -136,7 +136,7 @@ export function TransfersClient() {
     return (
       <EmptyState
         title="No accounts available"
-        message="Add or seed accounts before creating transfer requests."
+        message="Contact member services to open a checking or savings account before initiating transfers."
       />
     );
   }
@@ -203,16 +203,16 @@ export function TransfersClient() {
 
   return (
     <section className="grid gap-5">
-      <InfoPanel title="Transfer review workflow">
-        Transfers are reviewed before posting. Submitted requests create pending transactions only —
-        balances change after admin approval and ledger posting.
+      <InfoPanel title="How transfers are processed">
+        Transfers are reviewed by member services before posting. Submitted requests stay pending
+        until approved — your available balance updates once the transfer posts.
       </InfoPanel>
 
       {summary?.needsProfileCompletion ? (
-        <InfoPanel title="KYC verification recommended" variant="warning">
-          Your profile is not fully verified. High-value transfers may receive elevated risk scoring.{" "}
+        <InfoPanel title="Profile verification recommended" variant="warning">
+          Your profile is not fully verified. High-value transfers may receive additional review.{" "}
           <Link href="/profile" className="font-semibold text-royal-blue underline">
-            Complete profile & KYC
+            Complete profile & verification
           </Link>
         </InfoPanel>
       ) : null}
@@ -250,7 +250,7 @@ export function TransfersClient() {
                   New transfer
                 </h2>
                 <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  Creates a pending transfer request without moving real funds.
+                  Funds are held until the transfer clears our review and posting process.
                 </p>
               </div>
             </div>
@@ -363,10 +363,10 @@ export function TransfersClient() {
 
           <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-6 text-white shadow-[0_18px_60px_rgba(10,42,94,0.12)]">
             <CalendarClock size={24} className="text-light-blue" aria-hidden="true" />
-            <h2 className="mt-5 text-2xl font-semibold">Transfer review workflow</h2>
+            <h2 className="mt-5 text-2xl font-semibold">How transfer review works</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/[0.68]">
-              Submitted transfers are stored as pending transactions for admin review. Balances are
-              not updated until approval posts ledger entries.
+              Submitted transfers stay pending until member services completes review. Balances update
+              once the transfer is approved and posted to your account.
             </p>
           </div>
         </div>
@@ -382,7 +382,7 @@ export function TransfersClient() {
                   Schedule a transfer
                 </h2>
                 <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  Scheduled transfers create future review requests and still require approval
+                  Scheduled transfers create future review requests and require member services approval
                   before posting.
                 </p>
               </div>

@@ -5,7 +5,7 @@ export default function BillPayPage() {
   return (
     <AppShell
       title="Bill Pay"
-      subtitle="Manage payees and schedule bill payments for admin review before posting."
+      subtitle="Manage payees and schedule bill payments. Payments post after operations review."
     >
       <BillPayClient />
     </AppShell>

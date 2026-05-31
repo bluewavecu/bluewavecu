@@ -3,6 +3,7 @@
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { buildAdminAuthUrl, buildMemberAuthUrl } from "@/lib/authRoutes";
 import { getJson, postJson } from "@/lib/clientApi";
 import type { SafeUser } from "@/types/banking";
 
@@ -51,9 +52,11 @@ export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
   async function handleLogout() {
     setIsSigningOut(true);
 
+    const role = user?.role;
+
     await postJson("/api/auth/logout", {});
     setUser(null);
-    router.push("/login");
+    router.push(role === "ADMIN" ? buildAdminAuthUrl() : buildMemberAuthUrl());
     router.refresh();
   }
 

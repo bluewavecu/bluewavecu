@@ -13,7 +13,8 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
-import type { AccountType, PageAccount } from "@/types/banking";
+import { getShareAccountLabel } from "@/lib/institution";
+import type { PageAccount } from "@/types/banking";
 
 const quickActions = [
   { label: "Transfer funds", href: "/transfers", icon: ArrowLeftRight },
@@ -27,24 +28,12 @@ function getStatusLabel(status: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function getAccountTypeLabel(accountType: AccountType) {
-  if (accountType === "CREDIT") {
-    return "Credit";
-  }
-
-  if (accountType === "SAVINGS") {
-    return "Savings";
-  }
-
-  return "Checking";
-}
-
 export function AccountsClient() {
   const { data, error, isLoading, refetch } = useAccounts();
   const [selectedAccount, setSelectedAccount] = useState<PageAccount | null>(null);
 
   if (isLoading) {
-    return <LoadingState title="Loading accounts" message="Retrieving authenticated account data." />;
+    return <LoadingState title="Loading accounts" message="Retrieving your account information." />;
   }
 
   if (error) {
@@ -74,8 +63,8 @@ export function AccountsClient() {
           </p>
           <p className="mt-3 text-4xl font-semibold">{formatCurrency(totalAvailable)}</p>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            Across {data.accounts.length} authenticated Bluewave accounts. Only approved and
-            posted transactions affect balances.
+            Across {data.accounts.length} Bluewave accounts. Only completed transactions affect
+            available balances.
           </p>
         </article>
 
@@ -137,7 +126,7 @@ export function AccountsClient() {
               {account.displayName}
             </h2>
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-              {getAccountTypeLabel(account.accountType)} | {account.maskedAccountNumber}
+              {getShareAccountLabel(account.accountType)} | {account.maskedAccountNumber}
             </p>
             <div className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
               <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">

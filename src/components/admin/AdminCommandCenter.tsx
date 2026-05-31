@@ -39,7 +39,7 @@ export function AdminCommandCenter() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
+        message={isForbidden ? "Operations sign-in required." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );
@@ -99,7 +99,7 @@ export function AdminCommandCenter() {
       <div className="grid gap-5 xl:grid-cols-3">
         <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent admin activity</h2>
+            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent operations activity</h2>
             <Link href="/admin/audit-logs" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
               View audit logs
             </Link>
@@ -115,7 +115,7 @@ export function AdminCommandCenter() {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">No admin activity yet.</p>
+              <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">No operations activity yet.</p>
             )}
           </div>
         </article>

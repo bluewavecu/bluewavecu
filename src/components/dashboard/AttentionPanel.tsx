@@ -14,7 +14,7 @@ export function AttentionPanel() {
     return (
       <LoadingState
         title="Loading attention items"
-        message="Checking pending reviews and profile status."
+        message="Reviewing pending items and profile status."
       />
     );
   }

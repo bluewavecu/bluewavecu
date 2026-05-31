@@ -44,7 +44,7 @@ export function useAdminEventLogs(
 
       if (response.status === 403) {
         setIsForbidden(true);
-        setError("Admin access required.");
+        setError("Operations sign-in required.");
         return;
       }
 

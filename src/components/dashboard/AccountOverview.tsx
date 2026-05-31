@@ -1,5 +1,6 @@
 import { BadgeCheck, Landmark, ShieldCheck } from "lucide-react";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { getShareAccountLabel } from "@/lib/institution";
 import type { AccountType, DashboardAccount, DashboardLoan } from "@/types/banking";
 
 type AccountOverviewProps = {
@@ -17,17 +18,14 @@ type DisplayAccount = {
   accent: string;
 };
 
-const accountMeta: Record<AccountType, { type: string; accent: string }> = {
+const accountMeta: Record<AccountType, { accent: string }> = {
   CHECKING: {
-    type: "Checking",
     accent: "from-ocean-blue to-light-blue",
   },
   SAVINGS: {
-    type: "Savings",
     accent: "from-royal-blue to-ocean-blue",
   },
   CREDIT: {
-    type: "Credit Card",
     accent: "from-primary-navy to-royal-blue",
   },
 };
@@ -44,7 +42,7 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
 
   return {
     id: account.id,
-    type: meta.type,
+    type: getShareAccountLabel(account.accountType),
     name: account.displayName,
     number: account.maskedAccountNumber,
     available: account.availableBalance,

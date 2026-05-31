@@ -380,7 +380,7 @@ export async function sendBillPaymentReviewedEmail(params: {
 }) {
   const balanceMessage =
     params.status === "POSTED"
-      ? "Balances were updated after admin approval and ledger posting."
+      ? "Balances were updated after operations approval and ledger posting."
       : "Account balances were not changed.";
 
   return safeSendEmail(

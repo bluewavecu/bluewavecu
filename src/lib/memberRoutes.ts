@@ -47,7 +47,7 @@ export const memberNavSections: MemberNavSection[] = [
   {
     title: "Account",
     items: [
-      { label: "Profile & KYC", href: "/profile", icon: "UserRound" },
+      { label: "Profile & verification", href: "/profile", icon: "UserRound" },
       { label: "Security", href: MEMBER_SECURITY_PATH, icon: "Shield" },
       { label: "Settings", href: "/settings", icon: "Settings" },
     ],

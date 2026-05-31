@@ -58,7 +58,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
     heroImage: marketingImages.personalHero,
     heroImageAlt: "Member reviewing finances on a laptop at home",
     primaryCta: { label: "Open an account", href: "/register" },
-    secondaryCta: { label: "Member login", href: "/login" },
+    secondaryCta: { label: "Online banking", href: "/auth" },
     stats: [
       { value: "$0", label: "Everyday checking fees" },
       { value: "24/7", label: "Digital access" },
@@ -153,7 +153,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
       },
       {
         title: "Fraud monitoring",
-        description: "Risk scoring on transfers and bill payments with admin review when needed.",
+        description: "Risk scoring on transfers and bill payments with operations review when needed.",
         icon: ShieldCheck,
       },
       {
@@ -170,7 +170,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
           "Whether you are paying contractors or reconciling monthly activity, Bluewave keeps business banking structured and review-friendly.",
         bullets: [
           "Bill pay with payee management",
-          "Finance reports for admin teams",
+          "Finance reports for operations teams",
           "Reconciliation views for balance confidence",
         ],
         image: marketingImages.businessSplit,

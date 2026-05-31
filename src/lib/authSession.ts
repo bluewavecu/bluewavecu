@@ -1,3 +1,5 @@
+import { ADMIN_AUTH_PATH, MEMBER_AUTH_PATH, REGISTER_PATH } from "@/lib/authRoutes";
+
 const SAFE_REDIRECT_PREFIXES = [
   "/dashboard",
   "/accounts",
@@ -10,27 +12,19 @@ const SAFE_REDIRECT_PREFIXES = [
   "/admin",
 ];
 
-export function buildLoginUrl(options?: { next?: string; expired?: boolean }) {
-  const params = new URLSearchParams();
-
-  if (options?.next) {
-    params.set("next", options.next);
-  }
-
-  if (options?.expired) {
-    params.set("expired", "1");
-  }
-
-  const query = params.toString();
-  return query ? `/login?${query}` : "/login";
-}
+export { buildAdminAuthUrl, buildMemberAuthUrl, buildLoginUrl } from "@/lib/authRoutes";
 
 export function getSafeRedirectPath(next: string | null | undefined, role?: "USER" | "ADMIN") {
   if (!next || !next.startsWith("/") || next.startsWith("//")) {
     return role === "ADMIN" ? "/admin" : "/dashboard";
   }
 
-  if (next.startsWith("/login") || next.startsWith("/register")) {
+  if (
+    next.startsWith(MEMBER_AUTH_PATH) ||
+    next.startsWith(ADMIN_AUTH_PATH) ||
+    next.startsWith("/login") ||
+    next.startsWith(REGISTER_PATH)
+  ) {
     return role === "ADMIN" ? "/admin" : "/dashboard";
   }
 

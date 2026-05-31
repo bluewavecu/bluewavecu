@@ -197,7 +197,7 @@ async function main() {
         update: {
           userId: demoUser.id,
           accountType: account.accountType,
-          routingNumber: "000000000",
+          routingNumber: "311978875",
           balance: account.balance,
           availableBalance: account.availableBalance,
           currency: "USD",
@@ -207,7 +207,7 @@ async function main() {
           userId: demoUser.id,
           accountType: account.accountType,
           accountNumber: account.accountNumber,
-          routingNumber: "000000000",
+          routingNumber: "311978875",
           balance: account.balance,
           availableBalance: account.availableBalance,
           currency: "USD",

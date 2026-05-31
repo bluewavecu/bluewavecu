@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       return apiSuccess(
         {
           billPayment: submitted,
-          message: "Bill payment submitted for admin review. Balances are unchanged until approval.",
+          message: "Bill payment submitted for operations review. Balances update after approval and posting.",
         },
         { status: 201 },
       );

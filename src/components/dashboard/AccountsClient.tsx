@@ -4,6 +4,7 @@ import { BadgeCheck, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getShareAccountLabel } from "@/lib/institution";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
@@ -18,7 +19,7 @@ export function AccountsClient() {
   const { data, error, isLoading, refetch } = useDashboardData();
 
   if (isLoading) {
-    return <LoadingState title="Loading accounts" message="Retrieving authenticated account data." />;
+    return <LoadingState title="Loading accounts" message="Retrieving your account information." />;
   }
 
   if (error) {
@@ -53,7 +54,7 @@ export function AccountsClient() {
             {account.displayName}
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            {getStatusLabel(account.accountType)} | {account.maskedAccountNumber}
+            {getShareAccountLabel(account.accountType)} | {account.maskedAccountNumber}
           </p>
           <div className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
             <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
@@ -65,7 +66,7 @@ export function AccountsClient() {
           </div>
           <p className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue dark:text-light-blue">
             <BadgeCheck size={16} aria-hidden="true" />
-            API-backed account data
+            Live account balances
           </p>
         </article>
       ))}

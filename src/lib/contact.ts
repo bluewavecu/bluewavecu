@@ -3,8 +3,8 @@ const topicMap: Record<string, string> = {
   loans: "Loans",
   security: "Security concern",
   careers: "Careers",
-  newsroom: "General inquiry",
-  rates: "General inquiry",
+  newsroom: "Media inquiry",
+  rates: "Rates inquiry",
 };
 
 export function mapContactTopic(value: string | undefined) {

@@ -58,3 +58,11 @@ export function formatStatusLabel(status: string) {
     .replace(/_/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
+
+export function formatNotificationTypeLabel(type: string) {
+  if (type === "ADMIN") {
+    return "Account update";
+  }
+
+  return formatStatusLabel(type);
+}

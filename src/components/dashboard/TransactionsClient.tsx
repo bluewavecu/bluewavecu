@@ -16,7 +16,7 @@ export function TransactionsClient() {
     return (
       <LoadingState
         title="Loading transactions"
-        message="Retrieving authenticated recent transaction activity."
+        message="Retrieving your recent transaction activity."
       />
     );
   }
@@ -61,7 +61,7 @@ export function TransactionsClient() {
       {data.recentTransactions.length > 0 ? (
         <RecentTransactions
           transactions={data.recentTransactions}
-          description="Recent activity from the authenticated dashboard API."
+          description="Recent activity from your Bluewave accounts."
         />
       ) : (
         <EmptyState

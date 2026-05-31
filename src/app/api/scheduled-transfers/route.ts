@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
       {
         scheduledTransfer: serializeScheduledTransfer(scheduledTransfer),
         message:
-          "Scheduled transfer saved. Future runs create review requests and still require admin approval before posting.",
+          "Scheduled transfer saved. Future runs create review requests and require operations approval before posting.",
       },
       { status: 201 },
     );

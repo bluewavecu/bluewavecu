@@ -83,7 +83,7 @@ export function AdminSidebar() {
 
         <div className="mt-6 rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-4 text-white">
           <p className="text-sm font-semibold">Banking Operations</p>
-          <p className="mt-1 text-xs text-white/[0.62]">Ledger-controlled admin console</p>
+          <p className="mt-1 text-xs text-white/[0.62]">Secure operations console</p>
         </div>
 
         <nav aria-label="Admin navigation" className="mt-6 flex-1 space-y-6 overflow-y-auto pr-1">

@@ -6,7 +6,7 @@ import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MarketingSplitSection } from "@/components/marketing/MarketingSplitSection";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { supportFaqs, marketingImages } from "@/data/marketingPages";
-import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
+import { INSTITUTION } from "@/lib/institution";
 import { ButtonLink } from "@/components/ui/Button";
 
 export function SupportHubPage() {
@@ -14,12 +14,12 @@ export function SupportHubPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Support"
-        headline="Help that meets you where you bank"
-        description="Browse common answers, contact the Bluewave team, or sign in to manage support tickets from your member dashboard."
+        headline="Help that meets you where you manage your membership"
+        description="Browse common answers, contact the Bluewave team, or sign in to create and track support requests from your member dashboard."
         heroImage={marketingImages.supportHero}
         heroImageAlt="Support specialist ready to help a member"
         primaryCta={{ label: "Contact support", href: "/contact" }}
-        secondaryCta={{ label: "Member support center", href: MEMBER_SUPPORT_PATH }}
+        secondaryCta={{ label: "Sign in for ticket tracking", href: "/auth" }}
       />
 
       <section className="bg-background py-16 sm:py-20">
@@ -29,19 +29,19 @@ export function SupportHubPage() {
               icon: MessageSquare,
               title: "Submit a ticket",
               text: "Signed-in members can create and track support requests online.",
-              href: MEMBER_SUPPORT_PATH,
+              href: "/auth",
             },
             {
               icon: Phone,
               title: "Call us",
-              text: "(646) 776-4480 · Mon–Fri, 8am–6pm CT",
-              href: "tel:+16467764480",
+              text: `${INSTITUTION.phone.display} · ${INSTITUTION.memberServicesHoursShort}`,
+              href: `tel:${INSTITUTION.phone.tel}`,
             },
             {
               icon: Mail,
               title: "Email",
-              text: "support@bluewavecu.com for non-urgent questions.",
-              href: "mailto:support@bluewavecu.com",
+              text: `${INSTITUTION.email} for non-urgent questions.`,
+              href: `mailto:${INSTITUTION.email}`,
             },
           ].map((item, index) => {
             const Icon = item.icon;
@@ -73,16 +73,16 @@ export function SupportHubPage() {
       <MarketingSplitSection
         block={{
           eyebrow: "Member-first support",
-          title: "Real people for account questions and digital banking help",
+          title: "Real people for account questions and online banking help",
           description:
-            "Whether you need help with transfers, cards, statements, or sign-in, Bluewave support channels connect you to specialists who understand the platform.",
+            "Whether you need help with transfers, cards, statements, or sign-in, Bluewave member services connects you to specialists who know your accounts.",
           bullets: [
             "Phone and email support during business hours",
             "Signed-in ticket tracking for members",
             "Escalation paths for urgent security concerns",
           ],
           image: marketingImages.supportSplit,
-          imageAlt: "Member support representative assisting a banking customer",
+          imageAlt: "Member support representative assisting a credit union member",
         }}
       />
 

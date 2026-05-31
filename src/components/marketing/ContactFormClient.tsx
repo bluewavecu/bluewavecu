@@ -10,19 +10,22 @@ const topics = [
   "Account support",
   "Security concern",
   "Careers",
+  "Media inquiry",
+  "Rates inquiry",
 ];
 
 type ContactFormClientProps = {
   defaultTopic?: string;
+  defaultMessage?: string;
 };
 
-export function ContactFormClient({ defaultTopic }: ContactFormClientProps) {
+export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormClientProps) {
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     phone: "",
     topic: defaultTopic ?? "General inquiry",
-    message: "",
+    message: defaultMessage ?? "",
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export function ContactFormClient({ defaultTopic }: ContactFormClientProps) {
       email: "",
       phone: "",
       topic: defaultTopic ?? "General inquiry",
-      message: "",
+      message: defaultMessage ?? "",
     });
   }
 

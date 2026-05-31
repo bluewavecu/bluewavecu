@@ -44,7 +44,7 @@ export function AdminOverviewClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
+        message={isForbidden ? "Operations sign-in required." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );

@@ -151,7 +151,7 @@ export function TransactionsClient() {
     return (
       <LoadingState
         title="Loading transactions"
-        message="Retrieving authenticated transaction activity."
+        message="Retrieving your transaction activity."
       />
     );
   }
@@ -163,8 +163,8 @@ export function TransactionsClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="Pending review">
-        Transfer and payment requests remain pending until an administrator reviews and approves
-        ledger posting.
+        Transfer and payment requests remain pending until member services reviews and posts them
+        to your account.
       </InfoPanel>
 
       <div className="grid gap-5 xl:grid-cols-[0.68fr_1.32fr]">
@@ -249,7 +249,7 @@ export function TransactionsClient() {
         </div>
 
         <p className="mt-5 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-          Showing {transactions.length} authenticated records, newest first.
+          Showing {transactions.length} records, newest first.
         </p>
       </aside>
 
@@ -259,8 +259,8 @@ export function TransactionsClient() {
             Transaction history
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Authenticated activity from your Bluewave accounts. Transfer requests are reviewed
-            before completion.
+            Activity from your Bluewave accounts. Transfer requests are reviewed before balances
+            update.
           </p>
 
           <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">

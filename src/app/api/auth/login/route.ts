@@ -71,6 +71,14 @@ export async function POST(request: NextRequest) {
       return apiError("This account is suspended", 403);
     }
 
+    if (input.portal === "member" && user.role === "ADMIN") {
+      return apiError("Invalid email or password", 401);
+    }
+
+    if (input.portal === "admin" && user.role !== "ADMIN") {
+      return apiError("Invalid email or password", 401);
+    }
+
     const session = await createUserSession({
       userId: user.id,
       request,

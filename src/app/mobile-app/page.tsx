@@ -28,7 +28,7 @@ export default function MobileAppPage() {
               card controls, and the same secure transfer workflows you use online.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/login" size="lg">
+              <ButtonLink href="/auth" size="lg">
                 Use Online Banking
                 <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
@@ -42,7 +42,7 @@ export default function MobileAppPage() {
             <div className="overflow-hidden rounded-lg border border-white/[0.16] shadow-[0_22px_80px_rgba(10,42,94,0.20)]">
               <Image
                 src={marketingImages.mobileHero}
-                alt="Bluewave mobile banking preview on a phone"
+                alt="Bluewave mobile banking on a phone"
                 width={1200}
                 height={800}
                 className="h-[260px] w-full object-cover sm:h-[320px]"

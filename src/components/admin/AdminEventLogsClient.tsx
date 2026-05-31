@@ -39,7 +39,7 @@ export function AdminEventLogsClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required." : error}
+        message={isForbidden ? "Operations sign-in required." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );

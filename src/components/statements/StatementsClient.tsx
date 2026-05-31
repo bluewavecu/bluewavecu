@@ -8,8 +8,8 @@ export function StatementsClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="Statement availability">
-        Statements include posted transactions and ledger balance snapshots when available. Pending
-        transfers and bill payments appear after admin review and posting. Account numbers are always
+        Statements include posted transactions and ending balances when available. Pending transfers
+        and bill payments appear after member services review and posting. Account numbers are always
         masked in exports.
       </InfoPanel>
 

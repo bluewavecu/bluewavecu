@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
         type: "TRANSFER",
         severity: "warning",
         title: "Pending transfer reviews",
-        message: `${pendingTransfers} transfer request${pendingTransfers === 1 ? "" : "s"} awaiting admin approval.`,
+        message: `${pendingTransfers} transfer request${pendingTransfers === 1 ? "" : "s"} awaiting operations approval.`,
         href: "/admin/transactions",
         createdAt: new Date().toISOString(),
       });

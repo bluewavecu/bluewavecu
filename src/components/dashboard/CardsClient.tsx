@@ -17,7 +17,7 @@ export function CardsClient() {
   const { data, error, isLoading, refetch } = useDashboardData();
 
   if (isLoading) {
-    return <LoadingState title="Loading cards" message="Retrieving authenticated card data." />;
+    return <LoadingState title="Loading cards" message="Retrieving your card information." />;
   }
 
   if (error) {

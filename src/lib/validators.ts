@@ -65,6 +65,7 @@ export const registerSchema = z
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1, "Password is required"),
+  portal: z.enum(["member", "admin"]).default("member"),
 });
 
 export const transferSchema = z

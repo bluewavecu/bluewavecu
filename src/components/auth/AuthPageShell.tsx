@@ -15,7 +15,7 @@ type AuthPageShellProps = {
     body: string;
     highlights: [string, string];
   };
-  alternateAction: {
+  alternateAction?: {
     prompt: string;
     label: string;
     href: string;
@@ -92,15 +92,17 @@ export function AuthPageShell({
                 {children}
               </div>
 
-              <div className="border-t border-primary-navy/[0.06] px-6 py-4 text-center text-sm text-bluewave-gray dark:border-white/[0.06] dark:text-white/[0.62] sm:px-8">
-                {alternateAction.prompt}{" "}
-                <Link
-                  href={alternateAction.href}
-                  className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
-                >
-                  {alternateAction.label}
-                </Link>
-              </div>
+              {alternateAction ? (
+                <div className="border-t border-primary-navy/[0.06] px-6 py-4 text-center text-sm text-bluewave-gray dark:border-white/[0.06] dark:text-white/[0.62] sm:px-8">
+                  {alternateAction.prompt}{" "}
+                  <Link
+                    href={alternateAction.href}
+                    className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
+                  >
+                    {alternateAction.label}
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

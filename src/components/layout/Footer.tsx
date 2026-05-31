@@ -1,10 +1,14 @@
 import { ArrowUpRight, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import {
+  INSTITUTION,
+  formatInstitutionAddress,
+} from "@/lib/institution";
 
 const footerLinks = [
   {
-    title: "Banking",
+    title: "Accounts",
     links: [
       { label: "Personal", href: "/personal" },
       { label: "Business", href: "/business" },
@@ -15,6 +19,7 @@ const footerLinks = [
   {
     title: "Resources",
     links: [
+      { label: "Online banking", href: "/auth" },
       { label: "Support", href: "/support" },
       { label: "Security", href: "/security" },
       { label: "Mobile App", href: "/mobile-app" },
@@ -40,24 +45,29 @@ export function Footer() {
           <div>
             <BrandLogo href="/" displayHeight={44} priority />
             <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">
-              Your secure gateway to modern digital banking. Access your accounts,
-              discover competitive products, and manage your financial future with
-              Bluewave Credit Union.
+              Member-owned financial services with secure online banking, competitive
+              products, and local support from {INSTITUTION.shortName} Credit Union.
             </p>
 
             <div className="mt-7 grid gap-3 text-sm text-white/[0.72]">
               <span className="flex items-center gap-3">
                 <MapPin size={17} className="text-light-blue" aria-hidden="true" />
-                2000 McKinney Ave, Dallas, TX 75201
+                {formatInstitutionAddress()}
               </span>
-              <span className="flex items-center gap-3">
+              <Link
+                href={`tel:${INSTITUTION.phone.tel}`}
+                className="flex items-center gap-3 transition hover:text-light-blue"
+              >
                 <Phone size={17} className="text-light-blue" aria-hidden="true" />
-                (646) 776-4480
-              </span>
-              <span className="flex items-center gap-3">
+                {INSTITUTION.phone.display}
+              </Link>
+              <Link
+                href={`mailto:${INSTITUTION.email}`}
+                className="flex items-center gap-3 transition hover:text-light-blue"
+              >
                 <Mail size={17} className="text-light-blue" aria-hidden="true" />
-                support@bluewavecu.com
-              </span>
+                {INSTITUTION.email}
+              </Link>
             </div>
           </div>
 
@@ -85,19 +95,26 @@ export function Footer() {
 
         <div className="mt-12 border-t border-white/10 pt-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <p className="text-sm text-white/[0.58]">
-              © {new Date().getFullYear()} Bluewave Credit Union. All rights reserved.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+              <p className="text-sm text-white/[0.58]">
+                © {new Date().getFullYear()} {INSTITUTION.legalName}. All rights reserved.
+              </p>
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                <Link href="/privacy" className="text-white/[0.64] transition hover:text-light-blue">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="text-white/[0.64] transition hover:text-light-blue">
+                  Terms of Use
+                </Link>
+              </div>
+            </div>
             <p className="flex max-w-3xl gap-3 text-xs leading-5 text-white/[0.54]">
               <ShieldCheck
                 size={17}
                 className="mt-0.5 shrink-0 text-light-blue"
                 aria-hidden="true"
               />
-              <span>
-                Bluewave Credit Union is federally insured by the NCUA. Membership
-                eligibility applies. Equal Housing Opportunity.
-              </span>
+              <span>{INSTITUTION.ncuaDisclaimer}</span>
             </p>
           </div>
         </div>

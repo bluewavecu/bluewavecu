@@ -13,7 +13,7 @@ export function AdminHeader({ title, subtitle }: AdminHeaderProps) {
         <div>
           <p className="inline-flex items-center gap-2 rounded-full bg-primary-navy/[0.08] px-3 py-1 text-xs font-semibold text-primary-navy dark:bg-white/[0.08] dark:text-light-blue">
             <ShieldCheck size={14} aria-hidden="true" />
-            Admin access
+            Operations console
           </p>
           <h1 className="mt-3 text-2xl font-semibold text-primary-navy dark:text-white sm:text-3xl">
             {title}

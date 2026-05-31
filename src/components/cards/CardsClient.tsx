@@ -34,7 +34,7 @@ export function CardsClient() {
   const [pendingCardId, setPendingCardId] = useState<string | null>(null);
 
   if (isLoading) {
-    return <LoadingState title="Loading cards" message="Retrieving authenticated card data." />;
+    return <LoadingState title="Loading cards" message="Retrieving your card information." />;
   }
 
   if (error) {
@@ -73,8 +73,8 @@ export function CardsClient() {
     <section className="grid gap-5">
       <InfoPanel title="Card management">
         Card control requests are submitted to member services for processing. A specialist will
-        confirm when your card status is updated.
-        and full card numbers are never displayed.
+        confirm when your card status is updated. Full card numbers are never displayed in online
+        banking.
       </InfoPanel>
 
       {actionMessage ? (

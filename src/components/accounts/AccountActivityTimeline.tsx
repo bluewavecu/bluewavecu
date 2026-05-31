@@ -142,7 +142,7 @@ export function AccountActivityTimeline({
     return (
       <LoadingState
         title="Loading activity"
-        message="Building your ledger-driven account timeline."
+        message="Loading your recent account activity."
       />
     );
   }

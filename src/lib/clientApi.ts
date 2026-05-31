@@ -29,7 +29,7 @@ async function requestJson<T>(
   } catch {
     return {
       success: false,
-      error: "Unable to reach Bluewave services. Check the local API setup.",
+      error: "Unable to reach Bluewave services. Please try again shortly.",
     };
   }
 }
@@ -65,7 +65,7 @@ export async function getJson<T>(url: string): Promise<ApiResponse<T>> {
   } catch {
     return {
       success: false,
-      error: "Unable to reach Bluewave services. Check the local API setup.",
+      error: "Unable to reach Bluewave services. Please try again shortly.",
     };
   }
 }

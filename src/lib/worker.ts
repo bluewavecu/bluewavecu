@@ -112,7 +112,7 @@ export async function processScheduledTransferReviewJob(payload: JobPayload) {
 
   void sendAdminAlertEmail({
     subject: "Scheduled transfer pending review",
-    message: `${scheduledTransfer.user.fullName} scheduled transfer ${transaction.reference} for $${amount.toFixed(2)} is ready for admin review.`,
+    message: `${scheduledTransfer.user.fullName} scheduled transfer ${transaction.reference} for $${amount.toFixed(2)} is ready for operations review.`,
     idempotencyKey: `admin-alert/scheduled-transfer-review/${transaction.reference}`,
   });
 

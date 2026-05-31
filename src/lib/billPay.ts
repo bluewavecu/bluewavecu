@@ -379,7 +379,7 @@ export async function submitBillPaymentForReview(userId: string, billPaymentId: 
 
   void sendAdminAlertEmail({
     subject: "Bill payment pending review",
-    message: `${payeeLabel} bill payment for $${billPayment.amount.toNumber().toFixed(2)} requires admin review.`,
+    message: `${payeeLabel} bill payment for $${billPayment.amount.toNumber().toFixed(2)} requires operations review.`,
     idempotencyKey: `admin-alert/bill-payment-review/${billPayment.id}`,
   });
 

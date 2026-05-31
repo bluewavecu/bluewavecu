@@ -17,7 +17,7 @@ export default function RegisterPage() {
       alternateAction={{
         prompt: "Already a member?",
         label: "Sign in",
-        href: "/login",
+        href: "/auth",
       }}
     >
       <RegisterForm />

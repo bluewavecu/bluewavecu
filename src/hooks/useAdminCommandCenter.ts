@@ -34,7 +34,7 @@ export function useAdminCommandCenter() {
         if (response.status === 403 || (!payload.success && payload.error === "Forbidden")) {
           setData(null);
           setIsForbidden(true);
-          setError("Admin access required.");
+          setError("Operations sign-in required.");
           return;
         }
 

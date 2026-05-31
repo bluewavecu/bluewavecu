@@ -26,7 +26,7 @@ export const safetyHighlights = [
 
 export const features: FeatureCard[] = [
   {
-    title: "Secure Banking",
+    title: "Member Security",
     description: "Encrypted sign-in, account alerts, and member-controlled security settings.",
     icon: ShieldCheck,
   },
@@ -42,11 +42,11 @@ export const features: FeatureCard[] = [
   },
   {
     title: "Credit Solutions",
-    description: "Checking-linked debit cards, credit cards, and member lending programs.",
+    description: "Share draft debit cards, Visa credit, and member lending programs.",
     icon: CreditCard,
   },
   {
-    title: "Savings Accounts",
+    title: "Share Savings",
     description: "Competitive savings rates with clear balances, goals, and activity history.",
     icon: PiggyBank,
   },
@@ -60,7 +60,7 @@ export const features: FeatureCard[] = [
 export const products: BankingProduct[] = [
   {
     title: "Personal Banking",
-    description: "Everyday checking, savings, transfers, bill pay, and digital statements.",
+    description: "Everyday share draft and share savings, transfers, bill pay, and digital statements.",
     accent: "from-ocean-blue to-light-blue",
   },
   {

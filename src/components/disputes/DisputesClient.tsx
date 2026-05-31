@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
@@ -122,6 +123,12 @@ export function DisputesClient() {
       </form>
 
       <div className="grid gap-3">
+        {disputes.length === 0 ? (
+          <EmptyState
+            title="No disputes on file"
+            message="If you see an unauthorized or incorrect charge, submit a dispute using the form above."
+          />
+        ) : null}
         {disputes.map((dispute) => (
           <article
             key={dispute.id}

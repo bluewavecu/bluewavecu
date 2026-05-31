@@ -65,7 +65,7 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
     >
       <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Schedule payment</h2>
       <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-        Bill payments are submitted for review before posting. No real external payments are sent.
+        Bill payments post to your ledger after operations review. Scheduled payments remain pending until approved.
       </p>
 
       <div className="mt-5 space-y-4">

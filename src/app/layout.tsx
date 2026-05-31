@@ -4,7 +4,7 @@ import "@/styles/globals.css";
 export const metadata: Metadata = {
   title: "Bluewave Credit Union",
   description:
-    "Modern digital banking platform focused on secure finance and seamless online banking.",
+    "Member-owned credit union with secure online banking, competitive rates, and local service in Dallas.",
   icons: {
     icon: [{ url: "/images/icon.webp", type: "image/webp" }],
     apple: [{ url: "/images/icon.webp", type: "image/webp" }],

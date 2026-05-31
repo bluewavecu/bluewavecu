@@ -34,7 +34,7 @@ export function useAdminSessions(activeOnly = false) {
 
         if (response.status === 403 || (!payload.success && payload.error === "Forbidden")) {
           setIsForbidden(true);
-          setError("Admin access required.");
+          setError("Operations sign-in required.");
           return;
         }
 

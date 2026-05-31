@@ -18,7 +18,7 @@ export function AdminSettingsClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required." : error}
+        message={isForbidden ? "Operations sign-in required." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );
@@ -50,7 +50,7 @@ export function AdminSettingsClient() {
           tone={data.emailConfigured ? "default" : "warning"}
         />
         <AdminMetricCard
-          label="Admin alert email"
+          label="Alert inbox"
           value={data.adminAlertEmail ?? "Not set"}
         />
         <AdminMetricCard
@@ -59,7 +59,7 @@ export function AdminSettingsClient() {
           tone={data.cronConfigured ? "default" : "warning"}
         />
         <AdminMetricCard
-          label="Production seed lock"
+          label="Environment data lock"
           value={data.demoSeedProtected ? "Enabled" : "Disabled"}
           tone={data.demoSeedProtected ? "default" : "warning"}
         />

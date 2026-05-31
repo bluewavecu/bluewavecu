@@ -1,6 +1,7 @@
 import { CreditCard, TrendingUp, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { getShareAccountLabel } from "@/lib/institution";
 import type { AccountType, DashboardAccount } from "@/types/banking";
 
 type BalanceCardsProps = {
@@ -20,21 +21,18 @@ type DisplayAccount = {
   isCredit: boolean;
 };
 
-const accountMeta: Record<AccountType, { type: string; accent: string; trend: string }> = {
+const accountMeta: Record<AccountType, { accent: string; trend: string }> = {
   CHECKING: {
-    type: "Checking",
     accent: "from-ocean-blue to-light-blue",
     trend: "Active",
   },
   SAVINGS: {
-    type: "Savings",
     accent: "from-royal-blue to-ocean-blue",
-    trend: "Funded",
+    trend: "Growing",
   },
   CREDIT: {
-    type: "Credit Card",
     accent: "from-primary-navy to-royal-blue",
-    trend: "Ready",
+    trend: "In use",
   },
 };
 
@@ -50,7 +48,7 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
 
   return {
     id: account.id,
-    type: meta.type,
+    type: getShareAccountLabel(account.accountType),
     name: account.displayName,
     number: account.maskedAccountNumber,
     balance: account.balance,

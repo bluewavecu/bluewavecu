@@ -45,7 +45,7 @@ export function useAdminBillPay(status?: BillPaymentStatus | "ALL", search?: str
 
       if (response.status === 403) {
         setIsForbidden(true);
-        setError("Admin access required.");
+        setError("Operations sign-in required.");
         return;
       }
 

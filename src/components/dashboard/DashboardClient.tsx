@@ -24,7 +24,7 @@ function DashboardSkeleton() {
     <div className="space-y-5">
       <LoadingState
         title="Loading dashboard"
-        message="Retrieving authenticated account, card, transaction, loan, and support data."
+        message="Retrieving your accounts, cards, transactions, and member services."
       />
       <section className="grid gap-4 lg:grid-cols-3">
         {skeletonCards.map((item) => (
@@ -85,7 +85,7 @@ export function DashboardClient() {
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
               <ShieldCheck size={14} aria-hidden="true" />
-              Authenticated member dashboard
+              Secure member dashboard
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-primary-navy dark:text-white">
               Welcome back, {data.user.firstName}
@@ -154,7 +154,7 @@ export function DashboardClient() {
               <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
                 {data.kycSummary.kycStatus === "VERIFIED"
                   ? "Your identity verification is complete."
-                  : "Your profile is in the compliance review workflow."}
+                  : "Your profile is being verified by member services."}
               </p>
             </div>
           </div>

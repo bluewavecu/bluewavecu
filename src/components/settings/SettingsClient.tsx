@@ -26,7 +26,7 @@ const preferenceSections = [
   },
   {
     title: "Account nicknames",
-    description: "Custom labels for checking, savings, and credit accounts.",
+    description: "Custom labels for share draft, share savings, and credit accounts.",
     status: "Contact member services",
   },
 ];

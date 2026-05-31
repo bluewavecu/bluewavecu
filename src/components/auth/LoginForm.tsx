@@ -10,13 +10,18 @@ import { getSafeRedirectPath } from "@/lib/authSession";
 import { postJson } from "@/lib/clientApi";
 import type { AuthResponse } from "@/types/banking";
 
-export function LoginForm() {
+type LoginFormProps = {
+  portal?: "member" | "admin";
+};
+
+export function LoginForm({ portal = "member" }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const sessionExpired = searchParams.get("expired") === "1";
   const nextPath = searchParams.get("next");
+  const isAdminPortal = portal === "admin";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,6 +35,7 @@ export function LoginForm() {
     const result = await postJson<AuthResponse>("/api/auth/login", {
       email,
       password,
+      portal,
     });
 
     setIsSubmitting(false);
@@ -55,7 +61,11 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <AuthField label="Email" htmlFor="login-email" icon={Mail}>
+      <AuthField
+        label={isAdminPortal ? "Operations email" : "Email"}
+        htmlFor="login-email"
+        icon={Mail}
+      >
         <input
           id="login-email"
           type="email"
@@ -77,11 +87,16 @@ export function LoginForm() {
         />
       </AuthField>
 
-      <div className="text-right text-sm">
-        <Link href="/support" className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue">
-          Forgot password?
-        </Link>
-      </div>
+      {!isAdminPortal ? (
+        <div className="text-right text-sm">
+          <Link
+            href="/support"
+            className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
+          >
+            Forgot password?
+          </Link>
+        </div>
+      ) : null}
 
       {error ? (
         <p
@@ -99,7 +114,7 @@ export function LoginForm() {
           className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
         })}
       >
-        {isSubmitting ? "Signing in..." : "Sign in"}
+        {isSubmitting ? "Signing in..." : isAdminPortal ? "Sign in to console" : "Sign in"}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
     </form>

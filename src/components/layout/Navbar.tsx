@@ -8,11 +8,11 @@ import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { label: "Personal", href: "#products" },
-  { label: "Business", href: "#products" },
-  { label: "Loans", href: "#products" },
-  { label: "About", href: "#features" },
-  { label: "Support", href: "#support" },
+  { label: "Personal", href: "/personal" },
+  { label: "Business", href: "/business" },
+  { label: "Loans", href: "/loans" },
+  { label: "About", href: "/about" },
+  { label: "Support", href: "/support" },
 ];
 
 export function Navbar() {
@@ -40,14 +40,14 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <Link
-            href="/login"
+            href="/auth"
             className={cn(
               buttonVariants({ variant: "secondary", size: "sm" }),
               "border-white/[0.18] bg-white/[0.08]",
             )}
           >
             <LogIn size={16} aria-hidden="true" />
-            Login
+            Online banking
           </Link>
           <Link href="/register" className={buttonVariants({ size: "sm" })}>
             <UserPlus size={16} aria-hidden="true" />
@@ -85,7 +85,7 @@ export function Navbar() {
           ))}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Link
-              href="/login"
+              href="/auth"
               onClick={() => setOpen(false)}
               className={buttonVariants({
                 variant: "secondary",
@@ -93,7 +93,7 @@ export function Navbar() {
               })}
             >
               <LogIn size={16} aria-hidden="true" />
-              Login
+              Online banking
             </Link>
             <Link
               href="/register"

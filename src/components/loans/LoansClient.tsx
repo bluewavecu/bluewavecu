@@ -63,7 +63,7 @@ export function LoansClient() {
   }, [estimateAmount, estimateTerm]);
 
   if (isLoading) {
-    return <LoadingState title="Loading loans" message="Retrieving authenticated loan data." />;
+    return <LoadingState title="Loading loans" message="Retrieving your loan information." />;
   }
 
   if (error) {
@@ -196,7 +196,7 @@ export function LoansClient() {
           <Calculator size={26} className="text-light-blue" aria-hidden="true" />
           <h2 className="mt-5 text-2xl font-semibold">Payment estimate calculator</h2>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            Estimate your monthly payment using a sample rate. This is not an approval or rate guarantee.
+            Estimate your monthly payment using our current published rate. Final terms require application review.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -230,7 +230,7 @@ export function LoansClient() {
               {formatCurrency(estimate.monthlyPayment)}
             </p>
             <p className="mt-2 text-xs text-white/[0.54]">
-              Based on a sample {estimate.estimatedRate.toFixed(2)}% APR over {estimate.termMonths} months.
+              Based on a published {estimate.estimatedRate.toFixed(2)}% APR over {estimate.termMonths} months.
             </p>
           </div>
         </div>

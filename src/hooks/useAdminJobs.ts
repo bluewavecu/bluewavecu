@@ -46,7 +46,7 @@ export function useAdminJobs(status?: JobStatus | "ALL", jobType?: string) {
 
       if (response.status === 403) {
         setIsForbidden(true);
-        setError("Admin access required.");
+        setError("Operations sign-in required.");
         return;
       }
 

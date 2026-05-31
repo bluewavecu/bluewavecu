@@ -93,10 +93,11 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
         </span>
         <div>
           <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
-            Export bank statement
+            Export account statement
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Download CSV or PDF statements using ledger postings and pending transaction records.
+            Download CSV or PDF statements with posted transactions and pending activity for the
+            selected period.
           </p>
         </div>
       </div>

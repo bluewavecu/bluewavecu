@@ -110,8 +110,8 @@ export async function createTransferNotification(params: {
   } as const;
 
   const messages = {
-    created: `Your transfer request for ${amountLabel} (${params.reference}) is pending admin review.`,
-    approved: `Your transfer ${params.reference} for ${amountLabel} was approved and posted to the ledger.`,
+    created: `Your transfer request for ${amountLabel} (${params.reference}) is being reviewed by member services.`,
+    approved: `Your transfer ${params.reference} for ${amountLabel} was approved and posted to your account.`,
     failed: `Your transfer ${params.reference} for ${amountLabel} was declined during review.`,
     reversed: `Your transfer ${params.reference} for ${amountLabel} was reversed during review.`,
   } as const;
@@ -218,7 +218,7 @@ export async function createBillPaymentNotification(params: {
 
   const messages = {
     created: `Your bill payment to ${params.payeeName} for ${amountLabel} was saved.`,
-    submitted: `Your bill payment to ${params.payeeName} for ${amountLabel} is pending admin review.`,
+    submitted: `Your bill payment to ${params.payeeName} for ${amountLabel} is being reviewed by member services.`,
     approved: `Your bill payment to ${params.payeeName} for ${amountLabel} was approved and posted.`,
     failed: `Your bill payment to ${params.payeeName} for ${amountLabel} was declined during review.`,
     cancelled: `Your bill payment to ${params.payeeName} for ${amountLabel} was cancelled.`,

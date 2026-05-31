@@ -75,14 +75,14 @@ export default function Home() {
           <MotionReveal className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.18] bg-white/[0.08] px-3 py-2 text-sm font-semibold text-light-blue backdrop-blur-xl">
               <Sparkles size={16} aria-hidden="true" />
-              Digital banking for modern members
+              Digital banking for members
             </div>
             <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-tight text-white sm:text-6xl lg:text-7xl">
-              Modern Banking Built Around You
+              Member-owned banking built around you
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/[0.76] sm:text-xl">
-              Secure digital banking with smarter tools, faster payments, and seamless
-              financial management.
+              Secure online banking with competitive rates, local service, and tools to manage
+              everyday finances as a Bluewave member.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="#open-account" size="lg">
@@ -136,7 +136,7 @@ export default function Home() {
         <div className="section-shell">
           <div className="grid gap-4 rounded-lg border border-primary-navy/[0.08] bg-white p-4 shadow-[0_18px_70px_rgba(10,42,94,0.08)] sm:grid-cols-2 lg:grid-cols-4">
             <h2 id="trusted-stats" className="sr-only">
-              Trusted Banking Stats
+              Member benefits at a glance
             </h2>
             {stats.map((stat) => (
               <div
@@ -156,7 +156,7 @@ export default function Home() {
           <MotionReveal className="max-w-2xl">
             <p className="text-sm font-semibold uppercase text-ocean-blue">Feature cards</p>
             <h2 className="mt-3 text-3xl font-semibold text-primary-navy sm:text-4xl">
-              Banking tools with a clearer daily rhythm
+              Everyday money tools for members
             </h2>
           </MotionReveal>
 
@@ -202,7 +202,8 @@ export default function Home() {
             </MotionReveal>
             <MotionReveal delay={0.08}>
               <p className="max-w-2xl text-base leading-7 text-bluewave-gray lg:ml-auto">
-                Checking, savings, business accounts, and lending — backed by NCUA insurance and
+                Share draft, share savings, business accounts, and lending — backed by NCUA
+                insurance and
                 member-focused digital service.
               </p>
             </MotionReveal>
@@ -251,7 +252,7 @@ export default function Home() {
           <MotionReveal>
             <p className="text-sm font-semibold uppercase text-light-blue">Security</p>
             <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              Secure finance for everyday banking
+              Secure finances for everyday membership
             </h2>
             <p className="mt-5 max-w-xl text-base leading-7 text-white/[0.70]">
               Member deposits are NCUA insured. Online banking uses encrypted sessions, review
@@ -308,13 +309,13 @@ export default function Home() {
                     Sign in to online banking to view accounts, transfers, and statements.
                   </p>
                   <ButtonLink
-                    href="/login"
+                    href="/auth"
                     variant="primary"
                     size="lg"
                     className="mt-4 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
                   >
                     <LogIn size={18} aria-hidden="true" />
-                    Member Login
+                    Sign in to online banking
                   </ButtonLink>
                 </div>
                 <ButtonLink

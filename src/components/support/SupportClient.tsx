@@ -242,7 +242,7 @@ export function SupportClient() {
           <CircleHelp size={26} className="text-light-blue" aria-hidden="true" />
           <h2 className="mt-5 text-2xl font-semibold">Member support</h2>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            {tickets.length} authenticated ticket{tickets.length === 1 ? "" : "s"} on file.
+            {tickets.length} support ticket{tickets.length === 1 ? "" : "s"} on file.
           </p>
           <p className="mt-4 inline-flex items-start gap-2 text-sm text-white/[0.68]">
             <MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" />

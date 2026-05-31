@@ -5,7 +5,7 @@ export default function TransfersPage() {
   return (
     <AppShell
       title="Transfers"
-      subtitle="Move money between your accounts and to other members. Transfers are reviewed before posting."
+      subtitle="Move money between your accounts and to other members. Transfers post after operations review."
     >
       <TransfersClient />
     </AppShell>

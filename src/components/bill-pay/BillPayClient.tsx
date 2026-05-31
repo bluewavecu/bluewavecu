@@ -14,10 +14,10 @@ export function BillPayClient() {
   return (
     <section className="grid gap-5">
       <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-5 text-white">
-        <h2 className="text-lg font-semibold">Bill pay review workflow</h2>
+        <h2 className="text-lg font-semibold">Bill pay processing</h2>
         <p className="mt-2 text-sm leading-6 text-white/[0.68]">
-          Bill payments are submitted for review before posting. Balances are not changed until an
-          admin approves and ledger posting completes. No real external billers are connected.
+          Bill payments are reviewed by member services before posting. Account balances update only
+          after approval is complete.
         </p>
       </div>
 

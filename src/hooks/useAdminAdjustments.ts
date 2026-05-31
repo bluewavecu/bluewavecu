@@ -36,7 +36,7 @@ export function useAdminAdjustments(status?: AdjustmentStatus | "ALL") {
 
       if (response.status === 403) {
         setIsForbidden(true);
-        setError("Admin access required.");
+        setError("Operations sign-in required.");
         return;
       }
 

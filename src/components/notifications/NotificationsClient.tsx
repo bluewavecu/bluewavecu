@@ -6,7 +6,11 @@ import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatStatusLabel, StatusBadge, statusToTone } from "@/components/ui/StatusBadge";
+import {
+  formatNotificationTypeLabel,
+  StatusBadge,
+  statusToTone,
+} from "@/components/ui/StatusBadge";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { NotificationType } from "@/types/banking";
 import { cn } from "@/lib/utils";
@@ -86,7 +90,7 @@ export function NotificationsClient() {
             <div key={notification.id} className="p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <StatusBadge
-                  label={formatStatusLabel(notification.type)}
+                  label={formatNotificationTypeLabel(notification.type)}
                   tone={statusToTone(notification.type)}
                 />
                 <Link

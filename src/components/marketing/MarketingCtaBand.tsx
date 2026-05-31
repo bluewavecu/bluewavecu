@@ -22,8 +22,8 @@ export function MarketingCtaBand() {
                 Open Account
                 <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
-              <ButtonLink href="/login" variant="secondary" size="lg">
-                Member Login
+              <ButtonLink href="/auth" variant="secondary" size="lg">
+                Sign in to online banking
                 <Fingerprint size={18} aria-hidden="true" />
               </ButtonLink>
             </div>

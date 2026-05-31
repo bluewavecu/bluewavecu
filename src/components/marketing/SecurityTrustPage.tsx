@@ -5,6 +5,7 @@ import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MarketingSplitSection } from "@/components/marketing/MarketingSplitSection";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { marketingImages, securityHighlights } from "@/data/marketingPages";
+import { INSTITUTION } from "@/lib/institution";
 import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { ButtonLink } from "@/components/ui/Button";
 
@@ -14,10 +15,10 @@ export function SecurityTrustPage() {
       <MarketingHero
         eyebrow="Security"
         headline="Trust, visibility, and control for every session"
-        description="Bluewave protects member accounts with layered authentication, session monitoring, and risk-aware reviews for sensitive financial activity."
+        description="Bluewave protects member accounts with layered authentication, session monitoring, and careful review of sensitive financial activity."
         heroImage={marketingImages.securityHero}
-        heroImageAlt="Secure digital banking on a laptop"
-        primaryCta={{ label: "Manage security settings", href: MEMBER_SECURITY_PATH }}
+        heroImageAlt="Secure online banking on a laptop"
+        primaryCta={{ label: "Sign in to manage security", href: "/auth" }}
         secondaryCta={{ label: "Report a concern", href: "/contact?topic=security" }}
       />
 
@@ -52,7 +53,7 @@ export function SecurityTrustPage() {
           bullets: [
             "Optional MFA for additional sign-in protection",
             "Session list with revoke controls",
-            "Risk reviews for high-value activity",
+            "Extra review for high-value activity",
           ],
           image: marketingImages.securitySplit,
           imageAlt: "Secure online banking verification on a laptop",
@@ -68,22 +69,27 @@ export function SecurityTrustPage() {
               Review devices, enable MFA, and revoke sessions
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-white/[0.72]">
-              Signed-in members can manage active sessions and security preferences from the member
-              Security center.
+              Signed-in members can manage active sessions and security preferences from the
+              Security center in online banking.
             </p>
           </MotionReveal>
-          <ButtonLink href={MEMBER_SECURITY_PATH} variant="light" size="lg">
-            Open Security center
-          </ButtonLink>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <ButtonLink href="/auth" variant="light" size="lg">
+              Sign in
+            </ButtonLink>
+            <ButtonLink href={MEMBER_SECURITY_PATH} variant="secondary" size="lg">
+              Security center
+            </ButtonLink>
+          </div>
         </div>
       </section>
 
       <section className="bg-background py-10">
         <div className="section-shell">
           <p className="text-xs leading-5 text-bluewave-gray">
-            If you suspect unauthorized activity, contact support immediately at{" "}
-            <Link href="tel:+16467764480" className="font-semibold text-royal-blue">
-              (646) 776-4480
+            If you suspect unauthorized activity, contact member services immediately at{" "}
+            <Link href={`tel:${INSTITUTION.phone.tel}`} className="font-semibold text-royal-blue">
+              {INSTITUTION.phone.display}
             </Link>{" "}
             or through the{" "}
             <Link href="/contact?topic=security" className="font-semibold text-royal-blue">
