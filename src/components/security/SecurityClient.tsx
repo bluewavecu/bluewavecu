@@ -14,7 +14,7 @@ export function SecurityClient() {
       </InfoPanel>
 
       <InfoPanel title="Password change">
-        Password change from the member portal is coming soon. Contact{" "}
+        To reset your password, contact{" "}
         <Link href={MEMBER_SUPPORT_PATH} className="font-semibold text-royal-blue">
           member support
         </Link>{" "}

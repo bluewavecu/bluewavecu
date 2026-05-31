@@ -14,7 +14,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         <div>
           <p className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
             <ShieldCheck size={14} aria-hidden="true" />
-            Secure UI preview
+            Secure online banking
           </p>
           <h1 className="mt-3 text-2xl font-semibold text-primary-navy dark:text-white sm:text-3xl">
             {title}

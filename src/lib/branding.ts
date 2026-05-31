@@ -8,3 +8,13 @@ export const BRAND_LOGO = {
 
 /** Default display height for header, footer, and app shells */
 export const BRAND_LOGO_HEIGHT = 44;
+
+/** Full-color auth logo for sign-up and enrollment headers */
+export const AUTH_LOGO = {
+  src: "/images/auth_logo.webp",
+  width: 930,
+  height: 254,
+  alt: "Bluewave Credit Union",
+} as const;
+
+export const AUTH_LOGO_HEIGHT = 52;

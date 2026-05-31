@@ -5,7 +5,7 @@ import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminAdjustments } from "@/hooks/useAdminAdjustments";
 import { cn } from "@/lib/utils";
 import type { AdjustmentStatus, AdminAccountRecord } from "@/types/banking";

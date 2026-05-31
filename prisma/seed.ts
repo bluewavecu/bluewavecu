@@ -81,7 +81,7 @@ const DEMO_TRANSACTIONS = [
     type: "TRANSFER" as const,
     amount: "-250.00",
     description: "Transfer to Account ending 5799: Rent payment",
-    merchant: "Jordan Parker",
+    merchant: "Member Transfer",
     status: "PENDING" as const,
     destinationAccountNumber: "1048225799",
   },
@@ -90,7 +90,7 @@ const DEMO_TRANSACTIONS = [
     accountNumber: "1048225701",
     type: "TRANSFER" as const,
     amount: "-100.00",
-    description: "Transfer to Savings: Posted demo transfer",
+    description: "Transfer to Savings: Posted sample transfer",
     merchant: "Bluewave Transfer",
     status: "COMPLETED" as const,
     destinationAccountNumber: "1048225702",
@@ -102,7 +102,7 @@ function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL is required to seed demo banking data.");
+    throw new Error("DATABASE_URL is required to seed development banking data.");
   }
 
   const adapter = new PrismaPg({ connectionString });
@@ -119,12 +119,12 @@ async function main() {
 
   if (isProduction && !allowDemoSeed) {
     logStep(
-      "Skipping demo seed in production. Set ALLOW_DEMO_SEED=true only for intentional demo deployments.",
+      "Skipping development seed in production. Set ALLOW_DEMO_SEED=true only for intentional staging bootstrap.",
     );
     return;
   }
 
-  logStep("Starting Bluewave demo seed...");
+  logStep("Starting Bluewave development seed...");
   const prisma = createPrismaClient();
   const memberPasswordHash = await bcrypt.hash(DEMO_MEMBER_PASSWORD, 12);
   const adminPasswordHash = await bcrypt.hash(DEMO_ADMIN_PASSWORD, 12);
@@ -187,7 +187,7 @@ async function main() {
       },
     });
 
-    logStep("Ensured demo users (member, pending member, admin).");
+    logStep("Ensured development users (member, pending member, admin).");
 
     const accountIds = new Map<string, string>();
 
@@ -218,13 +218,13 @@ async function main() {
       accountIds.set(account.accountNumber, savedAccount.id);
     }
 
-    logStep(`Ensured ${DEMO_ACCOUNTS.length} demo accounts.`);
+    logStep(`Ensured ${DEMO_ACCOUNTS.length} development accounts.`);
 
     for (const transaction of DEMO_TRANSACTIONS) {
       const accountId = accountIds.get(transaction.accountNumber);
 
       if (!accountId) {
-        throw new Error(`Missing demo account for transaction ${transaction.reference}.`);
+        throw new Error(`Missing account for transaction ${transaction.reference}.`);
       }
 
       await prisma.transaction.upsert({
@@ -259,7 +259,7 @@ async function main() {
       });
     }
 
-    logStep(`Ensured ${DEMO_TRANSACTIONS.length} demo transactions.`);
+    logStep(`Ensured ${DEMO_TRANSACTIONS.length} sample transactions.`);
 
     const postedDemoReference = "DEMO-TXN-1007";
     const postedDemoTransaction = await prisma.transaction.findUnique({
@@ -283,7 +283,7 @@ async function main() {
             postedAt: reviewedAt,
             reviewedAt,
             reviewedBy: adminUser.id,
-            reviewNote: "Demo posted internal transfer",
+            reviewNote: "Internal transfer approved",
           },
         });
 
@@ -314,7 +314,7 @@ async function main() {
           ],
         });
 
-        logStep("Seeded posted demo transfer ledger entries.");
+        logStep("Seeded posted sample transfer ledger entries.");
       }
     }
 
@@ -342,7 +342,7 @@ async function main() {
       ],
     });
 
-    logStep("Refreshed demo cards.");
+    logStep("Refreshed sample cards.");
 
     await prisma.loan.deleteMany({ where: { userId: demoUser.id } });
     await prisma.loan.create({
@@ -358,7 +358,7 @@ async function main() {
       },
     });
 
-    logStep("Refreshed demo loan preview.");
+    logStep("Refreshed sample loan preview.");
 
     await prisma.supportTicket.deleteMany({
       where: { userId: { in: [demoUser.id, pendingUser.id] } },
@@ -375,7 +375,7 @@ async function main() {
         {
           userId: demoUser.id,
           subject: "Address update request",
-          message: "Profile change review queue placeholder for future verification.",
+          message: "Profile change review queue  submitted for member services review.",
           status: "PENDING",
           priority: "HIGH",
         },
@@ -389,7 +389,7 @@ async function main() {
       ],
     });
 
-    logStep("Refreshed demo support tickets.");
+    logStep("Refreshed sample support tickets.");
 
     await prisma.notification.deleteMany({
       where: { userId: demoUser.id },
@@ -400,7 +400,7 @@ async function main() {
           userId: demoUser.id,
           type: "SYSTEM",
           title: "Welcome to Bluewave",
-          message: "Your demo membership is active. Explore accounts, transfers, and support.",
+          message: "Welcome to Bluewave online banking. Explore accounts, transfers, and support.",
           isRead: true,
         },
         {
@@ -423,13 +423,13 @@ async function main() {
           userId: demoUser.id,
           type: "SECURITY",
           title: "New sign-in detected",
-          message: "A successful sign-in was recorded on your demo account.",
+          message: "A successful sign-in was recorded on your account.",
           isRead: false,
         },
       ],
     });
 
-    logStep("Refreshed demo notifications.");
+    logStep("Refreshed sample notifications.");
 
     const checkingAccountId = accountIds.get("1048225701");
 
@@ -445,7 +445,7 @@ async function main() {
         data: {
           userId: demoUser.id,
           fromAccountId: checkingAccountId,
-          recipientName: "Jordan Parker",
+          recipientName: "External Payee",
           destinationAccountNumber: "1048225799",
           amount: "350.00",
           memo: "Monthly rent schedule",
@@ -456,7 +456,7 @@ async function main() {
         },
       });
 
-      logStep("Refreshed demo scheduled transfer.");
+      logStep("Refreshed sample scheduled transfer.");
     }
 
     await prisma.riskEvent.deleteMany({
@@ -469,7 +469,7 @@ async function main() {
           eventType: "LOGIN",
           riskScore: 45,
           severity: "MEDIUM",
-          reason: "Sign-in from an unfamiliar device during demo seed.",
+          reason: "Sign-in from an unfamiliar device during account review.",
           metadata: { ipAddress: "127.0.0.1" },
         },
         {
@@ -477,13 +477,13 @@ async function main() {
           eventType: "TRANSFER",
           riskScore: 70,
           severity: "HIGH",
-          reason: "Transfer amount exceeds $5,000 during demo seed.",
+          reason: "Transfer amount exceeds $5,000 during account review.",
           metadata: { amount: 5200 },
         },
       ],
     });
 
-    logStep("Refreshed demo risk events.");
+    logStep("Refreshed sample risk events.");
 
     await prisma.userSession.deleteMany({
       where: { userId: demoUser.id },
@@ -494,14 +494,14 @@ async function main() {
         tokenId: "demo-session-token",
         deviceName: "Mac",
         ipAddress: "127.0.0.1",
-        userAgent: "BluewaveDemoSeed/1.0",
-        location: "Local demo",
+        userAgent: "BluewaveSeed/1.0",
+        location: "Online banking",
         isActive: true,
         lastSeenAt: new Date(),
       },
     });
 
-    logStep("Refreshed demo user session.");
+    logStep("Refreshed sample user session.");
 
     await prisma.mfaSetting.upsert({
       where: {
@@ -520,7 +520,7 @@ async function main() {
       },
     });
 
-    logStep("Ensured demo MFA placeholder setting.");
+    logStep("Ensured sample MFA setting.");
 
     if (checkingAccountId) {
       await prisma.payee.deleteMany({ where: { userId: demoUser.id } });
@@ -549,17 +549,17 @@ async function main() {
         },
       });
 
-      logStep("Refreshed demo payees and bill payment.");
+      logStep("Refreshed sample payees and bill payment.");
     }
 
     const auditSeedActions = [
       {
-        action: "SEED_DEMO_DATA",
+        action: "SEED_DEVELOPMENT_DATA",
         entityType: "User",
         entityId: demoUser.id,
         details: {
           email: DEMO_USER_EMAIL,
-          purpose: "Local demo account bootstrap",
+          purpose: "Online banking account bootstrap",
         },
       },
       {
@@ -601,11 +601,11 @@ async function main() {
       }
     }
 
-    logStep("Ensured demo admin audit log entries.");
-    logStep("Bluewave demo seed completed successfully.");
-    console.log(`Demo member: ${DEMO_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
-    console.log(`Demo pending member: ${DEMO_PENDING_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
-    console.log(`Demo admin: ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`);
+    logStep("Ensured admin audit log entries.");
+    logStep("Bluewave development seed completed successfully.");
+    console.log(`Development member: ${DEMO_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
+    console.log(`Development pending member: ${DEMO_PENDING_USER_EMAIL} / ${DEMO_MEMBER_PASSWORD}`);
+    console.log(`Development admin: ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`);
   } finally {
     await prisma.$disconnect();
   }

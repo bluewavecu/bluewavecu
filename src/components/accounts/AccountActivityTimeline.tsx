@@ -9,7 +9,7 @@ import {
   Repeat2,
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccountActivity } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import type { ActivityTimelineItem } from "@/types/banking";

@@ -1,5 +1,6 @@
 import { CreditCard, TrendingUp, WalletCards } from "lucide-react";
-import { accounts as fallbackAccounts, formatCurrency } from "@/data/mockBanking";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { formatCurrency } from "@/lib/formatCurrency";
 import type { AccountType, DashboardAccount } from "@/types/banking";
 
 type BalanceCardsProps = {
@@ -61,18 +62,17 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
   };
 }
 
-function mapFallbackAccount(account: (typeof fallbackAccounts)[number]): DisplayAccount {
-  return {
-    ...account,
-    isCredit: account.id === "credit-card",
-  };
-}
-
 export function BalanceCards({ accounts }: BalanceCardsProps) {
-  const displayAccounts =
-    accounts !== undefined
-      ? accounts.map(mapDashboardAccount)
-      : fallbackAccounts.map(mapFallbackAccount);
+  if (!accounts || accounts.length === 0) {
+    return (
+      <EmptyState
+        title="No accounts to display"
+        message="Your linked accounts will appear here once membership accounts are active."
+      />
+    );
+  }
+
+  const displayAccounts = accounts.map(mapDashboardAccount);
 
   return (
     <section aria-labelledby="balance-cards" className="grid gap-4 lg:grid-cols-3">

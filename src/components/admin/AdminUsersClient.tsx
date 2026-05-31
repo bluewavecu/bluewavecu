@@ -13,7 +13,7 @@ import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminMemberDetail } from "@/hooks/useAdminMemberDetail";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import type { KycStatus, UserRole, UserStatus } from "@/types/banking";
@@ -76,7 +76,7 @@ export function AdminUsersClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
+        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );
@@ -193,7 +193,7 @@ export function AdminUsersClient() {
           ))}
         </AdminDataTable>
       ) : (
-        <EmptyState title="No users found" message="Adjust filters or seed demo users." />
+        <EmptyState title="No users found" message="No members match your filters." />
       )}
 
       <AdminDetailDrawer

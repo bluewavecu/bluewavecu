@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowRight, Eye, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { AuthField, authInputClassName } from "@/components/auth/AuthField";
 import { buttonVariants } from "@/components/ui/Button";
 import { getSafeRedirectPath } from "@/lib/authSession";
 import { postJson } from "@/lib/clientApi";
@@ -48,53 +49,36 @@ export function LoginForm() {
       {sessionExpired ? (
         <p
           role="status"
-          className="rounded-lg border border-amber-500/[0.20] bg-amber-500/[0.08] px-4 py-3 text-sm font-medium text-amber-800 dark:text-amber-200"
+          className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-100"
         >
           Your session expired. Sign in again to continue.
         </p>
       ) : null}
 
-      <label className="block">
-        <span className="text-sm font-semibold text-primary-navy dark:text-white">Email</span>
-        <span className="mt-2 flex items-center gap-3 rounded-lg border border-primary-navy/[0.10] bg-white px-4 py-3 text-bluewave-gray shadow-[0_12px_34px_rgba(10,42,94,0.06)] focus-within:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06]">
-          <Mail size={18} aria-hidden="true" />
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            required
-            className="w-full bg-transparent text-primary-navy outline-none dark:text-white"
-          />
-        </span>
-      </label>
+      <AuthField label="Email" htmlFor="login-email" icon={Mail}>
+        <input
+          id="login-email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          required
+          className={authInputClassName}
+        />
+      </AuthField>
 
-      <label className="block">
-        <span className="text-sm font-semibold text-primary-navy dark:text-white">
-          Password
-        </span>
-        <span className="mt-2 flex items-center gap-3 rounded-lg border border-primary-navy/[0.10] bg-white px-4 py-3 text-bluewave-gray shadow-[0_12px_34px_rgba(10,42,94,0.06)] focus-within:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06]">
-          <LockKeyhole size={18} aria-hidden="true" />
-          <input
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            required
-            className="w-full bg-transparent text-primary-navy outline-none dark:text-white"
-          />
-          <Eye size={18} aria-hidden="true" />
-        </span>
-      </label>
+      <AuthField label="Password" htmlFor="login-password" icon={LockKeyhole}>
+        <input
+          id="login-password"
+          type="password"
+          name="password"
+          autoComplete="current-password"
+          required
+          className={authInputClassName}
+        />
+      </AuthField>
 
-      <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <label className="inline-flex items-center gap-2 font-medium text-bluewave-gray dark:text-white/[0.66]">
-          <input
-            type="checkbox"
-            name="remember"
-            className="h-4 w-4 rounded border-primary-navy/[0.22] accent-ocean-blue"
-          />
-          Remember me
-        </label>
-        <Link href="/support" className="font-semibold text-royal-blue hover:text-ocean-blue">
+      <div className="text-right text-sm">
+        <Link href="/support" className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue">
           Forgot password?
         </Link>
       </div>
@@ -115,16 +99,9 @@ export function LoginForm() {
           className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
         })}
       >
-        {isSubmitting ? "Signing In..." : "Sign In"}
+        {isSubmitting ? "Signing in..." : "Sign in"}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
-
-      <p className="text-center text-sm text-bluewave-gray dark:text-white/[0.62]">
-        New to Bluewave?{" "}
-        <Link href="/register" className="font-semibold text-royal-blue hover:text-ocean-blue">
-          Enroll in online banking
-        </Link>
-      </p>
     </form>
   );
 }

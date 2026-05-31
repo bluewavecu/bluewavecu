@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Clock3,
   Fingerprint,
+  LogIn,
   ShieldCheck,
   Sparkles,
   WalletCards,
@@ -196,13 +197,13 @@ export default function Home() {
                 Banking products
               </p>
               <h2 className="mt-3 text-3xl font-semibold text-primary-navy sm:text-4xl">
-                Built for personal goals, business needs, and future lending
+                Built for personal goals, business growth, and member lending
               </h2>
             </MotionReveal>
             <MotionReveal delay={0.08}>
               <p className="max-w-2xl text-base leading-7 text-bluewave-gray lg:ml-auto">
-                Product areas are structured for a clean launch now and deeper secure
-                workflows later, without rebuilding the site foundation.
+                Checking, savings, business accounts, and lending — backed by NCUA insurance and
+                member-focused digital service.
               </p>
             </MotionReveal>
           </div>
@@ -250,11 +251,11 @@ export default function Home() {
           <MotionReveal>
             <p className="text-sm font-semibold uppercase text-light-blue">Security</p>
             <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              Secure finance surfaces for sensitive moments
+              Secure finance for everyday banking
             </h2>
             <p className="mt-5 max-w-xl text-base leading-7 text-white/[0.70]">
-              The foundation keeps trust signals visible while leaving room for verified
-              compliance language, authentication, alerts, and transaction flows.
+              Member deposits are NCUA insured. Online banking uses encrypted sessions, review
+              queues for money movement, and audit logging for sensitive actions.
             </p>
           </MotionReveal>
 
@@ -293,19 +294,35 @@ export default function Home() {
               <div>
                 <p className="text-sm font-semibold uppercase text-light-blue">Get started</p>
                 <h2 className="mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl">
-                  Open a digital-first banking relationship with Bluewave.
+                  Open a digital-first membership with Bluewave.
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-white/[0.72]">
-                  A focused foundation for account opening, onboarding, and member
-                  support as the product grows.
+                  A focused onboarding path for new members with online banking, transfers, bill
+                  pay, and dedicated member support.
                 </p>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <ButtonLink href="/login" variant="light" size="lg">
-                  Member Login
-                  <Fingerprint size={18} aria-hidden="true" />
-                </ButtonLink>
-                <ButtonLink href="/register" variant="secondary" size="lg">
+              <div className="flex w-full flex-col gap-4 lg:min-w-[280px]">
+                <div className="rounded-lg border border-white/[0.18] bg-white/[0.08] p-4 backdrop-blur-xl">
+                  <p className="text-sm font-semibold text-white">Already a member?</p>
+                  <p className="mt-1 text-sm leading-6 text-white/[0.72]">
+                    Sign in to online banking to view accounts, transfers, and statements.
+                  </p>
+                  <ButtonLink
+                    href="/login"
+                    variant="primary"
+                    size="lg"
+                    className="mt-4 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
+                  >
+                    <LogIn size={18} aria-hidden="true" />
+                    Member Login
+                  </ButtonLink>
+                </div>
+                <ButtonLink
+                  href="/register"
+                  variant="light"
+                  size="lg"
+                  className="w-full justify-center"
+                >
                   Open Account
                   <ArrowRight size={18} aria-hidden="true" />
                 </ButtonLink>

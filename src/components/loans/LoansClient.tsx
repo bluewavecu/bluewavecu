@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useLoans } from "@/hooks/useLoans";
 import { postJson } from "@/lib/clientApi";
 
@@ -51,13 +51,13 @@ export function LoansClient() {
   const estimate = useMemo(() => {
     const principal = Number.parseFloat(estimateAmount) || 0;
     const termMonths = Number.parseInt(estimateTerm, 10) || 0;
-    const demoRate = 8.99;
-    const monthlyPayment = estimateMonthlyPayment(principal, demoRate, termMonths);
+    const estimatedRate = 8.99;
+    const monthlyPayment = estimateMonthlyPayment(principal, estimatedRate, termMonths);
 
     return {
       principal,
       termMonths,
-      demoRate,
+      estimatedRate,
       monthlyPayment,
     };
   }, [estimateAmount, estimateTerm]);
@@ -74,7 +74,7 @@ export function LoansClient() {
     return (
       <EmptyState
         title="No loan data"
-        message="Sign in with a seeded demo member account to review loans."
+        message="Sign in to review your loan accounts and applications."
       />
     );
   }
@@ -156,7 +156,7 @@ export function LoansClient() {
       {data.loans.length === 0 && data.offers.length === 0 ? (
         <EmptyState
           title="No loan records found"
-          message="Seed demo lending data or add loan application flows before reviewing loans."
+          message="No loans are on file yet. Submit an application or contact lending services."
         />
       ) : null}
 
@@ -171,7 +171,7 @@ export function LoansClient() {
               {formatCurrency(primaryOffer.preApprovedAmount)}
             </p>
             <p className="mt-2 text-sm font-semibold text-royal-blue dark:text-light-blue">
-              Demo pre-qualification up to {primaryOffer.rateRange}
+              Pre-qualification up to {primaryOffer.rateRange}
             </p>
             <p className="mt-5 max-w-xl text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
               {primaryOffer.description}
@@ -181,10 +181,12 @@ export function LoansClient() {
             </p>
             <button
               type="button"
-              disabled
-              className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ocean-blue/[0.40] px-5 text-sm font-semibold text-primary-navy opacity-80"
+              onClick={() => {
+                document.getElementById("loan-application-form")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue"
             >
-              Explore Demo Offer
+              Start application
               <BadgeCheck size={17} aria-hidden="true" />
             </button>
           </div>
@@ -194,7 +196,7 @@ export function LoansClient() {
           <Calculator size={26} className="text-light-blue" aria-hidden="true" />
           <h2 className="mt-5 text-2xl font-semibold">Payment estimate calculator</h2>
           <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            Sample calculator for demo planning only. This is not an approval or rate guarantee.
+            Estimate your monthly payment using a sample rate. This is not an approval or rate guarantee.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -228,19 +230,23 @@ export function LoansClient() {
               {formatCurrency(estimate.monthlyPayment)}
             </p>
             <p className="mt-2 text-xs text-white/[0.54]">
-              Based on a demo {estimate.demoRate.toFixed(2)}% APR over {estimate.termMonths} months.
+              Based on a sample {estimate.estimatedRate.toFixed(2)}% APR over {estimate.termMonths} months.
             </p>
           </div>
         </div>
       </div>
 
-      <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+      <article
+        id="loan-application-form"
+        className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+      >
         <ClipboardList size={26} className="text-ocean-blue" aria-hidden="true" />
         <h2 className="mt-5 text-2xl font-semibold text-primary-navy dark:text-white">
           Application request
         </h2>
         <p className="mt-2 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Document checklist: government ID, proof of income, recent statements (demo placeholder).
+          Please have government ID, proof of income, and recent bank statements ready. A lending
+          specialist will follow up within one business day.
         </p>
         <form
           className="mt-6 grid gap-4 md:grid-cols-2"

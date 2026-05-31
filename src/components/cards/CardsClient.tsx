@@ -15,7 +15,7 @@ import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatStatusLabel, StatusBadge, statusToTone } from "@/components/ui/StatusBadge";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useCards } from "@/hooks/useCards";
 import { postJson } from "@/lib/clientApi";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ export function CardsClient() {
     return (
       <EmptyState
         title="No cards found"
-        message="Seed demo card data or add card issuing flows before managing cards."
+        message="No cards are linked to your membership yet. Contact member services to request a debit or credit card."
       />
     );
   }
@@ -72,7 +72,8 @@ export function CardsClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="Card management">
-        Card controls submit support requests for demo workflows. No card status changes automatically
+        Card control requests are submitted to member services for processing. A specialist will
+        confirm when your card status is updated.
         and full card numbers are never displayed.
       </InfoPanel>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useBillPay } from "@/hooks/useBillPay";
 import { cn } from "@/lib/utils";
 

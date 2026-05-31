@@ -20,8 +20,8 @@ export function StatementsClient() {
           Statement history
         </h2>
         <p className="mt-2 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-          Archived statement library is coming soon. Use the export tool above to download CSV or
-          PDF statements for any month with activity.
+          Download prior statements using the export tool above. Your full statement archive will
+          appear here as additional months are posted.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <span className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">

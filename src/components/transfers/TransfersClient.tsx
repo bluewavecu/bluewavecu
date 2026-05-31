@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useMemberSummary } from "@/hooks/useMemberSummary";
 import { useScheduledTransfers } from "@/hooks/useScheduledTransfers";
@@ -299,7 +299,7 @@ export function TransfersClient() {
                   type="text"
                   value={recipientName}
                   onChange={(event) => setRecipientName(event.target.value)}
-                  placeholder="Jordan Parker"
+                  placeholder="Recipient name"
                   className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
                 />
               </label>
@@ -312,7 +312,7 @@ export function TransfersClient() {
                   type="text"
                   value={toAccountNumber}
                   onChange={(event) => setToAccountNumber(event.target.value)}
-                  placeholder="1048225799"
+                  placeholder="Account number"
                   className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
                 />
               </label>

@@ -59,8 +59,8 @@ export function AdminSettingsClient() {
           tone={data.cronConfigured ? "default" : "warning"}
         />
         <AdminMetricCard
-          label="Demo seed protection"
-          value={data.demoSeedProtected ? "Protected" : "Unprotected"}
+          label="Production seed lock"
+          value={data.demoSeedProtected ? "Enabled" : "Disabled"}
           tone={data.demoSeedProtected ? "default" : "warning"}
         />
       </div>
@@ -68,7 +68,7 @@ export function AdminSettingsClient() {
       <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
         <h3 className="font-semibold text-primary-navy dark:text-white">Feature flags</h3>
         <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Placeholder toggles for operational modules.
+          Operational modules enabled for this environment.
         </p>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {Object.entries(data.featureFlags).map(([key, enabled]) => (

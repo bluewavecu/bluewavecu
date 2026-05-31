@@ -6,7 +6,7 @@ import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminOperationalAlerts } from "@/hooks/useNotifications";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
 import { useAdminRisk } from "@/hooks/useAdminRisk";
@@ -44,7 +44,7 @@ export function AdminOverviewClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
+        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );

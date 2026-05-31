@@ -27,32 +27,32 @@ export const safetyHighlights = [
 export const features: FeatureCard[] = [
   {
     title: "Secure Banking",
-    description: "Modern account access patterns with privacy-minded digital flows.",
+    description: "Encrypted sign-in, account alerts, and member-controlled security settings.",
     icon: ShieldCheck,
   },
   {
     title: "Fast Transfers",
-    description: "Move money with a streamlined experience built for daily use.",
+    description: "Move money between your accounts and to other members with review before posting.",
     icon: Send,
   },
   {
     title: "Mobile Banking",
-    description: "A responsive interface shaped for quick decisions on any screen.",
+    description: "Manage accounts, cards, and payments from any device with a responsive experience.",
     icon: Smartphone,
   },
   {
     title: "Credit Solutions",
-    description: "Clean pathways for credit cards, borrowing, and future loan tools.",
+    description: "Checking-linked debit cards, credit cards, and member lending programs.",
     icon: CreditCard,
   },
   {
     title: "Savings Accounts",
-    description: "Organize balances, savings goals, and account activity with clarity.",
+    description: "Competitive savings rates with clear balances, goals, and activity history.",
     icon: PiggyBank,
   },
   {
     title: "Fraud Monitoring",
-    description: "Visible safety cues and alert-ready surfaces for sensitive actions.",
+    description: "Risk alerts, session controls, and dispute support when something looks unusual.",
     icon: BellRing,
   },
 ];
@@ -60,17 +60,17 @@ export const features: FeatureCard[] = [
 export const products: BankingProduct[] = [
   {
     title: "Personal Banking",
-    description: "Everyday checking, savings, transfers, and digital-first money management.",
+    description: "Everyday checking, savings, transfers, bill pay, and digital statements.",
     accent: "from-ocean-blue to-light-blue",
   },
   {
     title: "Business Banking",
-    description: "Flexible account experiences for teams, vendors, payments, and cash flow.",
+    description: "Business checking, team payments, vendor transfers, and cash-flow tools.",
     accent: "from-royal-blue to-ocean-blue",
   },
   {
     title: "Lending",
-    description: "A polished foundation for loan discovery, eligibility flows, and support.",
+    description: "Personal, auto, and home equity lending with member-focused rates and service.",
     accent: "from-primary-navy to-royal-blue",
   },
 ];
@@ -78,17 +78,17 @@ export const products: BankingProduct[] = [
 export const securityPoints = [
   {
     title: "Protected account access",
-    description: "Security-forward navigation, safe calls to action, and clear user pathways.",
+    description: "Session monitoring, secure cookies, and role-based access for members and staff.",
     icon: LockKeyhole,
   },
   {
-    title: "Digital wallet ready",
-    description: "A layout foundation that can grow into cards, payments, and transactions.",
+    title: "Card and payment controls",
+    description: "Lock cards, report lost or stolen cards, and review bill pay before funds post.",
     icon: Wallet,
   },
   {
-    title: "Banking product clarity",
-    description: "Product sections stay organized for future compliance and content review.",
+    title: "Regulatory readiness",
+    description: "Audit trails, compliance review queues, and NCUA-insured member deposits.",
     icon: Landmark,
   },
 ];
@@ -225,7 +225,7 @@ export const testimonials: HomeTestimonial[] = [
     name: "Natalie Howard",
     location: "Orlando, FL",
     quote:
-      "The credit card and loan areas feel ready for a full application workflow later.",
+      "The lending team helped us refinance with a clear rate and straightforward online application.",
   },
   {
     id: "testimonial-20",
@@ -246,7 +246,7 @@ export const testimonials: HomeTestimonial[] = [
     name: "Henry Price",
     location: "Atlanta, GA",
     quote:
-      "Support, accounts, transfers, and transactions each have a clear place in the app shell.",
+      "Support, accounts, transfers, and statements are easy to find in online banking.",
   },
   {
     id: "testimonial-23",
@@ -288,7 +288,7 @@ export const testimonials: HomeTestimonial[] = [
     name: "Samuel Murphy",
     location: "Louisville, KY",
     quote:
-      "The banking app shell feels like it can grow into a full member portal without a redesign.",
+      "Online banking gives us one secure place to manage accounts, cards, and member services.",
   },
   {
     id: "testimonial-29",

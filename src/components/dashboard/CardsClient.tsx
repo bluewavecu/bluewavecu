@@ -4,7 +4,7 @@ import { CreditCard, LockKeyhole, Snowflake, Wifi } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const cardControls = [
@@ -33,7 +33,7 @@ export function CardsClient() {
     return (
       <EmptyState
         title="No cards found"
-        message="Seed demo card data or add card issuing flows before managing cards."
+        message="No cards are linked to your membership yet. Contact member services to request a debit or credit card."
       />
     );
   }

@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Send } from "lucide-react";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useBillPay } from "@/hooks/useBillPay";
 import { usePayees } from "@/hooks/usePayees";

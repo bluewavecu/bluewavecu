@@ -6,7 +6,7 @@ import { runDueJobs } from "@/lib/worker";
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+async function handleCronRun(request: NextRequest) {
   try {
     const auth = verifyCronSecret(request);
 
@@ -45,4 +45,13 @@ export async function POST(request: NextRequest) {
 
     return handleApiError(error);
   }
+}
+
+/** Vercel Cron invokes scheduled jobs with GET. Manual/Render callers may use POST. */
+export async function GET(request: NextRequest) {
+  return handleCronRun(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleCronRun(request);
 }

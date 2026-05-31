@@ -97,7 +97,7 @@ export function AdminSupportClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
+        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );
@@ -208,7 +208,7 @@ export function AdminSupportClient() {
             </article>
           ))
         ) : (
-          <EmptyState title="No support tickets found" message="Adjust filters or seed demo tickets." />
+          <EmptyState title="No support tickets found" message="No support tickets match your filters." />
         )}
       </div>
     </section>

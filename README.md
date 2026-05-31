@@ -104,13 +104,13 @@ npx prisma migrate deploy
 npx prisma migrate dev
 ```
 
-**Seed demo data (local or staging only):**
+**Seed development data (local or staging only):**
 
 ```bash
 npm run db:seed
 ```
 
-The seed script skips production unless `ALLOW_DEMO_SEED=true` is set intentionally.
+The seed script skips production unless `ALLOW_DEMO_SEED=true` is set intentionally for staging bootstrap.
 
 > If `prisma/migrations/` is empty, create the initial migration locally when PostgreSQL is reachable:
 >
@@ -120,13 +120,13 @@ The seed script skips production unless `ALLOW_DEMO_SEED=true` is set intentiona
 >
 > Commit the generated migration files before deploying to Render.
 
-Seed local demo data after configuring `DATABASE_URL` and `JWT_SECRET`:
+After configuring `DATABASE_URL` and `JWT_SECRET`, seed local development data:
 
 ```bash
 npm run db:seed
 ```
 
-Demo credentials created by the seed script:
+Development bootstrap credentials (local/staging only — never use in production):
 
 ```text
 Member: avery.morgan@bluewavecu.test / BluewaveDemo2026!
@@ -171,6 +171,71 @@ src/
 5. On light backgrounds (login/register, member sidebar), `tone="dark"` adds a navy badge so the white logo stays visible; dark nav/footer use the default transparent logo on navy.
 
 `public/images/logo.jpg` is a legacy source file and is **not** loaded by the app.
+
+## Deployment on Vercel
+
+Bluewave includes a `vercel.json` with Prisma build steps and an hourly cron job for `/api/cron/run-jobs`.
+
+### Quick start
+
+1. Import the GitHub repo in [Vercel](https://vercel.com/new).
+2. Add a **Postgres** database (Vercel Postgres or Neon via Marketplace).
+3. Copy environment variables from **`env.vercel.template`** (or your local **`.env.vercel`** after filling blanks).
+4. Deploy, then run migrations against production:
+   ```bash
+   npx prisma migrate deploy
+   ```
+5. Point **Cloudflare DNS** to Vercel when ready (`bluewavecu.com`).
+
+### Environment variables (Production)
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Postgres connection string from Vercel/Neon |
+| `JWT_SECRET` | Yes | `openssl rand -base64 48` |
+| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` (must match public URL) |
+| `NODE_ENV` | Yes | `production` (Vercel sets this on Production deploys) |
+| `CRON_SECRET` | Yes | `openssl rand -hex 32` — Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` |
+| `ALLOW_DEMO_SEED` | Yes | **`false`** on real production data |
+| `RESEND_API_KEY` | Yes | Required in production (`src/lib/env.ts`) |
+| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <no-reply@bluewavecu.com>` |
+| `ADMIN_ALERT_EMAIL` | Recommended | Admin inbox for signup/transfer/support alerts |
+
+**Preview deploys:** use a separate `DATABASE_URL` and set `NEXT_PUBLIC_APP_URL` to the preview URL (e.g. `https://bluewavecu-xxx.vercel.app`).
+
+### Add vars via CLI
+
+```bash
+vercel link
+vercel env pull .env.local          # optional: sync from Vercel to local
+
+# Add each key interactively (Production / Preview / Development)
+vercel env add DATABASE_URL
+vercel env add JWT_SECRET
+vercel env add NEXT_PUBLIC_APP_URL
+vercel env add RESEND_API_KEY
+vercel env add EMAIL_FROM
+vercel env add ADMIN_ALERT_EMAIL
+vercel env add CRON_SECRET
+vercel env add ALLOW_DEMO_SEED
+```
+
+Or paste from `.env.vercel` in the Vercel Dashboard → **Settings → Environment Variables**.
+
+### Cron (included in `vercel.json`)
+
+- **Schedule:** every hour (`0 * * * *`)
+- **Path:** `/api/cron/run-jobs`
+- **Auth:** set `CRON_SECRET` in Vercel env — the platform sends it as a Bearer token automatically.
+
+Manual test after deploy:
+
+```bash
+curl -X POST "https://bluewavecu.com/api/cron/run-jobs" \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+See also: `env.vercel.template`, `DEPLOYMENT_CHECKLIST.md`, `PRODUCTION_ENV_SETUP.md`.
 
 ## Deployment Note For Render
 

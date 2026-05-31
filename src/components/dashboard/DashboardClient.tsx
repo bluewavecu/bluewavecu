@@ -14,7 +14,7 @@ import { NotificationsPanel } from "@/components/notifications/NotificationsPane
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const skeletonCards = ["balance", "savings", "card"];
@@ -68,7 +68,7 @@ export function DashboardClient() {
     return (
       <EmptyState
         title="No dashboard data"
-        message="Sign in with a seeded demo member account to load authenticated banking data."
+        message="Sign in to access your accounts, transfers, and member services."
       />
     );
   }
@@ -85,7 +85,7 @@ export function DashboardClient() {
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
               <ShieldCheck size={14} aria-hidden="true" />
-              Authenticated dashboard
+              Authenticated member dashboard
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-primary-navy dark:text-white">
               Welcome back, {data.user.firstName}
@@ -112,7 +112,7 @@ export function DashboardClient() {
       ) : (
         <EmptyState
           title="No accounts found"
-          message="Seed demo banking data or wait for account creation flows before reviewing balances."
+          message="No account balances are available yet. Contact member services if you recently opened membership."
         />
       )}
 
@@ -182,7 +182,7 @@ export function DashboardClient() {
                 <p className="mt-3 text-sm leading-6 text-white/[0.68]">
                   {data.supportTicketSummary.open} open and{" "}
                   {data.supportTicketSummary.pending} pending support tickets from{" "}
-                  {data.supportTicketSummary.total} total demo records.
+                  {data.supportTicketSummary.total} total support requests on file.
                 </p>
               </div>
             </div>

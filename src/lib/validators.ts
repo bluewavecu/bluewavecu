@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { US_STATE_CODES } from "@/data/usStates";
 
 function parseDateOfBirth(value: string) {
   const parsed = new Date(`${value}T00:00:00.000Z`);
@@ -24,7 +25,8 @@ function isAtLeast18YearsOld(dateOfBirth: Date) {
 
 export const registerSchema = z
   .object({
-    fullName: z.string().trim().min(2, "Full name is required").max(120),
+    firstName: z.string().trim().min(1, "First name is required").max(60),
+    lastName: z.string().trim().min(1, "Last name is required").max(60),
     email: z.string().trim().toLowerCase().email(),
     phone: z.string().trim().min(7, "Phone number is required").max(32),
     dateOfBirth: z
@@ -43,18 +45,19 @@ export const registerSchema = z
     addressLine1: z.string().trim().min(3, "Street address is required").max(160),
     addressLine2: z.string().trim().max(160).optional(),
     city: z.string().trim().min(2, "City is required").max(80),
-    state: z.string().trim().min(2, "State is required").max(80),
+    state: z.enum(US_STATE_CODES, { message: "Select a state" }),
     postalCode: z
       .string()
       .trim()
       .min(3, "Postal code is required")
       .max(16)
       .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
-    country: z.string().trim().min(2, "Country is required").max(80).default("US"),
     password: z.string().min(8, "Password must be at least 8 characters").max(128),
   })
   .transform((input) => ({
     ...input,
+    fullName: `${input.firstName} ${input.lastName}`.trim(),
+    country: "US",
     dateOfBirth: parseDateOfBirth(input.dateOfBirth)!,
     addressLine2: input.addressLine2?.trim() || undefined,
   }));

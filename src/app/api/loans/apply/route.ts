@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       "Purpose:",
       input.purpose,
       "",
-      "This is a demo application request only. No credit decision or approval has been made.",
+      "This application is under review. No credit decision or approval has been made yet.",
     ].join("\n");
 
     const ticket = await prisma.supportTicket.create({
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     void sendAdminAlertEmail({
       subject: "Loan application request",
-      message: `${user.fullName} submitted a demo loan application for ${input.loanType}.`,
+      message: `${user.fullName} submitted a loan application for ${input.loanType}.`,
       idempotencyKey: `admin-alert/loan-apply/${ticket.id}`,
     });
 

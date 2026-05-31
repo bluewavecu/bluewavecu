@@ -5,7 +5,7 @@ export default function CardsPage() {
   return (
     <AppShell
       title="Cards"
-      subtitle="Manage debit and credit card previews with safe demo controls."
+      subtitle="Manage debit and credit cards, lock or unlock cards, and request replacements."
     >
       <CardsClient />
     </AppShell>

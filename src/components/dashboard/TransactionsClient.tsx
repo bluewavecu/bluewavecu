@@ -29,7 +29,7 @@ export function TransactionsClient() {
     return (
       <EmptyState
         title="No transaction data"
-        message="Sign in with a seeded demo member account to view transactions."
+        message="Sign in to view your transaction history."
       />
     );
   }
@@ -53,8 +53,8 @@ export function TransactionsClient() {
           ))}
         </div>
         <p className="mt-5 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-          Showing {data.recentTransactions.length} authenticated records. Dedicated
-          transaction search, export, and statements remain pending Step 6 APIs.
+          Showing {data.recentTransactions.length} recent records. Use the Transactions page for
+          search, filters, and statement exports.
         </p>
       </aside>
 
@@ -66,7 +66,7 @@ export function TransactionsClient() {
       ) : (
         <EmptyState
           title="No transactions found"
-          message="Seed demo banking data or create transaction records before reviewing activity."
+          message="No transactions are available for the selected period."
         />
       )}
     </section>

@@ -5,28 +5,29 @@ import { InfoPanel } from "@/components/ui/InfoPanel";
 const preferenceSections = [
   {
     title: "Email notifications",
-    description: "Transfer alerts, login alerts, and support updates — managed via Resend when configured.",
-    status: "Coming soon",
+    description:
+      "Transfer alerts, login alerts, statement notices, and support updates delivered to your registered email.",
+    status: "Managed via profile",
   },
   {
     title: "Communication preferences",
-    description: "Marketing and product update opt-in controls.",
-    status: "Coming soon",
+    description: "Marketing and product update opt-in controls for email and mail.",
+    status: "Contact member services",
   },
   {
     title: "Theme preference",
-    description: "Light and dark mode persistence across devices.",
-    status: "Coming soon",
+    description: "Light and dark mode follows your device settings in online banking.",
+    status: "Automatic",
   },
   {
     title: "Privacy & security",
-    description: "Data sharing and session timeout preferences.",
-    status: "Coming soon",
+    description: "Session timeout and security alerts are managed under Security in the sidebar.",
+    status: "View Security",
   },
   {
     title: "Account nicknames",
     description: "Custom labels for checking, savings, and credit accounts.",
-    status: "Coming soon",
+    status: "Contact member services",
   },
 ];
 
@@ -34,8 +35,8 @@ export function SettingsClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="Member settings">
-        Preferences below are placeholders for future releases. Banking security settings are
-        available under Security in the sidebar.
+        Manage notification and communication preferences with Bluewave member services. Security
+        controls such as sessions and multi-factor authentication are available under Security.
       </InfoPanel>
 
       {preferenceSections.map((section) => (

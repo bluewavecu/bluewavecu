@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         subject,
         message:
           input.note?.trim() ||
-          `Member requested ${actionLabel.toLowerCase()} for card ending ${card.last4}. This is a demo workflow request — no card status was changed automatically.`,
+          `Member requested ${actionLabel.toLowerCase()} for card ending ${card.last4}. A member services specialist will complete this request and confirm when the change is processed.`,
         priority: input.action === "REPORT_LOST" ? "URGENT" : "NORMAL",
         status: "OPEN",
       },

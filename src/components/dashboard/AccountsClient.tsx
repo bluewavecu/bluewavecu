@@ -4,7 +4,7 @@ import { BadgeCheck, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 function getStatusLabel(status: string) {
@@ -29,7 +29,7 @@ export function AccountsClient() {
     return (
       <EmptyState
         title="No accounts found"
-        message="Seed demo banking data or add account creation flows before reviewing accounts."
+        message="No accounts are linked to your membership yet. Contact member services to open an account."
       />
     );
   }

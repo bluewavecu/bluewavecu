@@ -46,8 +46,8 @@ export function RatesPage() {
           </MotionReveal>
 
           <p className="mt-4 text-xs leading-5 text-bluewave-gray">
-            *Rates shown are illustrative for the demo environment. APR/APY, terms, and eligibility may
-            vary. Federally insured by NCUA.
+            *Rates are subject to change. APR/APY, terms, and eligibility may vary by product and
+            member qualification. Federally insured by NCUA.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">

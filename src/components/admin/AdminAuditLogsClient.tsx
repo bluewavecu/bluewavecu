@@ -25,7 +25,7 @@ export function AdminAuditLogsClient() {
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
+        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );

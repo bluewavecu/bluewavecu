@@ -10,7 +10,7 @@ import { InfoPanel } from "@/components/ui/InfoPanel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
@@ -344,7 +344,7 @@ export function TransactionsClient() {
       ) : (
         <EmptyState
           title="No transactions found"
-          message="Adjust filters or seed demo banking data to review activity."
+          message="No transactions match your current filters."
         />
       )}
       </div>

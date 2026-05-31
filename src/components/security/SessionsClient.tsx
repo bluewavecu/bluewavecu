@@ -60,15 +60,14 @@ export function SessionsClient() {
               Multi-factor authentication
             </h2>
             <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-              Email verification MFA foundation is prepared. OTP delivery will be activated in a
-              later step.
+              Receive sign-in alerts and enable email verification for added account protection.
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex flex-col gap-4 rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] p-4 dark:border-white/[0.08] dark:bg-white/[0.04] sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-semibold text-primary-navy dark:text-white">Email MFA placeholder</p>
+            <p className="font-semibold text-primary-navy dark:text-white">Email verification</p>
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
               {emailMfaEnabled ? "Enabled for your account." : "Currently disabled."}
             </p>

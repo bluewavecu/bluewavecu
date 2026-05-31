@@ -6,14 +6,14 @@ Run this checklist after the first successful Render deploy and DNS propagation 
 
 ## Local database readiness (before E2E)
 
-After PostgreSQL is running, migrations are applied, and demo seed is loaded (local/staging only):
+After PostgreSQL is running, migrations are applied, and development seed is loaded (local/staging only):
 
 ```bash
 npx prisma generate
 npm run db:e2e-check
 ```
 
-The script is **read-only** — it verifies Prisma connectivity, user/account counts, demo admin/member presence, and core ledger/audit tables. It prints next steps if data is missing.
+The script is **read-only** — it verifies Prisma connectivity, user/account counts, bootstrap admin/member presence, and core ledger/audit tables. It prints next steps if data is missing.
 
 > **Migration note:** If `prisma/migrations/` is still empty, initial migration remains blocked until PostgreSQL is reachable locally. Run `npx prisma migrate dev --name init` then commit migration files before production deploy.
 
@@ -33,9 +33,9 @@ The script is **read-only** — it verifies Prisma connectivity, user/account co
 
 ## Member flows
 
-Sign in with demo member (if seeded) or a registered account:
+Sign in with a development bootstrap member (if seeded on staging) or a registered account:
 
-`avery.morgan@bluewavecu.test` / `BluewaveDemo2026!` (demo only)
+`avery.morgan@bluewavecu.test` / `BluewaveDemo2026!` (staging bootstrap only)
 
 | Check | Pass |
 | --- | --- |
@@ -57,7 +57,7 @@ Sign in with demo member (if seeded) or a registered account:
 
 Sign in as admin:
 
-`admin@bluewavecu.test` / `BluewaveAdmin2026!` (demo only)
+`admin@bluewavecu.test` / `BluewaveAdmin2026!` (staging bootstrap only)
 
 | Check | Pass |
 | --- | --- |
@@ -142,5 +142,5 @@ curl -s -o /dev/null -w "cron: %{http_code}\n" -X POST "$BASE_URL/api/cron/run-j
 | Deploy URL | |
 | Deploy date | |
 | Migration applied (`migrate deploy`) | [ ] Yes / [ ] No |
-| Demo seed used | [ ] No (production) / [ ] Yes (staging) |
+| Development seed used | [ ] No (production) / [ ] Yes (staging) |
 | QA completed by | |

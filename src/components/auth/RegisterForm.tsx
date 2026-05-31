@@ -10,147 +10,13 @@ import {
   Phone,
   UserRound,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { AuthField, authInputClassName } from "@/components/auth/AuthField";
 import { buttonVariants } from "@/components/ui/Button";
+import { US_STATE_OPTIONS } from "@/data/usStates";
 import { postJson } from "@/lib/clientApi";
 import type { AuthResponse } from "@/types/banking";
-
-type FieldConfig = {
-  label: string;
-  name: string;
-  type: string;
-  autoComplete?: string;
-  icon: typeof UserRound;
-  required?: boolean;
-  minLength?: number;
-};
-
-const personalFields: FieldConfig[] = [
-  {
-    label: "Full name",
-    name: "fullName",
-    type: "text",
-    autoComplete: "name",
-    icon: UserRound,
-  },
-  {
-    label: "Email",
-    name: "email",
-    type: "email",
-    autoComplete: "email",
-    icon: Mail,
-  },
-  {
-    label: "Phone",
-    name: "phone",
-    type: "tel",
-    autoComplete: "tel",
-    icon: Phone,
-  },
-  {
-    label: "Date of birth",
-    name: "dateOfBirth",
-    type: "date",
-    autoComplete: "bday",
-    icon: Calendar,
-  },
-  {
-    label: "Occupation",
-    name: "occupation",
-    type: "text",
-    autoComplete: "organization-title",
-    icon: Briefcase,
-  },
-];
-
-const addressFields: FieldConfig[] = [
-  {
-    label: "Street address",
-    name: "addressLine1",
-    type: "text",
-    autoComplete: "address-line1",
-    icon: MapPin,
-  },
-  {
-    label: "Apt, suite, or unit",
-    name: "addressLine2",
-    type: "text",
-    autoComplete: "address-line2",
-    icon: MapPin,
-    required: false,
-  },
-  {
-    label: "City",
-    name: "city",
-    type: "text",
-    autoComplete: "address-level2",
-    icon: MapPin,
-  },
-  {
-    label: "State",
-    name: "state",
-    type: "text",
-    autoComplete: "address-level1",
-    icon: MapPin,
-  },
-  {
-    label: "Postal code",
-    name: "postalCode",
-    type: "text",
-    autoComplete: "postal-code",
-    icon: MapPin,
-  },
-  {
-    label: "Country",
-    name: "country",
-    type: "text",
-    autoComplete: "country-name",
-    icon: MapPin,
-  },
-];
-
-const securityFields: FieldConfig[] = [
-  {
-    label: "Password",
-    name: "password",
-    type: "password",
-    autoComplete: "new-password",
-    icon: LockKeyhole,
-    minLength: 8,
-  },
-  {
-    label: "Confirm password",
-    name: "confirmPassword",
-    type: "password",
-    autoComplete: "new-password",
-    icon: LockKeyhole,
-    minLength: 8,
-  },
-];
-
-function FormField({ field }: { field: FieldConfig }) {
-  const Icon = field.icon;
-
-  return (
-    <label className="block">
-      <span className="text-sm font-semibold text-primary-navy dark:text-white">{field.label}</span>
-      <span className="mt-2 flex items-center gap-3 rounded-lg border border-primary-navy/[0.10] bg-white px-4 py-3 text-bluewave-gray shadow-[0_12px_34px_rgba(10,42,94,0.06)] focus-within:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06]">
-        <Icon size={18} aria-hidden="true" />
-        <input
-          type={field.type}
-          name={field.name}
-          autoComplete={field.autoComplete}
-          required={field.required !== false}
-          minLength={field.minLength}
-          defaultValue={field.name === "country" ? "US" : undefined}
-          className="w-full bg-transparent text-primary-navy outline-none dark:text-white"
-        />
-      </span>
-    </label>
-  );
-}
 
 export function RegisterForm() {
   const router = useRouter();
@@ -173,7 +39,8 @@ export function RegisterForm() {
     setIsSubmitting(true);
 
     const result = await postJson<AuthResponse>("/api/auth/register", {
-      fullName: String(formData.get("fullName") ?? ""),
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
@@ -183,7 +50,6 @@ export function RegisterForm() {
       city: String(formData.get("city") ?? ""),
       state: String(formData.get("state") ?? ""),
       postalCode: String(formData.get("postalCode") ?? ""),
-      country: String(formData.get("country") ?? "US"),
       password,
     });
 
@@ -199,33 +65,171 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <fieldset className="space-y-4">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-ocean-blue">
-          Personal information
-        </legend>
-        {personalFields.map((field) => (
-          <FormField key={field.name} field={field} />
-        ))}
-      </fieldset>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <AuthField label="First name" htmlFor="register-first-name" icon={UserRound}>
+          <input
+            id="register-first-name"
+            type="text"
+            name="firstName"
+            autoComplete="given-name"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+        <AuthField label="Last name" htmlFor="register-last-name" icon={UserRound}>
+          <input
+            id="register-last-name"
+            type="text"
+            name="lastName"
+            autoComplete="family-name"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+      </div>
 
-      <fieldset className="space-y-4">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-ocean-blue">
-          Mailing address
-        </legend>
-        {addressFields.map((field) => (
-          <FormField key={field.name} field={field} />
-        ))}
-      </fieldset>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <AuthField label="Email" htmlFor="register-email" icon={Mail}>
+          <input
+            id="register-email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+        <AuthField label="Phone" htmlFor="register-phone" icon={Phone}>
+          <input
+            id="register-phone"
+            type="tel"
+            name="phone"
+            autoComplete="tel"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+      </div>
 
-      <fieldset className="space-y-4">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-ocean-blue">
-          Online banking credentials
-        </legend>
-        {securityFields.map((field) => (
-          <FormField key={field.name} field={field} />
-        ))}
-      </fieldset>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <AuthField label="Date of birth" htmlFor="register-dob" icon={Calendar}>
+          <input
+            id="register-dob"
+            type="date"
+            name="dateOfBirth"
+            autoComplete="bday"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+        <AuthField label="Occupation" htmlFor="register-occupation" icon={Briefcase}>
+          <input
+            id="register-occupation"
+            type="text"
+            name="occupation"
+            autoComplete="organization-title"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+      </div>
+
+      <div className="border-t border-primary-navy/[0.06] pt-6 dark:border-white/[0.06]">
+        <AuthField label="Street address" htmlFor="register-address-1" icon={MapPin}>
+          <input
+            id="register-address-1"
+            type="text"
+            name="addressLine1"
+            autoComplete="address-line1"
+            required
+            className={authInputClassName}
+          />
+        </AuthField>
+
+        <div className="mt-4">
+          <AuthField
+            label="Apt, suite, or unit (optional)"
+            htmlFor="register-address-2"
+            icon={MapPin}
+          >
+            <input
+              id="register-address-2"
+              type="text"
+              name="addressLine2"
+              autoComplete="address-line2"
+              className={authInputClassName}
+            />
+          </AuthField>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <AuthField label="City" htmlFor="register-city" icon={MapPin} className="sm:col-span-1">
+            <input
+              id="register-city"
+              type="text"
+              name="city"
+              autoComplete="address-level2"
+              required
+              className={authInputClassName}
+            />
+          </AuthField>
+          <AuthField label="State" htmlFor="register-state" icon={MapPin} className="sm:col-span-1">
+            <select
+              id="register-state"
+              name="state"
+              required
+              autoComplete="address-level1"
+              defaultValue=""
+              className={authInputClassName}
+            >
+              <option value="" disabled>
+                Select
+              </option>
+              {US_STATE_OPTIONS.map((state) => (
+                <option key={state.value} value={state.value}>
+                  {state.label}
+                </option>
+              ))}
+            </select>
+          </AuthField>
+          <AuthField label="ZIP code" htmlFor="register-zip" icon={MapPin} className="sm:col-span-1">
+            <input
+              id="register-zip"
+              type="text"
+              name="postalCode"
+              autoComplete="postal-code"
+              required
+              className={authInputClassName}
+            />
+          </AuthField>
+        </div>
+      </div>
+
+      <div className="grid gap-4 border-t border-primary-navy/[0.06] pt-6 sm:grid-cols-2 dark:border-white/[0.06]">
+        <AuthField label="Password" htmlFor="register-password" icon={LockKeyhole}>
+          <input
+            id="register-password"
+            type="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            className={authInputClassName}
+          />
+        </AuthField>
+        <AuthField label="Confirm password" htmlFor="register-confirm-password" icon={LockKeyhole}>
+          <input
+            id="register-confirm-password"
+            type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            className={authInputClassName}
+          />
+        </AuthField>
+      </div>
 
       {error ? (
         <p
@@ -246,13 +250,6 @@ export function RegisterForm() {
         {isSubmitting ? "Submitting application..." : "Submit application"}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
-
-      <p className="text-center text-sm text-bluewave-gray dark:text-white/[0.62]">
-        Already a member?{" "}
-        <Link href="/login" className="font-semibold text-royal-blue hover:text-ocean-blue">
-          Sign in
-        </Link>
-      </p>
     </form>
   );
 }

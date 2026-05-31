@@ -10,7 +10,7 @@ import { Amount } from "@/components/ui/Amount";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
 import type { AccountType, PageAccount } from "@/types/banking";
@@ -55,7 +55,7 @@ export function AccountsClient() {
     return (
       <EmptyState
         title="No accounts found"
-        message="Seed demo banking data or add account creation flows before reviewing accounts."
+        message="No accounts are linked to your membership yet. Contact member services to open an account."
       />
     );
   }

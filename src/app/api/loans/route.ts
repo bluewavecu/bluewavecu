@@ -6,28 +6,27 @@ import type { LoanOffer, PageLoan } from "@/types/banking";
 
 export const runtime = "nodejs";
 
-const demoLoanOffers: LoanOffer[] = [
+const memberLoanOffers: LoanOffer[] = [
   {
     id: "offer-personal",
     title: "Personal Loan Pre-Qualification",
     description:
-      "Review a sample pre-qualification range based on your membership profile and account history.",
+      "Review an estimated pre-qualification range based on your membership profile and account history.",
     preApprovedAmount: 25000,
     rateRange: "7.49% - 12.99% APR",
     termMonths: 48,
     disclaimer:
-      "This is a demo estimate only. Pre-qualification is not approval or a commitment to lend.",
+      "Pre-qualification is not approval or a commitment to lend. Final terms require application review.",
   },
   {
     id: "offer-auto",
-    title: "Auto Loan Preview",
-    description:
-      "Explore a sample vehicle financing estimate for qualified Bluewave members.",
+    title: "Auto Loan",
+    description: "Competitive vehicle financing for qualified Bluewave members.",
     preApprovedAmount: 35000,
     rateRange: "5.99% - 9.49% APR",
     termMonths: 60,
     disclaimer:
-      "Rates shown are illustrative demo values. Final terms require application review.",
+      "Rates and terms vary by creditworthiness, collateral, and program guidelines. Subject to approval.",
   },
 ];
 
@@ -60,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess({
       loans: serializedLoans,
-      offers: demoLoanOffers,
+      offers: memberLoanOffers,
     });
   } catch (error) {
     return handleApiError(error);

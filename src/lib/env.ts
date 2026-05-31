@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+function resolveDatabaseUrl() {
+  return (
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_PRISMA_URL ??
+    process.env.POSTGRES_URL
+  );
+}
+
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   JWT_SECRET: z
@@ -29,7 +37,7 @@ export function getServerEnv(): ServerEnv {
   }
 
   const result = envSchema.safeParse({
-    DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL: resolveDatabaseUrl(),
     JWT_SECRET: process.env.JWT_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NODE_ENV: process.env.NODE_ENV,

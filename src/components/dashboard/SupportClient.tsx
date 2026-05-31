@@ -9,7 +9,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 const supportContacts = [
   { label: "support@bluewavecu.com", icon: Mail },
   { label: "(646) 776-4480", icon: Phone },
-  { label: "Secure message center pending", icon: MessageSquareText },
+  { label: "Secure message center", icon: MessageSquareText },
 ];
 
 function getStatusLabel(status: string) {
@@ -43,7 +43,7 @@ export function SupportClient() {
     return (
       <EmptyState
         title="No support summary"
-        message="Sign in with a seeded demo member account to review support tickets."
+        message="Sign in to view and manage your support requests."
       />
     );
   }
@@ -81,7 +81,7 @@ export function SupportClient() {
         ) : (
           <EmptyState
             title="No support tickets"
-            message="Create a support ticket after Step 6 support APIs are expanded."
+            message="Submit a support request from Member Support when you need assistance."
             className="mt-5"
           />
         )}

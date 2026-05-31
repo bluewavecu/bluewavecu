@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useDisputes } from "@/hooks/useDisputes";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";

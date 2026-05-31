@@ -27,6 +27,7 @@ pnpm-debug.log*
 # env
 .env*
 !.env.example
+!env.vercel.template
 
 # vercel
 .vercel
@@ -35,3 +36,4 @@ pnpm-debug.log*
 *.tsbuildinfo
 
 /src/generated/prisma
+*.vercel.pulled

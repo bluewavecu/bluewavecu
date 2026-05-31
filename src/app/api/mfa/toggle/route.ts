@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const input = mfaToggleSchema.parse(await request.json());
 
     if (input.method !== "EMAIL") {
-      return apiError("Only email MFA placeholder is available in this step.", 400);
+      return apiError("Only email verification is available at this time.", 400);
     }
 
     const prisma = getPrisma();
@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
 
     void createSecurityNotification({
       userId: payload.userId,
-      title: input.enabled ? "Email MFA enabled" : "Email MFA disabled",
+      title: input.enabled ? "Email verification enabled" : "Email verification disabled",
       message: input.enabled
-        ? "Email verification MFA foundation is enabled. OTP delivery will activate in a later step."
-        : "Email verification MFA was disabled on your account.",
+        ? "Email verification is enabled for sign-in alerts on your account."
+        : "Email verification alerts were disabled on your account.",
       metadata: { href: MEMBER_SECURITY_PATH, method: input.method },
     });
 
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
         verifiedAt: setting.verifiedAt?.toISOString() ?? null,
       },
       message: input.enabled
-        ? "Email MFA placeholder enabled."
-        : "Email MFA placeholder disabled.",
+        ? "Email verification enabled."
+        : "Email verification disabled.",
     });
   } catch (error) {
     return handleApiError(error);

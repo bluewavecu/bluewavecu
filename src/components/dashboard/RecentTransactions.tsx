@@ -1,5 +1,6 @@
 import { ArrowDownLeft, ArrowUpRight, Repeat2 } from "lucide-react";
-import { formatCurrency, recentTransactions as fallbackTransactions } from "@/data/mockBanking";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { cn } from "@/lib/utils";
 import type { DashboardTransaction, TransactionType } from "@/types/banking";
 
@@ -62,28 +63,20 @@ function mapDashboardTransaction(transaction: DashboardTransaction): DisplayTran
   };
 }
 
-function mapFallbackTransaction(
-  transaction: (typeof fallbackTransactions)[number],
-): DisplayTransaction {
-  return {
-    id: transaction.id,
-    date: transaction.date,
-    merchant: transaction.merchant,
-    description: transaction.description,
-    amount: transaction.amount,
-    type: transaction.type as keyof typeof transactionIcons,
-    status: transaction.status,
-  };
-}
-
 export function RecentTransactions({
   transactions,
-  description = "Recent authenticated account activity.",
+  description = "Your most recent account activity.",
 }: RecentTransactionsProps) {
-  const displayTransactions =
-    transactions !== undefined
-      ? transactions.map(mapDashboardTransaction)
-      : fallbackTransactions.map(mapFallbackTransaction);
+  if (!transactions || transactions.length === 0) {
+    return (
+      <EmptyState
+        title="No recent transactions"
+        message="Account activity will appear here as transactions post to your accounts."
+      />
+    );
+  }
+
+  const displayTransactions = transactions.map(mapDashboardTransaction);
 
   return (
     <section

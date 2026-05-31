@@ -21,7 +21,7 @@ export default function MobileAppPage() {
               Mobile app
             </p>
             <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-tight sm:text-6xl">
-              Banking in your pocket, coming soon
+              Mobile banking for Bluewave members
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/[0.74]">
               The Bluewave mobile app is in active development with biometric sign-in,
@@ -56,7 +56,7 @@ export default function MobileAppPage() {
                   <Wrench size={23} aria-hidden="true" />
                 </span>
                 <span className="rounded-full bg-white/[0.10] px-3 py-1 text-xs font-semibold text-light-blue">
-                  Preview build
+                  In active development
                 </span>
               </div>
               <h2 className="mt-8 text-2xl font-semibold">Planned launch features</h2>

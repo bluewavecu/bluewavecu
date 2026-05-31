@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatCurrency } from "@/data/mockBanking";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminTransactions } from "@/hooks/useAdminTransactions";
 import { cn } from "@/lib/utils";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
@@ -238,7 +238,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
   if (error) {
     return (
       <ApiErrorState
-        message={isForbidden ? "Admin access required. Sign in with a demo admin account." : error}
+        message={isForbidden ? "Administrator access required. Sign in with an authorized admin account." : error}
         onRetry={isForbidden ? undefined : refetch}
       />
     );
@@ -360,7 +360,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
               />
             ))
           ) : (
-            <EmptyState title="No other transactions" message="Adjust filters or seed demo data." />
+            <EmptyState title="No other transactions" message="No transactions match your filters." />
           )}
         </section>
       </div>
