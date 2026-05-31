@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ChevronRight, CreditCard, TrendingUp, WalletCards } from "lucide-react";
+import { ChevronRight, CreditCard, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
+import { sortMemberDisplayAccounts } from "@/lib/sortMemberDisplayAccounts";
 import type { AccountType, DashboardAccount } from "@/types/banking";
 
 type BalanceCardsProps = {
@@ -18,35 +19,28 @@ type DisplayAccount = {
   balance: number;
   available: number;
   status: string;
-  trend: string;
   accent: string;
   isCredit: boolean;
 };
 
-const accountMeta: Record<AccountType, { accent: string; trend: string }> = {
+const accountMeta: Record<AccountType, { accent: string }> = {
   CHECKING: {
     accent: "from-ocean-blue to-light-blue",
-    trend: "Active",
   },
   SAVINGS: {
     accent: "from-royal-blue to-ocean-blue",
-    trend: "Growing",
   },
   BUSINESS: {
     accent: "from-primary-navy to-royal-blue",
-    trend: "Business",
   },
   MONEY_MARKET: {
     accent: "from-royal-blue to-light-blue",
-    trend: "Earning",
   },
   CERTIFICATE: {
     accent: "from-ocean-blue to-primary-navy",
-    trend: "Fixed term",
   },
   CREDIT: {
     accent: "from-primary-navy to-royal-blue",
-    trend: "In use",
   },
 };
 
@@ -68,7 +62,6 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
     balance: account.balance,
     available: account.availableBalance,
     status: getStatusLabel(account.status),
-    trend: meta.trend,
     accent: meta.accent,
     isCredit: account.accountType === "CREDIT",
   };
@@ -84,10 +77,10 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
     );
   }
 
-  const displayAccounts = accounts.map(mapDashboardAccount);
+  const displayAccounts = sortMemberDisplayAccounts(accounts).map(mapDashboardAccount);
 
   return (
-    <section aria-labelledby="balance-cards" className="grid gap-4 lg:grid-cols-3">
+    <section aria-labelledby="balance-cards" className="grid gap-3 sm:grid-cols-2">
       <h2 id="balance-cards" className="sr-only">
         Balance Cards
       </h2>
@@ -96,47 +89,45 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
           <Link
             key={account.id}
             href={`/auth/accounts/${account.id}`}
-            className="group block overflow-hidden rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] transition hover:border-ocean-blue/[0.35] hover:shadow-[0_22px_70px_rgba(10,42,94,0.12)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            className="group block overflow-hidden rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_10px_30px_rgba(10,42,94,0.06)] transition hover:border-ocean-blue/[0.30] dark:border-white/[0.08] dark:bg-white/[0.06]"
           >
-            <div className={`h-2 bg-gradient-to-r ${account.accent}`} />
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-bluewave-gray dark:text-white/[0.58]">
-                    {account.type}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold text-primary-navy dark:text-white">
-                    {account.name}
-                  </h3>
+            <div className={`h-1 bg-gradient-to-r ${account.accent}`} />
+            <div className="flex items-center gap-3 p-3.5 sm:p-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-ocean-blue/[0.10] text-royal-blue dark:text-light-blue">
+                {account.isCredit ? (
+                  <CreditCard size={18} aria-hidden="true" />
+                ) : (
+                  <WalletCards size={18} aria-hidden="true" />
+                )}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold uppercase tracking-wide text-bluewave-gray dark:text-white/[0.52]">
+                      {account.type}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-primary-navy dark:text-white">
+                      {account.name}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-bluewave-gray dark:text-white/[0.45]">
+                      {account.isCredit ? "Balance" : "Available"}
+                    </p>
+                    <p className="mt-0.5 text-lg font-semibold text-primary-navy dark:text-white">
+                      {formatCurrency(account.isCredit ? account.balance : account.available)}
+                    </p>
+                  </div>
                 </div>
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
-                  {account.isCredit ? (
-                    <CreditCard size={21} aria-hidden="true" />
-                  ) : (
-                    <WalletCards size={21} aria-hidden="true" />
-                  )}
-                </span>
-              </div>
-              <p className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-royal-blue opacity-0 transition group-hover:opacity-100 dark:text-light-blue">
-                View account
-                <ChevronRight size={14} aria-hidden="true" />
-              </p>
 
-              <div className="mt-7">
-                <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
-                  {account.isCredit ? "Current balance" : "Available balance"}
-                </p>
-                <p className="mt-2 text-3xl font-semibold text-primary-navy dark:text-white">
-                  {formatCurrency(account.isCredit ? account.balance : account.available)}
-                </p>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between border-t border-primary-navy/[0.08] pt-4 text-sm dark:border-white/[0.08]">
-                <AccountNumberDisplay accountNumber={account.number} />
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-ocean-blue/[0.10] px-3 py-1 font-semibold text-royal-blue dark:text-light-blue">
-                  <TrendingUp size={14} aria-hidden="true" />
-                  {account.trend}
-                </span>
+                <div className="mt-2 flex items-center justify-between gap-2 border-t border-primary-navy/[0.06] pt-2 text-xs dark:border-white/[0.06]">
+                  <AccountNumberDisplay accountNumber={account.number} />
+                  <span className="inline-flex items-center gap-1 font-semibold text-royal-blue opacity-80 transition group-hover:opacity-100 dark:text-light-blue">
+                    {account.status}
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </span>
+                </div>
               </div>
             </div>
           </Link>

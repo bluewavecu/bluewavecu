@@ -3,6 +3,7 @@ import { BadgeCheck, ChevronRight, Landmark, ShieldCheck } from "lucide-react";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
+import { sortMemberDisplayAccounts } from "@/lib/sortMemberDisplayAccounts";
 import type { AccountType, DashboardAccount, DashboardLoan } from "@/types/banking";
 
 type AccountOverviewProps = {
@@ -63,7 +64,7 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
 }
 
 export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
-  const displayAccounts = accounts?.map(mapDashboardAccount) ?? [];
+  const displayAccounts = sortMemberDisplayAccounts(accounts ?? []).map(mapDashboardAccount);
   const primaryLoan = loans?.[0];
 
   return (

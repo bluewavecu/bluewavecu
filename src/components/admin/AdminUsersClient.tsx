@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AdminCreateUserForm } from "@/components/admin/AdminCreateUserForm";
+import { adminConsolePath } from "@/lib/adminRoutes";
 import { AdminDataTable } from "@/components/admin/AdminDataTable";
 import { AdminDetailDrawer } from "@/components/admin/AdminDetailDrawer";
 import {
@@ -35,6 +36,9 @@ function formatStatusLabel(status: string) {
     .replace(/_/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
+
+const memberActionLinkClassName =
+  "rounded-full border border-ocean-blue/[0.25] bg-ocean-blue/[0.10] px-3 py-1.5 text-xs font-semibold text-primary-navy transition hover:border-ocean-blue dark:text-white";
 
 export function AdminUsersClient() {
   const [search, setSearch] = useState("");
@@ -217,6 +221,22 @@ export function AdminUsersClient() {
               </td>
               <td className="px-4 py-4">
                 <div className="flex flex-wrap gap-2">
+                  {user.role === "USER" ? (
+                    <>
+                      <Link
+                        href={`${adminConsolePath("adjustments")}?userId=${user.id}`}
+                        className={memberActionLinkClassName}
+                      >
+                        Fund User
+                      </Link>
+                      <Link
+                        href={adminConsolePath("users", user.id, "cards")}
+                        className={memberActionLinkClassName}
+                      >
+                        Add Card
+                      </Link>
+                    </>
+                  ) : null}
                   {statusOptions.map((status) => (
                     <button
                       key={`${user.id}-${status}`}
@@ -270,6 +290,22 @@ export function AdminUsersClient() {
             ) : null}
 
             <div className="flex flex-wrap gap-2">
+              {memberDetail.user.role === "USER" ? (
+                <>
+                  <Link
+                    href={`${adminConsolePath("adjustments")}?userId=${memberDetail.user.id}`}
+                    className={memberActionLinkClassName}
+                  >
+                    Fund User
+                  </Link>
+                  <Link
+                    href={adminConsolePath("users", memberDetail.user.id, "cards")}
+                    className={memberActionLinkClassName}
+                  >
+                    Add Card
+                  </Link>
+                </>
+              ) : null}
               <button
                 type="button"
                 disabled={isUpdating}

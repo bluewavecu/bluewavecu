@@ -33,18 +33,17 @@ function DashboardSkeleton() {
         title="Loading dashboard"
         message="Retrieving your accounts, cards, transactions, and member services."
       />
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-2">
         {skeletonCards.map((item) => (
           <div
             key={item}
-            className="h-56 animate-pulse rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            className="h-28 animate-pulse rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_10px_30px_rgba(10,42,94,0.06)] dark:border-white/[0.08] dark:bg-white/[0.06]"
           >
-            <div className="h-2 rounded-t-lg bg-ocean-blue/[0.28]" />
-            <div className="space-y-5 p-5">
-              <div className="h-4 w-24 rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]" />
-              <div className="h-5 w-44 rounded-full bg-primary-navy/[0.10] dark:bg-white/[0.14]" />
-              <div className="h-9 w-32 rounded-full bg-primary-navy/[0.10] dark:bg-white/[0.14]" />
-              <div className="h-4 w-full rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]" />
+            <div className="h-1 rounded-t-lg bg-ocean-blue/[0.28]" />
+            <div className="space-y-3 p-4">
+              <div className="h-3 w-24 rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]" />
+              <div className="h-5 w-32 rounded-full bg-primary-navy/[0.10] dark:bg-white/[0.14]" />
+              <div className="h-3 w-full rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]" />
             </div>
           </div>
         ))}

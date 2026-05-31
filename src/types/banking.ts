@@ -416,6 +416,13 @@ export type AdminCardApplicationsData = {
   };
 };
 
+export type AdminMemberCardsData = {
+  user: AdminUserSummary;
+  accounts: LinkedAccountSummary[];
+  cards: PageCard[];
+  applications: CardApplicationRecord[];
+};
+
 export type PageLoan = DashboardLoan;
 
 export type LoanOffer = {

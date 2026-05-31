@@ -398,6 +398,118 @@ export async function reviewCardApplication(params: {
   return serializeCardApplication(result.updatedApplication);
 }
 
+export async function issueMemberCard(params: {
+  userId: string;
+  adminId: string;
+  accountId: string;
+  cardType: CardType;
+  spendingLimit?: number;
+}) {
+  const prisma = getPrisma();
+
+  const user = await prisma.user.findUnique({
+    where: { id: params.userId },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      status: true,
+      deletedAt: true,
+      role: true,
+    },
+  });
+
+  if (!user || user.deletedAt || user.role !== "USER") {
+    throw new Error("Member not found.");
+  }
+
+  const account = await prisma.account.findFirst({
+    where: {
+      id: params.accountId,
+      userId: params.userId,
+      status: "ACTIVE",
+    },
+  });
+
+  if (!account) {
+    throw new Error("Select a valid active account for this member.");
+  }
+
+  const existingActiveCard = await prisma.card.findFirst({
+    where: {
+      userId: params.userId,
+      accountId: params.accountId,
+      cardType: params.cardType,
+      status: { in: ["ACTIVE", "LOCKED"] },
+    },
+  });
+
+  if (existingActiveCard) {
+    throw new Error("This account already has an active card of that type.");
+  }
+
+  const { pan: _pan, last4, panPrefix } = generateMastercardPan(MASTERCARD_BIN_PREFIX);
+  const { expiryMonth, expiryYear } = getDefaultCardExpiry();
+  const spendingLimit = params.spendingLimit ?? defaultSpendingLimit(params.cardType);
+
+  const card = await prisma.card.create({
+    data: {
+      userId: params.userId,
+      accountId: params.accountId,
+      cardType: params.cardType,
+      last4,
+      panPrefix,
+      network: "MASTERCARD",
+      expiryMonth,
+      expiryYear,
+      cardholderName: user.fullName,
+      status: "ACTIVE",
+      spendingLimit,
+    },
+    include: {
+      account: {
+        select: {
+          id: true,
+          accountType: true,
+          accountNumber: true,
+        },
+      },
+    },
+  });
+
+  void createAccountNotification({
+    userId: params.userId,
+    title: "Your Mastercard is ready",
+    message: `Your ${params.cardType.toLowerCase()} Mastercard ending ${last4} was issued and is now active in online banking.`,
+    metadata: { href: "/auth/cards" },
+  });
+
+  void writeEventLog({
+    eventType: "CARD_ISSUED_BY_ADMIN",
+    actorId: params.adminId,
+    entityType: "Card",
+    entityId: card.id,
+    message: `Operations issued a ${params.cardType.toLowerCase()} Mastercard ending ${last4} to ${user.fullName}.`,
+    severity: "INFO",
+    metadata: { accountId: params.accountId, panPrefix, last4 },
+  });
+
+  void writeAdminEvent({
+    eventType: "CARD_ISSUED",
+    actorId: params.adminId,
+    entityId: card.id,
+    message: `Issued Mastercard ending ${last4} to ${user.fullName}.`,
+    metadata: {
+      userId: params.userId,
+      cardType: params.cardType,
+      panPrefix,
+    },
+  });
+
+  return serializePageCard(card);
+}
+
 export async function getCardTransactions(cardId: string, userId: string) {
   const prisma = getPrisma();
 

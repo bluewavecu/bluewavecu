@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
@@ -28,6 +29,8 @@ function formatEffectiveAt(value: string) {
 }
 
 export function AdminAdjustmentsClient() {
+  const searchParams = useSearchParams();
+  const preselectedUserId = searchParams.get("userId") ?? "";
   const [statusFilter, setStatusFilter] = useState<AdjustmentStatus | "ALL">("POSTED");
   const [users, setUsers] = useState<AdminUserSummaryWithKyc[]>([]);
   const [accounts, setAccounts] = useState<AdminAccountRecord[]>([]);
@@ -76,6 +79,24 @@ export function AdminAdjustmentsClient() {
     });
     return () => controller.abort();
   }, [fetchAccounts, fetchUsers]);
+
+  useEffect(() => {
+    if (!preselectedUserId || users.length === 0 || accounts.length === 0) {
+      return;
+    }
+
+    if (!users.some((user) => user.id === preselectedUserId)) {
+      return;
+    }
+
+    setUserId(preselectedUserId);
+
+    const memberAccounts = accounts.filter((account) => account.user.id === preselectedUserId);
+
+    if (memberAccounts.length === 1) {
+      setAccountId(memberAccounts[0]!.id);
+    }
+  }, [accounts, preselectedUserId, users]);
 
   const userAccounts = useMemo(() => {
     if (!userId) {

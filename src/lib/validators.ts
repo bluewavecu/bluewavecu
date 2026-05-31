@@ -451,6 +451,12 @@ export const adminReviewCardApplicationSchema = z.object({
   spendingLimit: z.coerce.number().positive().optional(),
 });
 
+export const adminIssueMemberCardSchema = z.object({
+  accountId: z.string().min(1, "Select an account"),
+  cardType: z.enum(["DEBIT", "CREDIT"]),
+  spendingLimit: z.coerce.number().positive().optional(),
+});
+
 export const idDocumentTypeSchema = z.enum([
   "DRIVERS_LICENSE",
   "PASSPORT",
@@ -726,6 +732,7 @@ export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewS
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
 export type CardApplyInput = z.infer<typeof cardApplySchema>;
+export type AdminIssueMemberCardInput = z.infer<typeof adminIssueMemberCardSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
 export type CardActionInput = z.infer<typeof cardActionSchema>;
 export type LoanApplyInput = z.infer<typeof loanApplySchema>;
