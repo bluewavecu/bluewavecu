@@ -2,7 +2,7 @@
 
 import { CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
 import { BalanceCards } from "@/components/dashboard/BalanceCards";
@@ -21,6 +21,7 @@ import {
   membershipStatusTone,
 } from "@/lib/membershipStatus";
 import { withPhotoCacheBuster } from "@/lib/memberAvatar";
+import { hasSeenKycVerifiedNotice, markKycVerifiedNoticeSeen } from "@/lib/kycNotice";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const skeletonCards = ["balance", "savings", "card"];
@@ -54,6 +55,20 @@ function DashboardSkeleton() {
 export function DashboardClient() {
   const { data, error, isLoading, refetch } = useDashboardData();
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showVerifiedNotice, setShowVerifiedNotice] = useState(false);
+
+  useEffect(() => {
+    if (!data || data.kycSummary.kycStatus !== "VERIFIED") {
+      return;
+    }
+
+    if (hasSeenKycVerifiedNotice(data.user.id)) {
+      return;
+    }
+
+    setShowVerifiedNotice(true);
+    markKycVerifiedNoticeSeen(data.user.id);
+  }, [data]);
 
   async function handlePhotoUpload(file: File) {
     setIsUploadingPhoto(true);
@@ -194,7 +209,7 @@ export function DashboardClient() {
             </Link>
           </div>
         </section>
-      ) : (
+      ) : showVerifiedNotice ? (
         <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
           <div className="flex gap-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
@@ -202,17 +217,32 @@ export function DashboardClient() {
             </span>
             <div>
               <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
-                KYC status: {data.kycSummary.kycStatus.replaceAll("_", " ")}
+                KYC status: VERIFIED
               </h2>
               <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-                {data.kycSummary.kycStatus === "VERIFIED"
-                  ? "Your identity verification is complete."
-                  : "Your profile is being verified by member services."}
+                Your identity verification is complete.
               </p>
             </div>
           </div>
         </section>
-      )}
+      ) : data.kycSummary.kycStatus === "SUBMITTED" ||
+        data.kycSummary.kycStatus === "UNDER_REVIEW" ? (
+        <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+          <div className="flex gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300">
+              <ShieldCheck size={21} aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
+                KYC status: {data.kycSummary.kycStatus.replaceAll("_", " ")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
+                Your profile is being verified by member services.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <QuickActions />
