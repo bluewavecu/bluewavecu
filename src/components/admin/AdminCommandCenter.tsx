@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminCommandPanel, AdminMetricCard } from "@/components/admin/AdminMetricCard";
+import { AdminOverviewQuickAccess } from "@/components/admin/AdminOverviewQuickAccess";
 import { AdminOperationalAlerts } from "@/components/admin/AdminOperationalAlerts";
 import { AdminQuickActions } from "@/components/admin/AdminQuickActions";
 import { AdminStatusBadge, formatStatusLabel } from "@/components/admin/AdminStatusBadge";
@@ -108,6 +109,8 @@ export function AdminCommandCenter() {
           href="/lex/auth/accounts"
         />
       </div>
+
+      <AdminOverviewQuickAccess />
 
       <AdminOperationalAlerts alerts={data.alerts} onRefresh={() => void refetch()} />
 
