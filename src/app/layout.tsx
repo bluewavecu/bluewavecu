@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display } from "next/font/google";
 import "@/styles/globals.css";
 import { ClientProviders } from "@/components/providers/ClientProviders";
+import { CrawlerBlockHead } from "@/components/seo/CrawlerBlockHead";
 import { getServerLocale } from "@/i18n/getLocale";
 import { getLocaleDirection } from "@/i18n/config";
 import { blockSearchIndexing } from "@/lib/siteMetadata";
@@ -36,6 +37,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={getLocaleDirection(locale)}>
+      <head>
+        <CrawlerBlockHead />
+      </head>
       <body className={`${playfair.variable} bg-background text-foreground antialiased`}>
         <ClientProviders initialLocale={locale}>{children}</ClientProviders>
       </body>

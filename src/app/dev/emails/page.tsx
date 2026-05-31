@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEmailPreviewDefinitions } from "@/lib/emailPreviews";
+import { blockSearchIndexing } from "@/lib/siteMetadata";
 
 export const metadata = {
-  title: "Email previews | Bluewave Credit Union",
-  robots: "noindex, nofollow",
+  ...blockSearchIndexing,
+  title: "Email previews",
 };
 
 export default function EmailPreviewIndexPage() {

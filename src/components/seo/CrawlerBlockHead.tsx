@@ -1,4 +1,4 @@
-import type { MetadataRoute } from "next";
+import { crawlerBlockMetaContent } from "@/lib/siteMetadata";
 
 const googleBotAgents = [
   "Googlebot",
@@ -18,11 +18,13 @@ const googleBotAgents = [
   "DuplexWeb-Google",
 ] as const;
 
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: [
-      { userAgent: "*", disallow: "/" },
-      ...googleBotAgents.map((userAgent) => ({ userAgent, disallow: "/" as const })),
-    ],
-  };
+export function CrawlerBlockHead() {
+  return (
+    <>
+      <meta name="robots" content={crawlerBlockMetaContent} />
+      {googleBotAgents.map((agent) => (
+        <meta key={agent} name={agent} content={crawlerBlockMetaContent} />
+      ))}
+    </>
+  );
 }
