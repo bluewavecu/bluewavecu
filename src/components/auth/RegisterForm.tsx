@@ -24,37 +24,27 @@ import {
 import { US_STATE_OPTIONS } from "@/data/usStates";
 import { postJson } from "@/lib/clientApi";
 import { MEMBER_VERIFY_EMAIL_PATH } from "@/lib/authRoutes";
-import { cn } from "@/lib/utils";
 import type { RegisterResponse } from "@/types/banking";
+
+function resolveAccountTypes(selected: SignupAccountType): SignupAccountType[] {
+  if (selected === "SAVINGS") {
+    return ["SAVINGS"];
+  }
+
+  return ["SAVINGS", selected];
+}
 
 export function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedAccountTypes, setSelectedAccountTypes] = useState<SignupAccountType[]>(
-    DEFAULT_SIGNUP_ACCOUNT_TYPES,
+  const [selectedAccountType, setSelectedAccountType] = useState<SignupAccountType>(
+    DEFAULT_SIGNUP_ACCOUNT_TYPES[0] ?? "SAVINGS",
   );
-
-  function toggleAccountType(accountType: SignupAccountType, required?: boolean) {
-    if (required) {
-      return;
-    }
-
-    setSelectedAccountTypes((current) =>
-      current.includes(accountType)
-        ? current.filter((value) => value !== accountType)
-        : [...current, accountType],
-    );
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
-    if (!selectedAccountTypes.includes("SAVINGS")) {
-      setError("A savings account is required for Bluewave membership.");
-      return;
-    }
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get("password") ?? "");
@@ -81,7 +71,7 @@ export function RegisterForm() {
       state: String(formData.get("state") ?? ""),
       postalCode: String(formData.get("postalCode") ?? ""),
       password,
-      accountTypes: selectedAccountTypes,
+      accountTypes: resolveAccountTypes(selectedAccountType),
     });
 
     setIsSubmitting(false);
@@ -142,9 +132,6 @@ export function RegisterForm() {
               pattern="[A-Za-z0-9_]{3,32}"
               className={authInputClassName}
             />
-            <p className="mt-2 text-xs text-bluewave-gray dark:text-white/[0.58]">
-              3–32 characters. Letters, numbers, and underscores only. You&apos;ll use this to sign in.
-            </p>
           </AuthField>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -291,67 +278,24 @@ export function RegisterForm() {
         </div>
 
         <aside className="rounded-xl border border-primary-navy/[0.08] bg-[#f7fbff] p-5 dark:border-white/[0.08] dark:bg-white/[0.04]">
-          <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/15 text-royal-blue dark:text-light-blue">
-              <WalletCards size={20} aria-hidden="true" />
-            </span>
-            <div>
-              <h3 className="text-lg font-semibold text-primary-navy dark:text-white">
-                Choose your accounts
-              </h3>
-              <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-                Select the account types you want opened with your membership. Savings is required.
-                Account numbers are assigned after admin approval.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => {
-              const checked = selectedAccountTypes.includes(option.value);
-
-              return (
-                <label
-                  key={option.value}
-                  className={cn(
-                    "flex cursor-pointer gap-3 rounded-lg border p-4 transition",
-                    checked
-                      ? "border-ocean-blue bg-white shadow-[0_12px_34px_rgba(0,168,232,0.10)] dark:bg-white/[0.06]"
-                      : "border-primary-navy/[0.08] bg-white/70 dark:border-white/[0.08] dark:bg-white/[0.03]",
-                    option.required && "cursor-default",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={option.required}
-                    onChange={() => toggleAccountType(option.value, option.required)}
-                    className="mt-1 h-4 w-4 rounded border-primary-navy/20 text-ocean-blue focus:ring-ocean-blue"
-                  />
-                  <span>
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                        {option.label}
-                      </span>
-                      {option.required ? (
-                        <span className="rounded-full bg-ocean-blue/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-royal-blue dark:text-light-blue">
-                          Required
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="mt-1 block text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-                      {option.description}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-
-          <p className="mt-4 text-xs leading-5 text-bluewave-gray dark:text-white/[0.52]">
-            Selected accounts appear in online banking right away. Twelve-digit account numbers
-            beginning with 33 are issued once member services approves your application.
-          </p>
+          <AuthField label="Choose account" htmlFor="register-account-type" icon={WalletCards}>
+            <select
+              id="register-account-type"
+              name="accountType"
+              required
+              value={selectedAccountType}
+              onChange={(event) =>
+                setSelectedAccountType(event.target.value as SignupAccountType)
+              }
+              className={authInputClassName}
+            >
+              {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </AuthField>
         </aside>
       </div>
 
