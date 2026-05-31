@@ -43,7 +43,6 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [transactionPin, setTransactionPin] = useState("");
-  const [confirmTransactionPin, setConfirmTransactionPin] = useState("");
   const [annualIncomeRange, setAnnualIncomeRange] = useState("");
   const [mathAnswer, setMathAnswer] = useState("");
   const [mathToken, setMathToken] = useState("");
@@ -73,11 +72,6 @@ export function RegisterForm() {
       return;
     }
 
-    if (transactionPin !== confirmTransactionPin) {
-      setError("Transaction PINs must match.");
-      return;
-    }
-
     if (transactionPin.length !== 6) {
       setError("Choose a 6-digit transaction PIN.");
       return;
@@ -101,7 +95,6 @@ export function RegisterForm() {
       postalCode: String(formData.get("postalCode") ?? ""),
       password: passwordValue,
       transactionPin,
-      confirmTransactionPin,
       accountTypes: resolveSignupAccountTypes(selectedAccountType),
       mathToken,
       mathAnswer,
@@ -354,42 +347,21 @@ export function RegisterForm() {
             </AuthField>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <AuthField label="Transaction PIN" htmlFor="register-transaction-pin" icon={LockKeyhole}>
-              <PasswordInput
-                id="register-transaction-pin"
-                name="transactionPin"
-                autoComplete="off"
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                required
-                value={transactionPin}
-                onChange={(event) =>
-                  setTransactionPin(event.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-              />
-            </AuthField>
-            <AuthField
-              label="Confirm transaction PIN"
-              htmlFor="register-confirm-transaction-pin"
-              icon={LockKeyhole}
-            >
-              <PasswordInput
-                id="register-confirm-transaction-pin"
-                name="confirmTransactionPin"
-                autoComplete="off"
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                required
-                value={confirmTransactionPin}
-                onChange={(event) =>
-                  setConfirmTransactionPin(event.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-              />
-            </AuthField>
-          </div>
+          <AuthField label="Transaction PIN" htmlFor="register-transaction-pin" icon={LockKeyhole}>
+            <PasswordInput
+              id="register-transaction-pin"
+              name="transactionPin"
+              autoComplete="off"
+              inputMode="numeric"
+              pattern="\d{6}"
+              maxLength={6}
+              required
+              value={transactionPin}
+              onChange={(event) =>
+                setTransactionPin(event.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+            />
+          </AuthField>
 
           <MathChallengeField
             key={mathChallengeKey}

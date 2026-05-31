@@ -112,7 +112,6 @@ const registerSchemaBase = z
       .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
     password: z.string().min(8, "Password must be at least 8 characters").max(128),
     transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits"),
-    confirmTransactionPin: z.string().regex(/^\d{6}$/, "Confirm your 6-digit PIN"),
     accountTypes: z
       .array(z.enum(SIGNUP_ACCOUNT_TYPE_VALUES))
       .min(1, "Select at least one account type")
@@ -120,11 +119,7 @@ const registerSchemaBase = z
         message: "A savings account is required for membership",
       }),
   })
-  .refine((input) => input.transactionPin === input.confirmTransactionPin, {
-    message: "Transaction PINs must match",
-    path: ["confirmTransactionPin"],
-  })
-  .transform(({ confirmTransactionPin: _confirmTransactionPin, ...input }) => ({
+  .transform((input) => ({
     ...input,
     fullName: `${input.firstName} ${input.lastName}`.trim(),
     country: "US",
