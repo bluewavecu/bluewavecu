@@ -1,6 +1,9 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { StatementExportData } from "@/lib/statementExport";
+import { formatStatementPeriodLabel } from "@/lib/statementPeriod";
+import { INSTITUTION } from "@/lib/institution";
+import { drawPdfFooter, drawPdfHeader } from "@/lib/pdfBranding";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", {
@@ -9,67 +12,115 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-function formatMonthYear(month: number, year: number) {
-  return new Date(year, month - 1, 1).toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+function formatMoneyColumn(amount: number | null) {
+  if (amount === null || amount === 0) {
+    return "—";
+  }
+
+  return formatCurrency(amount);
 }
 
 export function generateStatementPdfBuffer(data: StatementExportData): Buffer {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const showAccountColumn = data.rows.some(
+    (row, index, rows) => index > 0 && row.maskedAccount !== rows[0]?.maskedAccount,
+  );
+
+  const { contentStartY } = drawPdfHeader(doc, {
+    title: "Account Statement",
+    subtitle: formatStatementPeriodLabel(data.period),
+  });
+
+  let metaY = contentStartY;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  doc.text(`Member: ${data.memberName}`, 40, metaY);
+  doc.text(`Account: ${data.accountLabel}`, 40, metaY + 14);
+
+  const summaryY = metaY + 34;
+  doc.setFillColor(247, 251, 255);
+  doc.setDrawColor(220, 228, 238);
+  doc.roundedRect(40, summaryY, pageWidth - 80, 52, 4, 4, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("Bluewave Credit Union", 40, 48);
+  doc.setFontSize(9);
+  doc.setTextColor(10, 42, 94);
+  doc.text("Opening balance", 52, summaryY + 18);
+  doc.text("Total inflow", 52 + (pageWidth - 80) / 3, summaryY + 18);
+  doc.text("Total outflow", 52 + ((pageWidth - 80) / 3) * 2, summaryY + 18);
+  doc.text("Closing balance", pageWidth - 52, summaryY + 18, { align: "right" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text("Account Statement", 40, 68);
-  doc.text(`Member: ${data.memberName}`, 40, 88);
-  doc.text(`Account: ${data.accountLabel}`, 40, 104);
-  doc.text(`Period: ${formatMonthYear(data.month, data.year)}`, 40, 120);
+  doc.setTextColor(20, 20, 20);
+  doc.text(
+    data.openingBalance !== null ? formatCurrency(data.openingBalance) : "—",
+    52,
+    summaryY + 36,
+  );
+  doc.text(formatCurrency(data.totalInflow), 52 + (pageWidth - 80) / 3, summaryY + 36);
+  doc.text(formatCurrency(data.totalOutflow), 52 + ((pageWidth - 80) / 3) * 2, summaryY + 36);
+  doc.text(
+    data.closingBalance !== null ? formatCurrency(data.closingBalance) : "—",
+    pageWidth - 52,
+    summaryY + 36,
+    { align: "right" },
+  );
 
-  if (data.openingBalance !== null || data.closingBalance !== null) {
-    const balanceParts: string[] = [];
+  const tableHead = showAccountColumn
+    ? [["Date", "Description", "Inflow", "Outflow", "Balance", "Account"]]
+    : [["Date", "Description", "Inflow", "Outflow", "Balance"]];
 
-    if (data.openingBalance !== null) {
-      balanceParts.push(`Opening balance: ${formatCurrency(data.openingBalance)}`);
-    }
-
-    if (data.closingBalance !== null) {
-      balanceParts.push(`Closing balance: ${formatCurrency(data.closingBalance)}`);
-    }
-
-    doc.text(balanceParts.join("   |   "), 40, 136);
-  }
-
-  autoTable(doc, {
-    startY: data.openingBalance !== null || data.closingBalance !== null ? 152 : 136,
-    head: [["Date", "Description", "Type", "Amount", "Status", "Balance", "Account"]],
-    body: data.rows.map((row) => [
+  const tableBody = data.rows.map((row) => {
+    const inflow = row.amount > 0 ? row.amount : null;
+    const outflow = row.amount < 0 ? Math.abs(row.amount) : null;
+    const base = [
       row.date,
       row.description,
-      row.type,
-      formatCurrency(row.amount),
-      row.status,
+      formatMoneyColumn(inflow),
+      formatMoneyColumn(outflow),
       row.balanceAfter !== null ? formatCurrency(row.balanceAfter) : "—",
-      row.maskedAccount,
-    ]),
-    styles: { fontSize: 8, cellPadding: 4 },
-    headStyles: { fillColor: [10, 42, 94] },
+    ];
+
+    if (showAccountColumn) {
+      base.push(row.maskedAccount);
+    }
+
+    return base;
+  });
+
+  autoTable(doc, {
+    startY: summaryY + 68,
+    head: tableHead,
+    body: tableBody,
+    styles: {
+      fontSize: 9,
+      cellPadding: 5,
+      lineColor: [230, 236, 244],
+      lineWidth: 0.5,
+      textColor: [30, 30, 30],
+    },
+    headStyles: {
+      fillColor: [10, 42, 94],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    columnStyles: {
+      0: { cellWidth: 62 },
+      2: { halign: "right" },
+      3: { halign: "right" },
+      4: { halign: "right", fontStyle: "bold" },
+      ...(showAccountColumn ? { 5: { cellWidth: 72 } } : {}),
+    },
+    alternateRowStyles: { fillColor: [252, 253, 255] },
     margin: { left: 40, right: 40 },
   });
 
-  const footerY = doc.internal.pageSize.getHeight() - 32;
-  doc.setFontSize(8);
-  doc.setTextColor(90, 90, 90);
-  doc.text(
-    "This statement is for informational purposes only. Full account numbers are never displayed.",
-    40,
-    footerY,
-    { maxWidth: pageWidth - 80 },
+  drawPdfFooter(
+    doc,
+    `${INSTITUTION.ncuaDisclaimer} This statement is for informational purposes only. Full account numbers are never displayed.`,
   );
 
   const arrayBuffer = doc.output("arraybuffer");

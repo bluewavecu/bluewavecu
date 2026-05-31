@@ -9,7 +9,7 @@ import {
   Smartphone,
   Wallet,
 } from "lucide-react";
-import type { BankingProduct, FeatureCard, HomeTestimonial } from "@/types/home";
+import type { BankingProduct, FeatureCard, HomeHeritageBlock, HomeTestimonial } from "@/types/home";
 
 export const stats = [
   { value: "24/7", label: "Digital access" },
@@ -57,21 +57,38 @@ export const features: FeatureCard[] = [
   },
 ];
 
+export const homeImages = {
+  hero: "/images/marketing/home-hero.webp",
+  heritage: "/images/marketing/home-hall.webp",
+  security: "/images/marketing/home-vault.webp",
+} as const;
+
+export const heritageBlock: HomeHeritageBlock = {
+  image: homeImages.heritage,
+  imageAlt: "Classic banking desk with ledgers, forms, and member account paperwork",
+};
+
 export const products: BankingProduct[] = [
   {
     title: "Personal Banking",
     description: "Everyday share draft and share savings, transfers, bill pay, and digital statements.",
-    accent: "from-ocean-blue to-light-blue",
+    accent: "from-primary-navy via-royal-blue to-ocean-blue",
+    image: "/images/marketing/home-personal.jpg",
+    imageAlt: "Member making an everyday purchase with a friendly, approachable payment experience",
   },
   {
     title: "Business Banking",
     description: "Business checking, team payments, vendor transfers, and cash-flow tools.",
-    accent: "from-royal-blue to-ocean-blue",
+    accent: "from-brand-navy via-royal-blue to-ocean-blue",
+    image: "/images/marketing/home-business.jpg",
+    imageAlt: "Diverse team collaborating around a table in a warm, people-first workspace",
   },
   {
     title: "Lending",
     description: "Personal, auto, and home equity lending with member-focused rates and service.",
-    accent: "from-primary-navy to-royal-blue",
+    accent: "from-primary-navy to-brand-navy",
+    image: "/images/marketing/home-lending.jpg",
+    imageAlt: "Happy couple holding keys outside their new home",
   },
 ];
 

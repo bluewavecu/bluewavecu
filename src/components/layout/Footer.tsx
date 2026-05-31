@@ -44,7 +44,7 @@ export function Footer() {
   const { t } = useTranslation();
 
   return (
-    <footer id="support" className="bg-brand-navy text-white">
+    <footer id="support" className="border-t border-classic-gold/25 bg-brand-navy text-white">
       <div className="section-shell py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1.45fr]">
           <div>
@@ -95,7 +95,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-8">
+        <div className="mt-12 border-t border-classic-gold/20 pt-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
               <p className="text-sm text-white/[0.58]">

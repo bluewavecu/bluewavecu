@@ -46,10 +46,11 @@ export function TestimonialsCarousel() {
   );
 
   return (
-    <section className="bg-background pb-16 sm:pb-20" aria-label="Member stories">
+    <section className="classic-marble border-t border-classic-gold/20 pb-16 sm:pb-20" aria-label="Member stories">
       <div className="section-shell">
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase text-ocean-blue">Member stories</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-ocean-blue">Member stories</p>
+          <div className="gold-rule mt-4 max-w-xs" aria-hidden="true" />
         </div>
 
         <div className="overflow-hidden">
@@ -63,22 +64,17 @@ export function TestimonialsCarousel() {
               className="grid gap-5 lg:grid-cols-3"
             >
               {visibleTestimonials.map((testimonial) => (
-                <article
-                  key={testimonial.id}
-                  className="min-h-72 rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_20px_70px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue">
+                <article key={testimonial.id} className="marketing-card min-h-72">
+                  <span className="marketing-icon-wrap">
                     <Quote size={21} aria-hidden="true" />
                   </span>
                   <p className="mt-6 text-base leading-7 text-primary-navy">
                     &quot;{testimonial.quote}&quot;
                   </p>
-                  <div className="mt-7 border-t border-primary-navy/[0.08] pt-5">
-                    <h3 className="font-semibold text-primary-navy">
-                      {testimonial.name}
-                    </h3>
+                  <div className="mt-7 border-t border-classic-gold/20 pt-5">
+                    <h3 className="font-display font-semibold text-primary-navy">{testimonial.name}</h3>
                     <p className="mt-2 flex items-center gap-2 text-sm text-bluewave-gray">
-                      <MapPin size={15} className="text-ocean-blue" aria-hidden="true" />
+                      <MapPin size={15} className="text-classic-gold" aria-hidden="true" />
                       {testimonial.location}
                     </p>
                   </div>

@@ -21,13 +21,9 @@ export function NewsroomPage() {
       <section className="bg-background py-16 sm:py-20">
         <div className="section-shell grid gap-5 lg:grid-cols-2">
           {newsArticles.map((article, index) => (
-            <MotionReveal
-              key={article.id}
-              delay={index * 0.04}
-              className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_70px_rgba(10,42,94,0.08)]"
-            >
+            <MotionReveal key={article.id} delay={index * 0.04} className="marketing-card">
               <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full bg-ocean-blue/[0.12] px-3 py-1 text-xs font-semibold text-royal-blue">
+                <span className="rounded-sm border border-classic-gold/30 bg-classic-gold-muted/40 px-3 py-1 text-xs font-semibold text-primary-navy">
                   {article.category}
                 </span>
                 <span className="text-xs text-bluewave-gray">
@@ -39,7 +35,7 @@ export function NewsroomPage() {
                   · {article.readMinutes} min read
                 </span>
               </div>
-              <h2 className="mt-5 text-xl font-semibold text-primary-navy">
+              <h2 className="font-display mt-5 text-xl font-semibold text-primary-navy">
                 <Link href={`/newsroom/${article.id}`} className="hover:text-royal-blue">
                   {article.title}
                 </Link>

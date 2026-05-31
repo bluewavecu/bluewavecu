@@ -1,5 +1,18 @@
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { getPrisma } from "@/lib/prisma";
+import type { StatementPeriod } from "@/lib/statementPeriod";
+
+export type { StatementPeriod } from "@/lib/statementPeriod";
+export {
+  STATEMENT_MAX_PERIOD,
+  STATEMENT_MIN_PERIOD,
+  buildStatementMonthOptions,
+  formatStatementPeriodLabel,
+  getDefaultStatementPeriodValue,
+  isPeriodInAllowedRange,
+  parseStatementPeriodValue,
+  resolveStatementPeriod,
+} from "@/lib/statementPeriod";
 
 export type StatementRow = {
   date: string;
@@ -13,12 +26,13 @@ export type StatementRow = {
 
 export type StatementExportData = {
   memberName: string;
-  month: number;
-  year: number;
+  period: StatementPeriod;
   accountLabel: string;
   rows: StatementRow[];
   openingBalance: number | null;
   closingBalance: number | null;
+  totalInflow: number;
+  totalOutflow: number;
 };
 
 export function parseStatementMonth(value: string | null) {
@@ -52,12 +66,11 @@ export function parseStatementYear(value: string | null) {
 export async function fetchStatementExportData(params: {
   userId: string;
   accountId?: string;
-  month: number;
-  year: number;
+  period: StatementPeriod;
 }): Promise<StatementExportData> {
   const prisma = getPrisma();
-  const periodStart = new Date(Date.UTC(params.year, params.month - 1, 1));
-  const periodEnd = new Date(Date.UTC(params.year, params.month, 1));
+  const periodStart = new Date(Date.UTC(params.period.startYear, params.period.startMonth - 1, 1));
+  const periodEnd = new Date(Date.UTC(params.period.endYear, params.period.endMonth, 1));
 
   const user = await prisma.user.findUnique({
     where: { id: params.userId },
@@ -184,14 +197,26 @@ export async function fetchStatementExportData(params: {
     orderBy: { createdAt: "desc" },
   });
 
+  let totalInflow = 0;
+  let totalOutflow = 0;
+
+  for (const row of rows) {
+    if (row.amount > 0) {
+      totalInflow += row.amount;
+    } else if (row.amount < 0) {
+      totalOutflow += Math.abs(row.amount);
+    }
+  }
+
   return {
     memberName: user.fullName,
-    month: params.month,
-    year: params.year,
+    period: params.period,
     accountLabel,
     rows,
     openingBalance: openingEntry ? openingEntry.balanceAfter.toNumber() : null,
     closingBalance: closingEntry ? closingEntry.balanceAfter.toNumber() : null,
+    totalInflow,
+    totalOutflow,
   };
 }
 
@@ -209,20 +234,20 @@ export function statementDataToCsv(data: StatementExportData) {
   const header = [
     "Date",
     "Description",
-    "Type",
-    "Amount",
+    "Inflow",
+    "Outflow",
+    "Balance",
     "Status",
-    "Balance After",
     "Account",
   ];
 
   const body = data.rows.map((row) => [
     row.date,
     row.description,
-    row.type,
-    row.amount.toFixed(2),
-    row.status,
+    row.amount > 0 ? row.amount.toFixed(2) : "",
+    row.amount < 0 ? Math.abs(row.amount).toFixed(2) : "",
     row.balanceAfter !== null ? row.balanceAfter.toFixed(2) : "",
+    row.status,
     row.maskedAccount,
   ]);
 
@@ -233,14 +258,15 @@ export function statementDataToCsv(data: StatementExportData) {
 
 export function buildStatementFilename(params: {
   format: "csv" | "pdf";
-  year: number;
-  month: number;
+  period: StatementPeriod;
   accountLabel?: string;
 }) {
-  const monthPart = String(params.month).padStart(2, "0");
+  const startPart = `${params.period.startYear}-${String(params.period.startMonth).padStart(2, "0")}`;
+  const endPart = `${params.period.endYear}-${String(params.period.endMonth).padStart(2, "0")}`;
+  const periodPart = startPart === endPart ? startPart : `${startPart}_to_${endPart}`;
   const accountPart = params.accountLabel
     ? params.accountLabel.replaceAll("*", "").replaceAll(" ", "").trim()
     : "all";
 
-  return `bluewave-statement-${accountPart}-${params.year}-${monthPart}.${params.format}`;
+  return `bluewave-statement-${accountPart}-${periodPart}.${params.format}`;
 }

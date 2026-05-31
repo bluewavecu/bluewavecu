@@ -203,7 +203,7 @@ export const es = {
       },
       statements: {
         title: "Estados de cuenta",
-        subtitle: "CSV o PDF por cuenta y mes.",
+        subtitle: "Descargue CSV o PDF de enero de 2025 a junio de 2026.",
       },
       payees: {
         title: "Beneficiarios",
@@ -388,6 +388,17 @@ export const es = {
       featuresTitle: "Todo lo que los miembros necesitan",
       productsTitle: "Productos para la vida real",
       securityTitle: "Seguridad en la que puede confiar",
+      heritageEyebrow: "Nuestra base",
+      heritageTitle: "Construido sobre la propiedad de los miembros y la banca responsable",
+      heritageDescription:
+        "Desde cuentas corrientes y de ahorro hasta préstamos y servicios de tesorería, Bluewave ofrece la confiabilidad de la banca clásica con la comodidad digital.",
+      heritageBullet1: "Estructura de propiedad de los miembros sin fines de lucro",
+      heritageBullet2: "Depósitos asegurados por la NCUA",
+      heritageBullet3: "Servicio local con acceso digital nacional",
+      trustMemberOwned: "Propiedad de los miembros",
+      trustNcua: "Asegurado por NCUA",
+      trustLocal: "Sirviendo Dallas–Fort Worth",
+      trustEstablished: "Est. 1987",
     },
   },
   status: {

@@ -2,6 +2,7 @@ import { ArrowRight, CircleHelp, Mail, MessageSquare, Phone } from "lucide-react
 import Link from "next/link";
 import { MarketingCtaBand } from "@/components/marketing/MarketingCtaBand";
 import { MarketingHero } from "@/components/marketing/MarketingHero";
+import { MarketingSectionHeader } from "@/components/marketing/MarketingSectionHeader";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MarketingSplitSection } from "@/components/marketing/MarketingSplitSection";
 import { MotionReveal } from "@/components/home/MotionReveal";
@@ -47,12 +48,8 @@ export function SupportHubPage() {
             const Icon = item.icon;
 
             return (
-              <MotionReveal
-                key={item.title}
-                delay={index * 0.05}
-                className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_18px_70px_rgba(10,42,94,0.08)]"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue">
+              <MotionReveal key={item.title} delay={index * 0.05} className="marketing-card">
+                <span className="marketing-icon-wrap">
                   <Icon size={20} aria-hidden="true" />
                 </span>
                 <h2 className="mt-5 text-lg font-semibold text-primary-navy">{item.title}</h2>
@@ -88,20 +85,15 @@ export function SupportHubPage() {
 
       <section className="bg-[linear-gradient(180deg,#f7fbff_0%,#edf7fd_100%)] py-16 sm:py-20">
         <div className="section-shell">
-          <MotionReveal className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase text-ocean-blue">FAQ</p>
-            <h2 className="mt-3 text-3xl font-semibold text-primary-navy">Common questions</h2>
+          <MotionReveal>
+            <MarketingSectionHeader eyebrow="FAQ" title="Common questions" />
           </MotionReveal>
 
           <div className="mt-8 grid gap-4">
             {supportFaqs.map((item, index) => (
-              <MotionReveal
-                key={item.question}
-                delay={index * 0.03}
-                className="rounded-lg border border-primary-navy/[0.08] bg-white p-5"
-              >
+              <MotionReveal key={item.question} delay={index * 0.03} className="marketing-card">
                 <h3 className="flex items-start gap-3 font-semibold text-primary-navy">
-                  <CircleHelp size={18} className="mt-0.5 shrink-0 text-ocean-blue" aria-hidden="true" />
+                  <CircleHelp size={18} className="mt-0.5 shrink-0 text-classic-gold" aria-hidden="true" />
                   {item.question}
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-bluewave-gray">{item.answer}</p>

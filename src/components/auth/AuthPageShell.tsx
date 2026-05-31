@@ -54,10 +54,11 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
   const showAlternate = variant === "memberLogin" || variant === "register";
 
   return (
-    <main className="min-h-screen bg-[#eef5fb] dark:bg-[#061222]">
+    <main className="min-h-screen bg-[#faf8f4] dark:bg-[#061222]">
       <div className="grid lg:min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        <section className="relative hidden overflow-hidden bg-primary-navy p-10 text-white lg:flex lg:flex-col">
-          <div className="banking-grid absolute inset-0 opacity-[0.32]" />
+        <section className="relative hidden overflow-hidden bg-[#04101f] p-10 text-white lg:flex lg:flex-col">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,#04101f_0%,#0A2A5E_50%,#0D47A1_100%)]" />
+          <div className="banking-grid absolute inset-0 opacity-[0.22]" />
           <div className="relative z-10 flex h-full flex-col">
             <div className="flex items-center justify-between gap-4">
               <BrandLogo displayHeight={40} priority />
@@ -68,22 +69,23 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
             </div>
 
             <div className="my-auto max-w-lg py-10">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/[0.16] bg-white/[0.08] px-3 py-2 text-sm font-semibold text-light-blue">
-                <ShieldCheck size={16} aria-hidden="true" />
+              <p className="inline-flex items-center gap-2 rounded-sm border border-classic-gold/35 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-classic-gold-muted">
+                <ShieldCheck size={15} aria-hidden="true" />
                 {t(`${prefix}.marketingBadge`)}
               </p>
-              <h1 className="mt-6 text-4xl font-semibold leading-tight xl:text-5xl">
+              <h1 className="font-display mt-8 text-4xl font-semibold leading-[1.06] xl:text-5xl">
                 {t(`${prefix}.marketingHeadline`)}
               </h1>
-              <p className="mt-4 text-base leading-7 text-white/[0.72]">{t(`${prefix}.marketingBody`)}</p>
+              <div className="gold-rule mt-6 max-w-xs" aria-hidden="true" />
+              <p className="mt-6 text-base leading-7 text-white/[0.78]">{t(`${prefix}.marketingBody`)}</p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-white/[0.12] bg-white/[0.08] p-4 backdrop-blur-sm">
-                  <ShieldCheck size={18} className="text-light-blue" aria-hidden="true" />
+                <div className="rounded-sm border border-classic-gold/25 bg-white/[0.08] p-4 backdrop-blur-sm">
+                  <ShieldCheck size={18} className="text-classic-gold" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">{t(`${prefix}.marketingHighlight1`)}</p>
                 </div>
-                <div className="rounded-lg border border-white/[0.12] bg-white/[0.08] p-4 backdrop-blur-sm">
-                  <ShieldCheck size={18} className="text-light-blue" aria-hidden="true" />
+                <div className="rounded-sm border border-classic-gold/25 bg-white/[0.08] p-4 backdrop-blur-sm">
+                  <ShieldCheck size={18} className="text-classic-gold" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">{t(`${prefix}.marketingHighlight2`)}</p>
                 </div>
               </div>
@@ -91,7 +93,7 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
           </div>
         </section>
 
-        <section className="flex flex-col px-4 py-6 sm:px-6 sm:py-8 lg:min-h-screen lg:py-10">
+        <section className="classic-marble flex flex-col px-4 py-6 sm:px-6 sm:py-8 lg:min-h-screen lg:py-10">
           <div
             className={cn(
               "mx-auto w-full lg:flex lg:flex-1 lg:flex-col",
@@ -105,17 +107,18 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
 
             <div
               className={cn(
-                "rounded-xl border border-primary-navy/[0.08] bg-white shadow-[0_24px_80px_rgba(10,42,94,0.10)] dark:border-white/[0.08] dark:bg-[#0a1a2e]",
+                "marketing-panel border-classic-gold/20 dark:border-white/[0.08] dark:bg-[#0a1a2e]",
                 wide && "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col",
               )}
             >
-              <div className="border-b border-primary-navy/[0.06] px-5 py-4 dark:border-white/[0.06] sm:px-8 sm:py-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ocean-blue sm:text-sm">
+              <div className="border-b border-classic-gold/20 px-5 py-4 dark:border-white/[0.06] sm:px-8 sm:py-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ocean-blue sm:text-sm">
                   {t(`${prefix}.eyebrow`)}
                 </p>
-                <h2 className="mt-1 text-xl font-semibold text-primary-navy dark:text-white sm:mt-2 sm:text-2xl lg:text-3xl">
+                <h2 className="font-display mt-2 text-xl font-semibold text-primary-navy dark:text-white sm:text-2xl lg:text-3xl">
                   {t(`${prefix}.title`)}
                 </h2>
+                <div className="gold-rule mt-4 max-w-[8rem]" aria-hidden="true" />
                 <p className="mt-1 text-sm leading-5 text-bluewave-gray dark:text-white/[0.62] sm:mt-2 sm:leading-6">
                   {t(`${prefix}.description`)}
                 </p>
@@ -131,7 +134,7 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
               </div>
 
               {showAlternate ? (
-                <div className="border-t border-primary-navy/[0.06] px-6 py-4 text-center text-sm text-bluewave-gray dark:border-white/[0.06] dark:text-white/[0.62] sm:px-8">
+                <div className="border-t border-classic-gold/20 px-6 py-4 text-center text-sm text-bluewave-gray dark:border-white/[0.06] dark:text-white/[0.62] sm:px-8">
                   {t(`${prefix}.alternatePrompt`)}{" "}
                   <Link
                     href={variant === "memberLogin" ? MEMBER_REGISTER_PATH : "/auth/login"}

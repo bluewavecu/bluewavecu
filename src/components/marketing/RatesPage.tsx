@@ -20,10 +20,10 @@ export function RatesPage() {
 
       <section className="bg-background py-16 sm:py-20">
         <div className="section-shell">
-          <MotionReveal className="overflow-hidden rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_20px_70px_rgba(10,42,94,0.08)]">
+          <MotionReveal className="marketing-panel">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-primary-navy/[0.08] bg-[#f7fbff]">
+                <thead className="border-b border-classic-gold/25 bg-classic-marble">
                   <tr>
                     <th className="px-5 py-4 font-semibold text-primary-navy">Product</th>
                     <th className="px-5 py-4 font-semibold text-primary-navy">Rate</th>
@@ -35,7 +35,7 @@ export function RatesPage() {
                   {rateRows.map((row) => (
                     <tr key={row.product} className="border-b border-primary-navy/[0.06]">
                       <td className="px-5 py-4 font-medium text-primary-navy">{row.product}</td>
-                      <td className="px-5 py-4 text-royal-blue">{row.apy}</td>
+                      <td className="px-5 py-4 font-display text-royal-blue">{row.apy}</td>
                       <td className="px-5 py-4 text-bluewave-gray">{row.minBalance}</td>
                       <td className="px-5 py-4 text-bluewave-gray">{row.notes}</td>
                     </tr>
@@ -54,7 +54,12 @@ export function RatesPage() {
             <ButtonLink href="/savings" size="lg">
               Explore savings
             </ButtonLink>
-            <ButtonLink href="/loans" variant="ghost" size="lg" className="border border-primary-navy/[0.10]">
+            <ButtonLink
+              href="/loans"
+              variant="ghost"
+              size="lg"
+              className="border border-primary-navy/10"
+            >
               View lending
             </ButtonLink>
           </div>

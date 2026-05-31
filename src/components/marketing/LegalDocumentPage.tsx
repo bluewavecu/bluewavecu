@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
+import { MarketingSectionHeader } from "@/components/marketing/MarketingSectionHeader";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { INSTITUTION, formatInstitutionAddress } from "@/lib/institution";
 
@@ -24,20 +25,22 @@ export function LegalDocumentPage({
 }: LegalDocumentPageProps) {
   return (
     <MarketingShell>
-      <section className="bg-background py-16 sm:py-20">
+      <section className="classic-marble border-b border-classic-gold/20 py-16 sm:py-20">
         <div className="section-shell max-w-3xl">
           <MotionReveal>
-            <p className="text-sm font-semibold uppercase text-ocean-blue">Legal</p>
-            <h1 className="mt-3 text-4xl font-semibold text-primary-navy">{title}</h1>
-            <p className="mt-4 text-base leading-7 text-bluewave-gray">{description}</p>
-            <p className="mt-3 text-sm text-bluewave-gray">Effective {effectiveDate}</p>
+            <MarketingSectionHeader eyebrow="Legal" title={title} description={description} />
+            <p className="mt-4 text-sm text-bluewave-gray">Effective {effectiveDate}</p>
           </MotionReveal>
+        </div>
+      </section>
 
-          <div className="mt-10 space-y-8">
+      <section className="bg-background py-16 sm:py-20">
+        <div className="section-shell max-w-3xl">
+          <div className="space-y-8">
             {sections.map((section, index) => (
               <MotionReveal key={section.title} delay={index * 0.03}>
-                <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-6">
-                  <h2 className="text-xl font-semibold text-primary-navy">{section.title}</h2>
+                <article className="marketing-card">
+                  <h2 className="font-display text-xl font-semibold text-primary-navy">{section.title}</h2>
                   <div className="mt-4 space-y-3 text-sm leading-6 text-bluewave-gray">
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>

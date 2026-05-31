@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { CheckCircle2 } from "lucide-react";
 import { MotionReveal } from "@/components/home/MotionReveal";
+import { MarketingSectionHeader } from "@/components/marketing/MarketingSectionHeader";
 import { cn } from "@/lib/utils";
 import type { MarketingSplitBlock } from "@/types/marketing";
 
@@ -10,7 +11,7 @@ type MarketingSplitSectionProps = {
 
 export function MarketingSplitSection({ block }: MarketingSplitSectionProps) {
   return (
-    <section className="bg-[linear-gradient(180deg,#f7fbff_0%,#edf7fd_100%)] py-16 sm:py-20">
+    <section className="classic-marble py-16 sm:py-20">
       <div className="section-shell">
         <div
           className={cn(
@@ -19,18 +20,18 @@ export function MarketingSplitSection({ block }: MarketingSplitSectionProps) {
           )}
         >
           <MotionReveal>
-            <p className="text-sm font-semibold uppercase text-ocean-blue">{block.eyebrow}</p>
-            <h2 className="mt-3 text-3xl font-semibold text-primary-navy sm:text-4xl">
-              {block.title}
-            </h2>
-            <p className="mt-5 text-base leading-7 text-bluewave-gray">{block.description}</p>
+            <MarketingSectionHeader
+              eyebrow={block.eyebrow}
+              title={block.title}
+              description={block.description}
+            />
             {block.bullets ? (
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-8 space-y-3">
                 {block.bullets.map((item) => (
                   <li key={item} className="flex gap-3 text-sm leading-6 text-primary-navy">
                     <CheckCircle2
                       size={18}
-                      className="mt-0.5 shrink-0 text-ocean-blue"
+                      className="mt-0.5 shrink-0 text-classic-gold"
                       aria-hidden="true"
                     />
                     {item}
@@ -41,7 +42,7 @@ export function MarketingSplitSection({ block }: MarketingSplitSectionProps) {
           </MotionReveal>
 
           <MotionReveal delay={0.08}>
-            <div className="overflow-hidden rounded-lg border border-primary-navy/[0.08] shadow-[0_24px_80px_rgba(10,42,94,0.12)]">
+            <div className="overflow-hidden rounded-sm border border-primary-navy/10 shadow-[0_24px_80px_rgba(10,42,94,0.12)]">
               <Image
                 src={block.image}
                 alt={block.imageAlt}

@@ -1,8 +1,12 @@
 "use client";
 
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAccounts } from "@/hooks/useAccounts";
+import {
+  buildStatementMonthOptions,
+  getDefaultStatementPeriodValue,
+} from "@/lib/statementPeriod";
 import { cn } from "@/lib/utils";
 
 type StatementExportCardProps = {
@@ -15,10 +19,11 @@ const fieldClassName =
 
 export function StatementExportCard({ className, showHeader = true }: StatementExportCardProps) {
   const { data } = useAccounts();
-  const now = new Date();
+  const monthOptions = useMemo(() => buildStatementMonthOptions(), []);
+  const defaultPeriod = getDefaultStatementPeriodValue();
   const [accountId, setAccountId] = useState("");
-  const [month, setMonth] = useState(String(now.getMonth() + 1));
-  const [year, setYear] = useState(String(now.getFullYear()));
+  const [fromPeriod, setFromPeriod] = useState(defaultPeriod);
+  const [toPeriod, setToPeriod] = useState(defaultPeriod);
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +36,8 @@ export function StatementExportCard({ className, showHeader = true }: StatementE
     setSuccessMessage(null);
 
     const params = new URLSearchParams({
-      month,
-      year,
+      fromPeriod,
+      toPeriod,
       format,
     });
 
@@ -65,7 +70,7 @@ export function StatementExportCard({ className, showHeader = true }: StatementE
       const filenameMatch = disposition?.match(/filename="(.+)"/);
       const defaultExt = format === "pdf" ? "pdf" : "csv";
       const filename =
-        filenameMatch?.[1] ?? `bluewave-statement-${year}-${month}.${defaultExt}`;
+        filenameMatch?.[1] ?? `bluewave-statement-${fromPeriod}-to-${toPeriod}.${defaultExt}`;
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -95,7 +100,7 @@ export function StatementExportCard({ className, showHeader = true }: StatementE
           <div>
             <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Statements</h2>
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-              CSV or PDF for the selected month.
+              Download CSV or PDF for any period from January 2025 through June 2026.
             </p>
           </div>
         </div>
@@ -119,33 +124,30 @@ export function StatementExportCard({ className, showHeader = true }: StatementE
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold text-primary-navy dark:text-white">Month</span>
+          <span className="text-sm font-semibold text-primary-navy dark:text-white">From</span>
           <select
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
+            value={fromPeriod}
+            onChange={(event) => setFromPeriod(event.target.value)}
             className={fieldClassName}
           >
-            {Array.from({ length: 12 }, (_, index) => {
-              const value = String(index + 1);
-              return (
-                <option key={value} value={value}>
-                  {new Date(2026, index, 1).toLocaleString("en-US", { month: "long" })}
-                </option>
-              );
-            })}
+            {monthOptions.map((option) => (
+              <option key={`from-${option.value}`} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold text-primary-navy dark:text-white">Year</span>
+          <span className="text-sm font-semibold text-primary-navy dark:text-white">To</span>
           <select
-            value={year}
-            onChange={(event) => setYear(event.target.value)}
+            value={toPeriod}
+            onChange={(event) => setToPeriod(event.target.value)}
             className={fieldClassName}
           >
-            {[now.getFullYear(), now.getFullYear() - 1].map((value) => (
-              <option key={value} value={String(value)}>
-                {value}
+            {monthOptions.map((option) => (
+              <option key={`to-${option.value}`} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

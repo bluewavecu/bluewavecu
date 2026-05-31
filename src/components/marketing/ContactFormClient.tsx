@@ -17,7 +17,7 @@ const topics = [
 ];
 
 const contactInputClassName =
-  "mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue";
+  "mt-2 w-full rounded-sm border border-primary-navy/[0.10] bg-[#faf8f4] px-4 py-3 text-sm outline-none focus:border-classic-gold/60";
 
 type ContactFormClientProps = {
   defaultTopic?: string;
@@ -119,7 +119,7 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
 
       <form
         onSubmit={(event) => void handleSubmit(event)}
-        className="rounded-lg border border-primary-navy/[0.08] bg-white p-6 shadow-[0_20px_70px_rgba(10,42,94,0.08)] sm:p-8"
+        className="marketing-card !p-6 sm:!p-8"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">

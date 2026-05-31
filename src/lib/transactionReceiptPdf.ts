@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import type { TransactionReceiptData } from "@/lib/transactionReceiptExport";
-import { INSTITUTION, formatInstitutionAddress } from "@/lib/institution";
+import { INSTITUTION } from "@/lib/institution";
+import { drawPdfFooter, drawPdfHeader } from "@/lib/pdfBranding";
 
 function formatCurrency(amount: number) {
   const absoluteValue = Math.abs(amount);
@@ -46,44 +47,32 @@ export function generateTransactionReceiptPdfBuffer(data: TransactionReceiptData
   const pageWidth = doc.internal.pageSize.getWidth();
   const displayDate = data.postedAt ?? data.createdAt;
 
-  doc.setFillColor(10, 42, 94);
-  doc.rect(0, 0, pageWidth, 88, "F");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(255, 255, 255);
-  doc.text(INSTITUTION.legalName, 40, 42);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text("Transaction Receipt", 40, 62);
-  doc.text(formatInstitutionAddress(), 40, 78);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(10, 42, 94);
-  doc.text("Payment confirmation", 40, 118);
+  const { contentStartY } = drawPdfHeader(doc, {
+    title: "Transaction Receipt",
+    subtitle: "Payment confirmation",
+  });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(90, 90, 90);
-  doc.text(`Reference ${data.reference}`, 40, 136);
-  doc.text(`Issued ${formatDateTime(new Date().toISOString())}`, 40, 150);
+  doc.text(`Reference ${data.reference}`, 40, contentStartY);
+  doc.text(`Issued ${formatDateTime(new Date().toISOString())}`, 40, contentStartY + 14);
 
   doc.setDrawColor(220, 228, 238);
-  doc.line(40, 166, pageWidth - 40, 166);
+  doc.line(40, contentStartY + 28, pageWidth - 40, contentStartY + 28);
 
+  const amountY = contentStartY + 58;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);
   doc.setTextColor(10, 42, 94);
-  doc.text(formatCurrency(data.amount), 40, 204);
+  doc.text(formatCurrency(data.amount), 40, amountY);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(60, 60, 60);
-  doc.text(data.merchant ?? data.description, 40, 226);
+  doc.text(data.merchant ?? data.description, 40, amountY + 22);
 
-  let y = 258;
+  let y = amountY + 54;
   const rows: Array<[string, string]> = [
     ["Member", data.memberName],
     ["Account", `${data.accountLabel} · ${data.maskedAccountNumber}`],
@@ -112,14 +101,9 @@ export function generateTransactionReceiptPdfBuffer(data: TransactionReceiptData
     y += 24;
   }
 
-  const footerY = doc.internal.pageSize.getHeight() - 48;
-  doc.setFontSize(8);
-  doc.setTextColor(110, 110, 110);
-  doc.text(
+  drawPdfFooter(
+    doc,
     `${INSTITUTION.ncuaDisclaimer} Keep this receipt for your records. Questions: ${INSTITUTION.phone.display} · ${INSTITUTION.email}`,
-    40,
-    footerY,
-    { maxWidth: pageWidth - 80 },
   );
 
   return Buffer.from(doc.output("arraybuffer"));

@@ -1,8 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import { Playfair_Display } from "next/font/google";
 import "@/styles/globals.css";
 import { ClientProviders } from "@/components/providers/ClientProviders";
 import { getServerLocale } from "@/i18n/getLocale";
 import { getLocaleDirection } from "@/i18n/config";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Bluewave Credit Union",
@@ -29,7 +36,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={getLocaleDirection(locale)}>
-      <body className="bg-background text-foreground antialiased">
+      <body className={`${playfair.variable} bg-background text-foreground antialiased`}>
         <ClientProviders initialLocale={locale}>{children}</ClientProviders>
       </body>
     </html>

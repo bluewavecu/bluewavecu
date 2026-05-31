@@ -39,7 +39,7 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
 
   return (
     <MarketingShell>
-      <section className="bg-background py-16 sm:py-20">
+      <section className="classic-marble border-b border-classic-gold/20 py-16 sm:py-20">
         <div className="section-shell max-w-3xl">
           <MotionReveal>
             <Link
@@ -50,7 +50,7 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
               Back to newsroom
             </Link>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-ocean-blue/[0.12] px-3 py-1 text-xs font-semibold text-royal-blue">
+              <span className="rounded-sm border border-classic-gold/30 bg-white/70 px-3 py-1 text-xs font-semibold text-primary-navy">
                 {article.category}
               </span>
               <span className="text-xs text-bluewave-gray">
@@ -62,11 +62,16 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
                 · {article.readMinutes} min read
               </span>
             </div>
-            <h1 className="mt-5 text-4xl font-semibold text-primary-navy">{article.title}</h1>
-            <p className="mt-4 text-lg leading-8 text-bluewave-gray">{article.summary}</p>
+            <h1 className="font-display mt-5 text-4xl font-semibold text-primary-navy">{article.title}</h1>
+            <div className="gold-rule mt-6 max-w-xs" aria-hidden="true" />
+            <p className="mt-6 text-lg leading-8 text-bluewave-gray">{article.summary}</p>
           </MotionReveal>
+        </div>
+      </section>
 
-          <div className="mt-8 space-y-4">
+      <section className="bg-background py-16 sm:py-20">
+        <div className="section-shell max-w-3xl">
+          <div className="space-y-4">
             {article.body.map((paragraph) => (
               <MotionReveal key={paragraph}>
                 <p className="text-base leading-7 text-bluewave-gray">{paragraph}</p>

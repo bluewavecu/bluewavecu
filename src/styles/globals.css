@@ -9,6 +9,9 @@
   --color-ocean-blue: #00a8e8;
   --color-light-blue: #5ed7ff;
   --color-bluewave-gray: #6b7280;
+  --color-classic-gold: #c9a962;
+  --color-classic-gold-muted: #e8dcc0;
+  --color-marble: #f4f1ea;
   --color-background: #f7fbff;
   --color-foreground: #071526;
   --font-sans: Inter, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
@@ -80,6 +83,74 @@ a {
       linear-gradient(rgba(94, 215, 255, 0.12) 1px, transparent 1px),
       linear-gradient(90deg, rgba(94, 215, 255, 0.12) 1px, transparent 1px);
     background-size: 42px 42px;
+  }
+
+  .classic-marble {
+    background-color: var(--color-marble);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.85) 0%, transparent 45%),
+      radial-gradient(circle at 80% 0%, rgba(201, 169, 98, 0.08) 0%, transparent 35%),
+      linear-gradient(180deg, #faf8f4 0%, #f0ebe3 100%);
+  }
+
+  .gold-rule {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(201, 169, 98, 0.15) 12%,
+      rgba(201, 169, 98, 0.75) 50%,
+      rgba(201, 169, 98, 0.15) 88%,
+      transparent 100%
+    );
+  }
+
+  .font-display {
+    font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  }
+
+  .marketing-card {
+    border: 1px solid rgba(10, 42, 94, 0.1);
+    border-radius: 2px;
+    background: #fff;
+    padding: 1.5rem;
+    box-shadow: 0 16px 60px rgba(10, 42, 94, 0.06);
+    transition:
+      transform 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .marketing-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(201, 169, 98, 0.4);
+  }
+
+  .marketing-icon-wrap {
+    display: inline-flex;
+    height: 3rem;
+    width: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    border: 1px solid rgba(201, 169, 98, 0.25);
+    background: rgba(232, 220, 192, 0.3);
+    color: var(--color-primary-navy);
+  }
+
+  .marketing-panel {
+    overflow: hidden;
+    border: 1px solid rgba(10, 42, 94, 0.1);
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: 0 20px 70px rgba(10, 42, 94, 0.08);
+  }
+
+  .marketing-dark-band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--color-primary-navy);
+    color: #fff;
   }
 }
 

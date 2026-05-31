@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ContactFormClient } from "@/components/marketing/ContactFormClient";
 import { MarketingCtaBand } from "@/components/marketing/MarketingCtaBand";
 import { MarketingHero } from "@/components/marketing/MarketingHero";
+import { MarketingSectionHeader } from "@/components/marketing/MarketingSectionHeader";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { marketingImages } from "@/data/marketingPages";
@@ -50,20 +51,18 @@ export function ContactPage({ defaultTopic, defaultMessage }: ContactPageProps) 
       <section id="contact-form" className="bg-background py-16 sm:py-20">
         <div className="section-shell grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
           <MotionReveal className="space-y-5">
-            <div>
-              <p className="text-sm font-semibold uppercase text-ocean-blue">Visit or call</p>
-              <h2 className="mt-3 text-3xl font-semibold text-primary-navy">Member support channels</h2>
-              <p className="mt-3 text-sm leading-6 text-bluewave-gray">
-                Member services: {INSTITUTION.memberServicesHours}
-              </p>
-            </div>
+            <MarketingSectionHeader
+              eyebrow="Visit or call"
+              title="Member support channels"
+              description={`Member services: ${INSTITUTION.memberServicesHours}`}
+            />
 
             <div className="grid gap-4">
               {contactChannels.map((item) => {
                 const Icon = item.icon;
                 const content = (
                   <>
-                    <Icon size={18} className="text-ocean-blue" aria-hidden="true" />
+                    <Icon size={18} className="text-classic-gold" aria-hidden="true" />
                     <span className="text-sm text-primary-navy">{item.label}</span>
                   </>
                 );
@@ -72,15 +71,12 @@ export function ContactPage({ defaultTopic, defaultMessage }: ContactPageProps) 
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-lg border border-primary-navy/[0.08] bg-white p-4 transition hover:border-ocean-blue/[0.30]"
+                    className="marketing-card flex items-center gap-3 !p-4 hover:!-translate-y-0"
                   >
                     {content}
                   </Link>
                 ) : (
-                  <div
-                    key={item.label}
-                    className="flex items-center gap-3 rounded-lg border border-primary-navy/[0.08] bg-white p-4"
-                  >
+                  <div key={item.label} className="marketing-card flex items-center gap-3 !p-4">
                     {content}
                   </div>
                 );

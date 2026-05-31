@@ -10,6 +10,13 @@ export type BankingProduct = {
   title: string;
   description: string;
   accent: string;
+  image: string;
+  imageAlt: string;
+};
+
+export type HomeHeritageBlock = {
+  image: string;
+  imageAlt: string;
 };
 
 export type HomeTestimonial = {

@@ -204,7 +204,7 @@ export const en = {
       },
       statements: {
         title: "Statements",
-        subtitle: "CSV or PDF by account and month.",
+        subtitle: "Download CSV or PDF for any period from January 2025 through June 2026.",
       },
       payees: {
         title: "Recipients",
@@ -449,10 +449,10 @@ export const en = {
       },
     },
     home: {
-      badge: "Digital banking for members",
-      headline: "Banking that feels clear, secure, and member-first",
+      badge: "Member-owned · NCUA insured",
+      headline: "The trust of traditional banking, with the ease of digital.",
       description:
-        "Bluewave Credit Union delivers everyday accounts, transfers, cards, and support with the transparency members expect.",
+        "Bluewave Credit Union pairs the trust of traditional core banking with secure online tools for accounts, transfers, cards, and member service.",
       primaryCta: "Open an account",
       secondaryCta: "Sign in",
       loginToOnlineBanking: "Login To Online Banking",
@@ -463,9 +463,20 @@ export const en = {
       statsPaymentMovement: "Payment movement",
       statsAccountControls: "Account controls",
       statsMobileExperience: "Mobile experience",
-      featuresTitle: "Everything members need in one place",
-      productsTitle: "Products built for real life",
-      securityTitle: "Security you can trust",
+      featuresTitle: "Core banking services, thoughtfully digital",
+      productsTitle: "Accounts and lending for every stage",
+      securityTitle: "Security rooted in institutional standards",
+      heritageEyebrow: "Our foundation",
+      heritageTitle: "Built on member ownership and responsible banking",
+      heritageDescription:
+        "From share draft and savings accounts to lending and treasury services, Bluewave delivers the steady reliability of classic banking with the convenience members expect today.",
+      heritageBullet1: "Member-owned, not-for-profit structure",
+      heritageBullet2: "Deposits insured by NCUA",
+      heritageBullet3: "Local service with nationwide digital access",
+      trustMemberOwned: "Member-owned",
+      trustNcua: "NCUA insured",
+      trustLocal: "Serving Dallas–Fort Worth",
+      trustEstablished: "Est. 1987",
     },
   },
   status: {
