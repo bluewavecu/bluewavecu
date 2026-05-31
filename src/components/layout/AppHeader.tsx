@@ -3,6 +3,7 @@
 import { AppHeaderSearch } from "@/components/layout/AppHeaderSearch";
 import { AppUserBadge } from "@/components/layout/AppUserBadge";
 import { AuthLogo } from "@/components/layout/AuthLogo";
+import { MemberMobileNav } from "@/components/layout/MemberMobileNav";
 import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
@@ -35,7 +36,8 @@ export function AppHeader({
         )}
       >
         <div className="flex items-start justify-between gap-3 px-4 pb-2 pt-3 sm:px-6 lg:px-8">
-          <div className="pointer-events-auto flex min-w-0 items-center gap-3 lg:hidden">
+          <div className="pointer-events-auto flex min-w-0 items-center gap-2 lg:hidden">
+            <MemberMobileNav />
             <AuthLogo href={MEMBER_DASHBOARD_PATH} displayHeight={32} />
           </div>
 

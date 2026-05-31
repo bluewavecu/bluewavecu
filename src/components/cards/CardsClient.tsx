@@ -14,7 +14,6 @@ import {
 import { BluewaveMastercard } from "@/components/cards/BluewaveMastercard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
-import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatStatusLabel, StatusBadge, statusToTone } from "@/components/ui/StatusBadge";
 import { buttonVariants } from "@/components/ui/Button";
@@ -22,7 +21,7 @@ import { formatCurrency } from "@/lib/formatCurrency";
 import { useCards } from "@/hooks/useCards";
 import { postJson } from "@/lib/clientApi";
 import { cn } from "@/lib/utils";
-import type { CardsData, CardTransactionSummary, CardType } from "@/types/banking";
+import type { CardApplicationRecord, CardsData, CardTransactionSummary, CardType } from "@/types/banking";
 
 const cardControls = [
   { action: "LOCK" as const, label: "Lock Card", icon: LockKeyhole },
@@ -84,7 +83,7 @@ function CardTransactionsPanel({ cardId }: { cardId: string }) {
   if (transactions.length === 0) {
     return (
       <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-        No card purchases yet. Activity will appear here when you use this Mastercard.
+        No purchases on this card yet.
       </p>
     );
   }
@@ -123,13 +122,47 @@ function CardTransactionsPanel({ cardId }: { cardId: string }) {
   );
 }
 
+function ApplicationStatusCard({ application }: { application: CardApplicationRecord }) {
+  return (
+    <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-semibold text-primary-navy dark:text-white">
+            {application.cardType} Mastercard
+          </p>
+          <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+            {application.linkedAccount?.displayName} · Submitted{" "}
+            {new Date(application.createdAt).toLocaleString()}
+          </p>
+        </div>
+        <StatusBadge
+          label={formatStatusLabel(application.status)}
+          tone={statusToTone(application.status)}
+        />
+      </div>
+      {application.status === "PENDING" ? (
+        <p className="mt-3 text-sm text-bluewave-gray dark:text-white/[0.62]">
+          We&apos;ll notify you when your application is reviewed.
+        </p>
+      ) : null}
+      {application.reviewNote ? (
+        <p className="mt-3 text-sm text-bluewave-gray dark:text-white/[0.62]">
+          Note: {application.reviewNote}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
 function ApplyCardPanel({
   accounts,
-  hasPending,
+  cards,
+  applications,
   onApplied,
 }: {
   accounts: CardsData["accounts"];
-  hasPending: boolean;
+  cards: CardsData["cards"];
+  applications: CardsData["applications"];
   onApplied: () => Promise<void>;
 }) {
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
@@ -138,8 +171,45 @@ function ApplyCardPanel({
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (accounts.some((account) => account.id === accountId)) {
+      return;
+    }
+
+    setAccountId(accounts[0]?.id ?? "");
+  }, [accountId, accounts]);
+
+  const pendingApplication = useMemo(
+    () =>
+      applications.find(
+        (application) =>
+          application.status === "PENDING" &&
+          application.accountId === accountId &&
+          application.cardType === cardType,
+      ),
+    [accountId, applications, cardType],
+  );
+
+  const hasActiveCard = useMemo(
+    () =>
+      cards.some(
+        (card) =>
+          card.accountId === accountId &&
+          card.cardType === cardType &&
+          (card.status === "ACTIVE" || card.status === "LOCKED"),
+      ),
+    [accountId, cardType, cards],
+  );
+
+  const canApply = !pendingApplication && !hasActiveCard;
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+
+    if (!canApply) {
+      return;
+    }
+
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);
@@ -162,44 +232,22 @@ function ApplyCardPanel({
 
   if (accounts.length === 0) {
     return (
-      <InfoPanel title="Apply for a Mastercard">
-        You need an active Bluewave account before applying for a card.{" "}
-        <Link href="/auth/accounts" className="font-semibold text-royal-blue">
-          View your accounts
-        </Link>
-        .
-      </InfoPanel>
+      <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
+        <p className="text-sm text-bluewave-gray dark:text-white/[0.62]">
+          You need an active account before applying.{" "}
+          <Link href="/auth/accounts" className="font-semibold text-royal-blue dark:text-light-blue">
+            View accounts
+          </Link>
+        </p>
+      </article>
     );
   }
 
   return (
-    <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
-            Apply for a Mastercard
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-            Request a Bluewave debit or credit Mastercard linked to your membership profile and
-            mailing address. Approved cards are issued on the 552901 Mastercard range.
-          </p>
-        </div>
-        <BluewaveMastercard
-          cardholderName="Your Name"
-          maskedPan="5529 01•• •••• ••••"
-          expiryLabel="••/••"
-          cardType={cardType}
-          className="w-full max-w-[320px]"
-        />
-      </div>
-
-      {hasPending ? (
-        <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-          You already have a card application under review. We will notify you when it is approved.
-        </p>
-      ) : (
-        <form onSubmit={(event) => void handleSubmit(event)} className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="block">
+    <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_12px_40px_rgba(10,42,94,0.06)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <form onSubmit={(event) => void handleSubmit(event)} className="grid flex-1 gap-4 md:grid-cols-2">
+          <label className="block md:col-span-2">
             <span className="text-sm font-semibold text-primary-navy dark:text-white">Linked account</span>
             <select
               value={accountId}
@@ -226,36 +274,43 @@ function ApplyCardPanel({
             </select>
           </label>
 
-          <div className="md:col-span-2">
-            <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-              Your legal name and mailing address from your profile will be attached to this
-              application.{" "}
-              <Link href="/auth/profile" className="font-semibold text-royal-blue dark:text-light-blue">
-                Review profile
-              </Link>
-              .
-            </p>
-          </div>
-
-          {error ? <p className="md:col-span-2 text-sm text-red-700 dark:text-red-300">{error}</p> : null}
-          {success ? (
-            <p className="md:col-span-2 text-sm text-emerald-700 dark:text-emerald-300">{success}</p>
-          ) : null}
-
-          <div className="md:col-span-2">
+          <div className="flex items-end">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !canApply}
               className={buttonVariants({
-                className: "inline-flex disabled:cursor-not-allowed disabled:opacity-60",
+                className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
               })}
             >
               <Plus size={18} aria-hidden="true" />
               {isSubmitting ? "Submitting..." : "Apply for card"}
             </button>
           </div>
+
+          {pendingApplication ? (
+            <p className="md:col-span-2 text-sm text-bluewave-gray dark:text-white/[0.62]">
+              This account already has a {cardType.toLowerCase()} application under review.
+            </p>
+          ) : null}
+          {hasActiveCard ? (
+            <p className="md:col-span-2 text-sm text-bluewave-gray dark:text-white/[0.62]">
+              This account already has an active {cardType.toLowerCase()} card.
+            </p>
+          ) : null}
+          {error ? <p className="md:col-span-2 text-sm text-red-700 dark:text-red-300">{error}</p> : null}
+          {success ? (
+            <p className="md:col-span-2 text-sm text-emerald-700 dark:text-emerald-300">{success}</p>
+          ) : null}
         </form>
-      )}
+
+        <BluewaveMastercard
+          cardholderName="Your Name"
+          maskedPan="5529 01•• •••• ••••"
+          expiryLabel="••/••"
+          cardType={cardType}
+          className="mx-auto w-full max-w-[300px] shrink-0 lg:mx-0"
+        />
+      </div>
     </article>
   );
 }
@@ -265,8 +320,8 @@ export function CardsClient() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [pendingCardId, setPendingCardId] = useState<string | null>(null);
 
-  const hasPendingApplication = useMemo(
-    () => data?.applications.some((application) => application.status === "PENDING") ?? false,
+  const openApplications = useMemo(
+    () => data?.applications.filter((application) => application.status !== "APPROVED") ?? [],
     [data?.applications],
   );
 
@@ -303,62 +358,19 @@ export function CardsClient() {
 
   return (
     <section className="grid gap-5">
-      <InfoPanel title="Bluewave Mastercard">
-        Apply for a debit or credit Mastercard linked to your membership details. Approved cards use
-        the 552901 Mastercard range and show purchase activity here in online banking.
-      </InfoPanel>
-
       <ApplyCardPanel
         accounts={data.accounts}
-        hasPending={hasPendingApplication}
+        cards={data.cards}
+        applications={data.applications}
         onApplied={refetch}
       />
 
-      {data.applications
-        .filter((application) => application.status !== "APPROVED")
-        .map((application) => (
-          <article
-            key={application.id}
-            className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-semibold text-primary-navy dark:text-white">
-                  {application.cardType} Mastercard application
-                </p>
-                <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  {application.linkedAccount?.displayName} · Submitted{" "}
-                  {new Date(application.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <StatusBadge
-                label={formatStatusLabel(application.status)}
-                tone={statusToTone(application.status)}
-              />
-            </div>
-            <div className="mt-4 grid gap-2 text-sm text-bluewave-gray dark:text-white/[0.62] sm:grid-cols-2">
-              <p>
-                <span className="font-semibold text-primary-navy dark:text-white">Name:</span>{" "}
-                {application.cardholderName}
-              </p>
-              <p>
-                <span className="font-semibold text-primary-navy dark:text-white">Email:</span>{" "}
-                {application.email}
-              </p>
-              <p className="sm:col-span-2 whitespace-pre-line">
-                <span className="font-semibold text-primary-navy dark:text-white">Address:</span>{" "}
-                {application.formattedAddress}
-              </p>
-              {application.reviewNote ? <p className="sm:col-span-2">Note: {application.reviewNote}</p> : null}
-            </div>
-          </article>
-        ))}
+      {openApplications.map((application) => (
+        <ApplicationStatusCard key={application.id} application={application} />
+      ))}
 
-      {data.cards.length === 0 ? (
-        <EmptyState
-          title="No active cards yet"
-          message="Once your Mastercard application is approved, your card will appear here with controls and purchase activity."
-        />
+      {data.cards.length === 0 && openApplications.length === 0 ? (
+        <EmptyState title="No cards yet" message="Apply above to request your first Mastercard." />
       ) : null}
 
       {actionMessage ? (
@@ -378,7 +390,7 @@ export function CardsClient() {
               status={card.status}
             />
 
-            <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+            <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_12px_40px_rgba(10,42,94,0.06)] dark:border-white/[0.08] dark:bg-white/[0.06]">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Card details</h2>
                 <StatusBadge
@@ -392,7 +404,7 @@ export function CardsClient() {
                     Network
                   </p>
                   <p className="mt-2 font-semibold text-primary-navy dark:text-white">
-                    {card.network} · 552901
+                    {card.network}
                   </p>
                 </div>
                 <div>
@@ -417,7 +429,7 @@ export function CardsClient() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+            <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_12px_40px_rgba(10,42,94,0.06)] dark:border-white/[0.08] dark:bg-white/[0.06]">
               <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Card activity</h2>
               <div className="mt-4">
                 <CardTransactionsPanel cardId={card.id} />
@@ -425,7 +437,7 @@ export function CardsClient() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
+          <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_12px_40px_rgba(10,42,94,0.06)] dark:border-white/[0.08] dark:bg-white/[0.06]">
             <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Card controls</h2>
             <div className="mt-5 grid gap-3">
               {cardControls.map((control) => {

@@ -264,6 +264,47 @@ export async function submitCardApplication(params: { userId: string; input: Car
   return serializeCardApplication(application);
 }
 
+export async function syncStaleCardApplications(userId: string) {
+  const prisma = getPrisma();
+
+  const pendingApplications = await prisma.cardApplication.findMany({
+    where: { userId, status: "PENDING" },
+    select: { id: true, accountId: true, cardType: true },
+  });
+
+  if (pendingApplications.length === 0) {
+    return;
+  }
+
+  await Promise.all(
+    pendingApplications.map(async (application) => {
+      const activeCard = await prisma.card.findFirst({
+        where: {
+          userId,
+          accountId: application.accountId,
+          cardType: application.cardType,
+          status: { in: ["ACTIVE", "LOCKED"] },
+        },
+        select: { id: true },
+      });
+
+      if (!activeCard) {
+        return;
+      }
+
+      await prisma.cardApplication.update({
+        where: { id: application.id },
+        data: {
+          status: "APPROVED",
+          cardId: activeCard.id,
+          reviewedAt: new Date(),
+          reviewNote: "Matched to an active card on file.",
+        },
+      });
+    }),
+  );
+}
+
 function defaultSpendingLimit(cardType: CardType) {
   return cardType === "CREDIT" ? 10_000 : 2_500;
 }
@@ -453,29 +494,49 @@ export async function issueMemberCard(params: {
   const { expiryMonth, expiryYear } = getDefaultCardExpiry();
   const spendingLimit = params.spendingLimit ?? defaultSpendingLimit(params.cardType);
 
-  const card = await prisma.card.create({
-    data: {
-      userId: params.userId,
-      accountId: params.accountId,
-      cardType: params.cardType,
-      last4,
-      panPrefix,
-      network: "MASTERCARD",
-      expiryMonth,
-      expiryYear,
-      cardholderName: user.fullName,
-      status: "ACTIVE",
-      spendingLimit,
-    },
-    include: {
-      account: {
-        select: {
-          id: true,
-          accountType: true,
-          accountNumber: true,
+  const card = await prisma.$transaction(async (tx) => {
+    const createdCard = await tx.card.create({
+      data: {
+        userId: params.userId,
+        accountId: params.accountId,
+        cardType: params.cardType,
+        last4,
+        panPrefix,
+        network: "MASTERCARD",
+        expiryMonth,
+        expiryYear,
+        cardholderName: user.fullName,
+        status: "ACTIVE",
+        spendingLimit,
+      },
+      include: {
+        account: {
+          select: {
+            id: true,
+            accountType: true,
+            accountNumber: true,
+          },
         },
       },
-    },
+    });
+
+    await tx.cardApplication.updateMany({
+      where: {
+        userId: params.userId,
+        accountId: params.accountId,
+        cardType: params.cardType,
+        status: "PENDING",
+      },
+      data: {
+        status: "APPROVED",
+        cardId: createdCard.id,
+        reviewedAt: new Date(),
+        reviewedBy: params.adminId,
+        reviewNote: "Issued directly by operations.",
+      },
+    });
+
+    return createdCard;
   });
 
   void createAccountNotification({

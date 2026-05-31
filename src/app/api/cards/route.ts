@@ -3,7 +3,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
 
 import { getAccountDisplayName, maskAccountNumber } from "@/lib/bankingSerialize";
-import { serializeCardApplication, serializePageCard, submitCardApplication } from "@/lib/cardApplications";
+import { serializeCardApplication, serializePageCard, submitCardApplication, syncStaleCardApplications } from "@/lib/cardApplications";
 import { getPrisma } from "@/lib/prisma";
 import { cardApplySchema } from "@/lib/validators";
 import type { CardsData, LinkedAccountSummary } from "@/types/banking";
@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     const payload = auth.payload;
 
     const prisma = getPrisma();
+
+    await syncStaleCardApplications(payload.userId);
 
     const [cards, applications, accounts] = await Promise.all([
       prisma.card.findMany({

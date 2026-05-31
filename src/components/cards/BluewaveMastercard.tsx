@@ -12,6 +12,15 @@ type BluewaveMastercardProps = {
   className?: string;
 };
 
+function MastercardMark({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center", className)} aria-hidden="true">
+      <span className="h-8 w-8 rounded-full bg-[#EB001B] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.18)]" />
+      <span className="-ml-4 h-8 w-8 rounded-full bg-[#F79E1B] opacity-95 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.18)]" />
+    </div>
+  );
+}
+
 export function BluewaveMastercard({
   cardholderName,
   maskedPan,
@@ -25,58 +34,66 @@ export function BluewaveMastercard({
   return (
     <div
       className={cn(
-        "relative aspect-[1.586/1] w-full max-w-[420px] overflow-hidden rounded-[22px] border border-white/[0.08] p-6 text-white shadow-[0_28px_90px_rgba(2,8,23,0.45)]",
-        "bg-[radial-gradient(circle_at_top_right,rgba(0,168,232,0.22),transparent_42%),linear-gradient(145deg,#020617_0%,#0A2A5E_38%,#061222_100%)]",
-        isInactive && "opacity-70 saturate-50",
+        "relative aspect-[1.586/1] w-full max-w-[380px] overflow-hidden rounded-[20px] border border-white/[0.10] p-5 text-white",
+        "shadow-[0_24px_70px_rgba(2,8,23,0.38)]",
+        "bg-[radial-gradient(circle_at_18%_12%,rgba(0,168,232,0.28),transparent_34%),radial-gradient(circle_at_88%_78%,rgba(26,86,219,0.22),transparent_38%),linear-gradient(135deg,#031022_0%,#0A2A5E_42%,#071526_100%)]",
+        isInactive && "opacity-75 saturate-[0.65]",
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_45%,transparent_70%)]" />
-      <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-ocean-blue/[0.16] blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 -left-8 h-44 w-44 rounded-full bg-royal-blue/[0.22] blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(125deg,transparent_10%,rgba(255,255,255,0.07)_48%,transparent_78%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:radial-gradient(rgba(255,255,255,0.55)_0.6px,transparent_0.6px)] [background-size:14px_14px]" />
+      <div className="pointer-events-none absolute -right-8 top-0 h-36 w-36 rounded-full bg-ocean-blue/[0.18] blur-3xl" />
 
-      <div className="relative flex h-full flex-col justify-between">
-        <div className="flex items-start justify-between gap-4">
+      <div className="relative flex h-full flex-col">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/[0.52]">
-              Bluewave {cardType === "CREDIT" ? "Credit" : "Debit"}
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/[0.55]">
+              Bluewave
             </p>
-            <p className="mt-2 text-sm font-medium text-white/[0.72]">Mastercard</p>
+            <p className="mt-1 text-xs font-medium text-white/[0.78]">
+              {cardType === "CREDIT" ? "Credit Mastercard" : "Debit Mastercard"}
+            </p>
           </div>
-
-          <div className="flex items-center" aria-hidden="true">
-            <span className="h-7 w-7 rounded-full bg-[#EB001B]" />
-            <span className="-ml-3 h-7 w-7 rounded-full bg-[#F79E1B]" />
-          </div>
+          <MastercardMark />
         </div>
 
-        <div className="mt-8 flex items-center gap-4">
-          <div className="h-10 w-14 rounded-md border border-amber-200/30 bg-[linear-gradient(135deg,#d4af37,#f5e6a8,#b8860b)] shadow-inner" />
-          <div className="flex items-end gap-1 text-white/[0.42]" aria-hidden="true">
-            <span className="h-3 w-3 rounded-full border border-current" />
-            <span className="h-4 w-4 rounded-full border border-current" />
+        <div className="mt-5 flex items-center gap-3">
+          <div
+            className="h-9 w-12 rounded-[6px] border border-amber-100/25 bg-[linear-gradient(145deg,#c9a227_0%,#f3e5ab_38%,#9a7618_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(0,0,0,0.25)]"
+            aria-hidden="true"
+          />
+          <div className="flex items-end gap-0.5 text-white/[0.35]" aria-hidden="true">
+            <span className="h-2.5 w-2.5 rounded-full border border-current" />
+            <span className="h-3.5 w-3.5 rounded-full border border-current" />
             <span className="h-5 w-5 rounded-full border border-current" />
           </div>
         </div>
 
-        <div className="mt-8">
-          <p className="font-mono text-[clamp(1.15rem,3vw,1.55rem)] font-semibold tracking-[0.18em] text-white">
-            {maskedPan}
-          </p>
-        </div>
+        <p className="mt-auto pt-6 font-mono text-[clamp(1rem,2.8vw,1.35rem)] font-medium tracking-[0.16em] text-white">
+          {maskedPan}
+        </p>
 
-        <div className="mt-8 flex items-end justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-white/[0.42]">Cardholder</p>
-            <p className="mt-1 truncate text-sm font-semibold uppercase tracking-[0.08em]">
+        <div className="mt-4 flex items-end justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-white/[0.42]">Cardholder</p>
+            <p className="mt-0.5 truncate text-sm font-semibold uppercase tracking-[0.06em]">
               {cardholderName}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-white/[0.42]">Valid thru</p>
-            <p className="mt-1 font-mono text-sm font-semibold">{expiryLabel ?? "••/••"}</p>
+          <div className="shrink-0 text-right">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-white/[0.42]">Valid thru</p>
+            <p className="mt-0.5 font-mono text-sm">{expiryLabel ?? "••/••"}</p>
           </div>
         </div>
+
+        {isInactive ? (
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center">
+            <span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm">
+              {status.replace("_", " ")}
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

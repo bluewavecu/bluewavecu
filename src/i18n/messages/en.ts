@@ -212,7 +212,7 @@ export const en = {
       },
       cards: {
         title: "Cards",
-        subtitle: "Apply for a Bluewave Mastercard, manage card controls, and review card purchase activity.",
+        subtitle: "Apply, manage controls, and review activity.",
       },
       loans: {
         title: "Loans",
