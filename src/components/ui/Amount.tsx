@@ -18,7 +18,7 @@ export function Amount({ value, currency = "USD", className, showSign = true }: 
     value > 0
       ? "text-emerald-700 dark:text-emerald-300"
       : value < 0
-        ? "text-primary-navy dark:text-white"
+        ? "text-red-700 dark:text-red-300"
         : "text-bluewave-gray dark:text-white/[0.62]";
 
   return <span className={cn("font-semibold tabular-nums", tone, className)}>{formatted}</span>;

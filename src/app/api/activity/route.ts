@@ -4,6 +4,7 @@ import { resolveRequestAuth } from "@/lib/requestAuth";
 
 import { formatAccountNumberForDisplay, maskAccountNumber } from "@/lib/bankingSerialize";
 import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
+import { getActivityTimelineTitle } from "@/lib/transactionDisplay";
 import { getPrisma } from "@/lib/prisma";
 import type { ActivityTimelineData, ActivityTimelineItem } from "@/types/banking";
 
@@ -57,7 +58,15 @@ export async function GET(request: NextRequest) {
         },
         include: {
           account: { select: { accountNumber: true, accountType: true } },
-          transaction: { select: { reference: true, status: true, type: true } },
+          transaction: {
+            select: {
+              reference: true,
+              status: true,
+              type: true,
+              description: true,
+              merchant: true,
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         take: limit,
@@ -89,7 +98,12 @@ export async function GET(request: NextRequest) {
       items.push({
         id: `ledger-${entry.id}`,
         kind: "LEDGER",
-        title: entry.direction === "DEBIT" ? "Ledger debit posted" : "Ledger credit posted",
+        title: getActivityTimelineTitle({
+          description: entry.description,
+          merchant: entry.transaction.merchant,
+          type: entry.transaction.type as "DEPOSIT" | "WITHDRAWAL" | "TRANSFER" | "PAYMENT" | "CARD" | "FEE" | "REFUND",
+          status: entry.transaction.status as "PENDING" | "COMPLETED" | "FAILED" | "REVERSED",
+        }),
         description: entry.description,
         status: entry.transaction.status,
         amount: entry.direction === "DEBIT" ? -entry.amount.toNumber() : entry.amount.toNumber(),
@@ -115,10 +129,12 @@ export async function GET(request: NextRequest) {
       items.push({
         id: `transaction-${transaction.id}`,
         kind: "TRANSACTION",
-        title:
-          transaction.type === "TRANSFER" && transaction.status === "PENDING"
-            ? "Transfer pending review"
-            : `${transaction.type.toLowerCase()} activity`,
+        title: getActivityTimelineTitle({
+          description: transaction.description,
+          merchant: transaction.merchant,
+          type: transaction.type,
+          status: transaction.status,
+        }),
         description: transaction.description,
         status: transaction.status,
         amount: transaction.amount.toNumber(),

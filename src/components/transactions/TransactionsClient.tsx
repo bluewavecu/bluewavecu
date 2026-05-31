@@ -7,22 +7,27 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
-  Mail,
   Repeat2,
   Search,
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { DetailDrawer } from "@/components/ui/DetailDrawer";
-import { Amount } from "@/components/ui/Amount";
-import { DateTime } from "@/components/ui/DateTime";
+import {
+  TransactionDetailDrawer,
+  type TransactionDrawerItem,
+} from "@/components/transactions/TransactionDetailDrawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { postJson } from "@/lib/clientApi";
 import { MEMBER_STATEMENTS_PATH } from "@/lib/memberRoutes";
+import {
+  getTransactionAmountClass,
+  getTransactionIconKind,
+  getTransactionStatusBadgeClass,
+  getTransactionStatusLabel,
+  getTransactionTitle,
+} from "@/lib/transactionDisplay";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
@@ -54,42 +59,6 @@ const transactionIcons = {
   transfer: Repeat2,
 };
 
-function getStatusLabel(status: string, type?: TransactionType) {
-  if (status === "PENDING" && type === "TRANSFER") {
-    return "Pending Review";
-  }
-
-  return status
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function getDisplayStatus(transaction: {
-  status: TransactionStatus;
-  type: TransactionType;
-  postedAt?: string | null;
-  ledgerSummary?: { posted: boolean };
-}) {
-  if (transaction.status === "COMPLETED" && transaction.type === "TRANSFER" && transaction.ledgerSummary?.posted) {
-    return "Posted";
-  }
-
-  return getStatusLabel(transaction.status, transaction.type);
-}
-
-function formatReviewDate(value: string | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
 function formatTransactionDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -102,32 +71,20 @@ function getTransactionDisplayDate(transaction: PageTransaction) {
   return transaction.postedAt ?? transaction.createdAt;
 }
 
-function getTransactionKind(type: TransactionType, amount: number) {
-  if (type === "TRANSFER") {
-    return "transfer";
-  }
-
-  if (amount > 0 || type === "DEPOSIT" || type === "REFUND") {
-    return "credit";
-  }
-
-  return "debit";
-}
-
-function getStatusBadgeClass(status: TransactionStatus) {
-  if (status === "COMPLETED") {
-    return "bg-emerald-500/[0.12] text-emerald-700 dark:text-emerald-300";
-  }
-
-  if (status === "PENDING") {
-    return "bg-amber-500/[0.12] text-amber-700 dark:text-amber-300";
-  }
-
-  if (status === "FAILED") {
-    return "bg-red-500/[0.12] text-red-700 dark:text-red-300";
-  }
-
-  return "bg-primary-navy/[0.06] text-primary-navy dark:bg-white/[0.08] dark:text-white";
+function toDrawerItem(transaction: PageTransaction): TransactionDrawerItem {
+  return {
+    id: transaction.id,
+    amount: transaction.amount,
+    description: transaction.description,
+    merchant: transaction.merchant,
+    reference: transaction.reference,
+    status: transaction.status,
+    type: transaction.type,
+    maskedAccountNumber: transaction.maskedAccountNumber,
+    createdAt: transaction.createdAt,
+    postedAt: transaction.postedAt,
+    reviewedAt: transaction.reviewedAt,
+  };
 }
 
 type TransactionFiltersMenuProps = {
@@ -294,9 +251,7 @@ export function TransactionsClient() {
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTransaction, setSelectedTransaction] = useState<PageTransaction | null>(null);
-  const [receiptMessage, setReceiptMessage] = useState<string | null>(null);
-  const [isEmailingReceipt, setIsEmailingReceipt] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionDrawerItem | null>(null);
   const activeSearchQuery = searchQuery || urlQuery;
 
   const filters = useMemo(
@@ -336,25 +291,6 @@ export function TransactionsClient() {
     setSelectedAccountId("");
     setSelectedStatus(undefined);
     setSelectedType(undefined);
-  }
-
-  async function handleEmailReceipt(transactionId: string) {
-    setReceiptMessage(null);
-    setIsEmailingReceipt(true);
-
-    const result = await postJson<{ message: string }>(
-      `/api/transactions/${transactionId}/receipt/email`,
-      {},
-    );
-
-    setIsEmailingReceipt(false);
-
-    if (!result.success) {
-      setReceiptMessage(result.error);
-      return;
-    }
-
-    setReceiptMessage(result.data.message);
   }
 
   if (isLoading) {
@@ -416,19 +352,20 @@ export function TransactionsClient() {
         <section className="rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
           <div className="divide-y divide-primary-navy/[0.08] px-4 dark:divide-white/[0.08] sm:px-5">
             {transactions.map((transaction) => {
-              const kind = getTransactionKind(transaction.type, transaction.amount);
+              const kind = getTransactionIconKind(transaction.type, transaction.amount);
               const Icon = transactionIcons[kind];
-              const positive = transaction.amount > 0;
+              const inflow = transaction.amount > 0;
+              const title = getTransactionTitle(transaction);
 
               return (
                 <article
                   key={transaction.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => setSelectedTransaction(transaction)}
+                  onClick={() => setSelectedTransaction(toDrawerItem(transaction))}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
-                      setSelectedTransaction(transaction);
+                      setSelectedTransaction(toDrawerItem(transaction));
                     }
                   }}
                   className="flex cursor-pointer items-start gap-4 py-4 transition hover:bg-ocean-blue/[0.04] first:pt-4 last:pb-4"
@@ -436,9 +373,9 @@ export function TransactionsClient() {
                   <span
                     className={cn(
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                      positive
-                        ? "bg-ocean-blue/[0.12] text-royal-blue"
-                        : "bg-primary-navy/[0.06] text-primary-navy dark:bg-white/[0.08] dark:text-light-blue",
+                      inflow
+                        ? "bg-emerald-500/[0.12] text-emerald-700 dark:text-emerald-300"
+                        : "bg-red-500/[0.10] text-red-700 dark:text-red-300",
                     )}
                   >
                     <Icon size={18} aria-hidden="true" />
@@ -447,7 +384,7 @@ export function TransactionsClient() {
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <h3 className="text-sm font-semibold text-primary-navy dark:text-white">
-                          {transaction.merchant ?? transaction.description}
+                          {title}
                         </h3>
                         <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
                           {formatTransactionDate(getTransactionDisplayDate(transaction))} · {transaction.maskedAccountNumber}
@@ -457,31 +394,19 @@ export function TransactionsClient() {
                             {transaction.description}
                           </p>
                         ) : null}
-                        {transaction.postedAt ? (
-                          <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
-                            Posted {formatReviewDate(transaction.postedAt)}
-                          </p>
-                        ) : null}
                       </div>
                       <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
-                        <p
-                          className={cn(
-                            "text-sm font-semibold",
-                            positive
-                              ? "text-royal-blue dark:text-light-blue"
-                              : "text-primary-navy dark:text-white",
-                          )}
-                        >
-                          {positive ? "+" : "-"}
+                        <p className={cn("text-sm font-semibold", getTransactionAmountClass(transaction.amount))}>
+                          {inflow ? "+" : "-"}
                           {formatCurrency(Math.abs(transaction.amount))}
                         </p>
                         <span
                           className={cn(
                             "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                            getStatusBadgeClass(transaction.status),
+                            getTransactionStatusBadgeClass(transaction.status, transaction.amount),
                           )}
                         >
-                          {getDisplayStatus(transaction)}
+                          {getTransactionStatusLabel(transaction.status, transaction.type)}
                         </span>
                       </div>
                     </div>
@@ -498,87 +423,10 @@ export function TransactionsClient() {
         />
       )}
 
-      <DetailDrawer
-        open={Boolean(selectedTransaction)}
-        title={selectedTransaction?.description ?? "Transaction"}
-        subtitle={selectedTransaction?.reference}
-        onClose={() => {
-          setSelectedTransaction(null);
-          setReceiptMessage(null);
-        }}
-        footer={
-          selectedTransaction ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a
-                href={`/api/transactions/${selectedTransaction.id}/receipt`}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold text-primary-navy dark:border-white/[0.10] dark:text-white"
-              >
-                <Download size={16} aria-hidden="true" />
-                Download PDF receipt
-              </a>
-              <button
-                type="button"
-                disabled={isEmailingReceipt}
-                onClick={() => void handleEmailReceipt(selectedTransaction.id)}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                <Mail size={16} aria-hidden="true" />
-                {isEmailingReceipt ? "Sending..." : "Email receipt"}
-              </button>
-              {selectedTransaction.status === "COMPLETED" ? (
-                <Link
-                  href="/auth/disputes"
-                  className="inline-flex h-10 items-center rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold text-primary-navy dark:border-white/[0.10] dark:text-white"
-                >
-                  Dispute transaction
-                </Link>
-              ) : null}
-            </div>
-          ) : null
-        }
-      >
-        {selectedTransaction ? (
-          <>
-            {receiptMessage ? (
-              <p className="mb-4 rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-royal-blue dark:text-light-blue">
-                {receiptMessage}
-              </p>
-            ) : null}
-            <dl className="space-y-3 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Amount</dt>
-              <dd>
-                <Amount value={selectedTransaction.amount} />
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Status</dt>
-              <dd className="font-semibold">{getDisplayStatus(selectedTransaction)}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Date</dt>
-              <dd>
-                <DateTime value={getTransactionDisplayDate(selectedTransaction)} variant="datetime" />
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Account</dt>
-              <dd>
-                <AccountNumberDisplay accountNumber={selectedTransaction.maskedAccountNumber} />
-              </dd>
-            </div>
-            {selectedTransaction.reviewedAt ? (
-              <div className="flex justify-between gap-4">
-                <dt className="text-bluewave-gray dark:text-white/[0.58]">Reviewed</dt>
-                <dd>
-                  <DateTime value={selectedTransaction.reviewedAt} variant="datetime" />
-                </dd>
-              </div>
-            ) : null}
-            </dl>
-          </>
-        ) : null}
-      </DetailDrawer>
+      <TransactionDetailDrawer
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+      />
     </section>
   );
 }

@@ -3,7 +3,6 @@
 import { CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
 import { BalanceCards } from "@/components/dashboard/BalanceCards";
@@ -243,10 +242,7 @@ export function DashboardClient() {
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <AccountActivityTimeline limit={8} />
-        <StatementExportCard />
-      </section>
+      <StatementExportCard />
     </div>
   );
 }

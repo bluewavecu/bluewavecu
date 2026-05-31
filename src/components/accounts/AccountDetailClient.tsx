@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowLeftRight, FileText, Scale } from "lucide-react";
-import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
+import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
-import { Amount } from "@/components/ui/Amount";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -16,7 +15,6 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
 import { MEMBER_ACCOUNTS_PATH, MEMBER_TRANSFERS_PATH } from "@/lib/memberRoutes";
-import { cn } from "@/lib/utils";
 
 function getStatusLabel(status: string) {
   return status
@@ -64,7 +62,19 @@ export function AccountDetailClient() {
     );
   }
 
-  const transactions = transactionsData?.transactions ?? [];
+  const recentTransactions = transactionsData?.transactions.map((transaction) => ({
+    id: transaction.id,
+    accountId: transaction.accountId,
+    accountType: transaction.accountType,
+    maskedAccountNumber: transaction.maskedAccountNumber,
+    type: transaction.type,
+    amount: transaction.amount,
+    description: transaction.description,
+    merchant: transaction.merchant,
+    reference: transaction.reference,
+    status: transaction.status,
+    createdAt: transaction.createdAt,
+  }));
 
   return (
     <section className="grid gap-5">
@@ -146,64 +156,25 @@ export function AccountDetailClient() {
         </div>
       </article>
 
-      <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent transactions</h2>
-          <Link
-            href={`/auth/transactions?accountId=${account.id}`}
-            className="text-sm font-semibold text-royal-blue dark:text-light-blue"
-          >
-            View all
-          </Link>
-        </div>
+      {transactionsLoading ? (
+        <LoadingState title="Loading transactions" message="Retrieving recent activity." />
+      ) : transactionsError ? (
+        <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-700 dark:text-red-300">
+          {transactionsError}
+        </p>
+      ) : recentTransactions && recentTransactions.length > 0 ? (
+        <RecentTransactions
+          transactions={recentTransactions}
+          viewAllHref={`/auth/transactions?accountId=${account.id}`}
+        />
+      ) : (
+        <EmptyState
+          title="No recent transactions"
+          message="No transactions on this account yet."
+        />
+      )}
 
-        {transactionsLoading ? (
-          <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">Loading transactions...</p>
-        ) : transactionsError ? (
-          <p className="mt-4 text-sm text-red-700 dark:text-red-300">{transactionsError}</p>
-        ) : transactions.length === 0 ? (
-          <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            No transactions on this account yet.
-          </p>
-        ) : (
-          <ul className="mt-4 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
-            {transactions.map((transaction) => (
-              <li
-                key={transaction.id}
-                className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold text-primary-navy dark:text-white">
-                    {transaction.merchant ?? transaction.description}
-                  </p>
-                  <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.58]">
-                    {new Date(transaction.createdAt).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  <StatusBadge label={getStatusLabel(transaction.status)} tone={statusToTone(transaction.status)} />
-                </div>
-                <Amount
-                  value={transaction.amount}
-                  className={cn(
-                    "shrink-0 text-sm font-semibold",
-                    transaction.amount >= 0 ? "text-emerald-700" : "text-primary-navy dark:text-white",
-                  )}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <AccountActivityTimeline accountId={account.id} limit={10} />
-        <StatementExportCard />
-      </div>
+      <StatementExportCard />
     </section>
   );
 }

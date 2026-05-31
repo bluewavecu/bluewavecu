@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { ArrowLeftRight, ChevronRight, ReceiptText, WalletCards } from "lucide-react";
-import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
+import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { getShareAccountLabel } from "@/lib/institution";
@@ -27,6 +28,11 @@ function getStatusLabel(status: string) {
 
 export function AccountsClient() {
   const { data, error, isLoading, refetch } = useAccounts();
+  const {
+    data: transactionsData,
+    error: transactionsError,
+    isLoading: transactionsLoading,
+  } = useTransactions({ limit: 12 });
 
   if (isLoading) {
     return <LoadingState title="Loading accounts" message="Retrieving your account information." />;
@@ -49,6 +55,20 @@ export function AccountsClient() {
     (sum, account) => sum + account.availableBalance,
     0,
   );
+
+  const recentTransactions = transactionsData?.transactions.map((transaction) => ({
+    id: transaction.id,
+    accountId: transaction.accountId,
+    accountType: transaction.accountType,
+    maskedAccountNumber: transaction.maskedAccountNumber,
+    type: transaction.type,
+    amount: transaction.amount,
+    description: transaction.description,
+    merchant: transaction.merchant,
+    reference: transaction.reference,
+    status: transaction.status,
+    createdAt: transaction.createdAt,
+  }));
 
   return (
     <section className="grid gap-5">
@@ -139,10 +159,22 @@ export function AccountsClient() {
       </div>
 
       <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <AccountActivityTimeline limit={12} />
+        {transactionsLoading ? (
+          <LoadingState title="Loading transactions" message="Retrieving recent activity." />
+        ) : transactionsError ? (
+          <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-700 dark:text-red-300">
+            {transactionsError}
+          </p>
+        ) : recentTransactions && recentTransactions.length > 0 ? (
+          <RecentTransactions transactions={recentTransactions} />
+        ) : (
+          <EmptyState
+            title="No recent transactions"
+            message="Account activity will appear here as transactions post to your accounts."
+          />
+        )}
         <StatementExportCard />
       </section>
-
     </section>
   );
 }

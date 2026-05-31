@@ -4,6 +4,9 @@ import {
 } from "@/lib/bankingSerialize";
 import { getShareAccountLabel } from "@/lib/institution";
 import { getPrisma } from "@/lib/prisma";
+import { buildTransactionReceiptFilename } from "@/lib/transactionDisplay";
+
+export { buildTransactionReceiptFilename };
 
 export type TransactionReceiptData = {
   transactionId: string;
@@ -100,7 +103,3 @@ export async function fetchTransactionReceiptData(params: {
   };
 }
 
-export function buildTransactionReceiptFilename(reference: string) {
-  const safeReference = reference.replace(/[^a-zA-Z0-9-_]+/g, "-");
-  return `bluewave-receipt-${safeReference}.pdf`;
-}

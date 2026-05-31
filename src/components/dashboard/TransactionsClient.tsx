@@ -62,7 +62,7 @@ export function TransactionsClient() {
       {data.recentTransactions.length > 0 ? (
         <RecentTransactions
           transactions={data.recentTransactions}
-          description="Recent activity from your Bluewave accounts."
+          description="Your most recent account activity."
         />
       ) : (
         <EmptyState
