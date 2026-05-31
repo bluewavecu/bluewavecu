@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
+import { ClientProviders } from "@/components/providers/ClientProviders";
+import { getServerLocale } from "@/i18n/getLocale";
+import { getLocaleDirection } from "@/i18n/config";
 
 export const metadata: Metadata = {
   title: "Bluewave Credit Union",
@@ -17,15 +20,17 @@ export const viewport: Viewport = {
   themeColor: "#0A2A5E",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getServerLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={getLocaleDirection(locale)}>
       <body className="bg-background text-foreground antialiased">
-        {children}
+        <ClientProviders initialLocale={locale}>{children}</ClientProviders>
       </body>
     </html>
   );

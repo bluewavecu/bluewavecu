@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthLogo } from "@/components/layout/AuthLogo";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import {
   isMemberNavActive,
   memberNavSections,
@@ -69,6 +70,7 @@ function NavLink({ href, label, iconName }: { href: string; label: string; iconN
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const mobilePrimary = memberNavSections.flatMap((section) => section.items).slice(0, 6);
 
   return (
@@ -78,16 +80,16 @@ export function AppSidebar() {
 
         <nav aria-label="Banking app navigation" className="mt-8 flex-1 space-y-6 overflow-y-auto pr-1">
           {memberNavSections.map((section) => (
-            <div key={section.title}>
+            <div key={section.titleKey}>
               <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-bluewave-gray dark:text-white/[0.42]">
-                {section.title}
+                {t(section.titleKey)}
               </p>
               <div className="grid gap-1">
                 {section.items.map((item) => (
                   <NavLink
                     key={item.href}
                     href={item.href}
-                    label={item.label}
+                    label={t(item.labelKey)}
                     iconName={item.icon}
                   />
                 ))}
@@ -101,7 +103,7 @@ export function AppSidebar() {
           className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary-navy/[0.72] transition hover:bg-primary-navy/[0.06] hover:text-primary-navy dark:text-white/[0.70] dark:hover:bg-white/[0.08] dark:hover:text-white"
         >
           <LogOut size={16} aria-hidden="true" />
-          Exit to website
+          {t("common.exitWebsite")}
         </Link>
       </aside>
 
@@ -126,7 +128,7 @@ export function AppSidebar() {
                 )}
               >
                 <Icon size={18} aria-hidden="true" />
-                {item.label.split(" ")[0]}
+                {t(item.labelKey).split(" ")[0]}
               </Link>
             );
           })}

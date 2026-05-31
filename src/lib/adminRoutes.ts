@@ -1,13 +1,13 @@
 import { ADMIN_DASHBOARD_PATH, adminConsolePath } from "@/lib/authRoutes";
 
 export type AdminNavItem = {
-  label: string;
+  labelKey: string;
   href: string;
   icon: string;
 };
 
 export type AdminNavSection = {
-  title: string;
+  titleKey: string;
   items: AdminNavItem[];
 };
 
@@ -15,64 +15,80 @@ export { ADMIN_DASHBOARD_PATH, adminConsolePath };
 
 export const adminNavSections: AdminNavSection[] = [
   {
-    title: "Overview",
+    titleKey: "admin.sections.overview",
     items: [
-      { label: "Command Center", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
-      { label: "Operational Alerts", href: adminConsolePath("alerts"), icon: "BellRing" },
+      { labelKey: "admin.nav.commandCenter", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
+      { labelKey: "admin.nav.operationalAlerts", href: adminConsolePath("alerts"), icon: "BellRing" },
     ],
   },
   {
-    title: "Members",
+    titleKey: "admin.sections.members",
     items: [
-      { label: "Users", href: adminConsolePath("users"), icon: "Users" },
-      { label: "Accounts", href: adminConsolePath("accounts"), icon: "WalletCards" },
-      { label: "Customer Profiles / KYC", href: adminConsolePath("compliance"), icon: "BadgeCheck" },
-      { label: "ID Verifications", href: adminConsolePath("id-verifications"), icon: "IdCard" },
-      { label: "Sessions / Security", href: adminConsolePath("sessions"), icon: "Shield" },
+      { labelKey: "admin.nav.users", href: adminConsolePath("users"), icon: "Users" },
+      { labelKey: "admin.nav.accounts", href: adminConsolePath("accounts"), icon: "WalletCards" },
+      {
+        labelKey: "admin.nav.customerProfilesKyc",
+        href: adminConsolePath("compliance"),
+        icon: "BadgeCheck",
+      },
+      { labelKey: "admin.nav.idVerifications", href: adminConsolePath("id-verifications"), icon: "IdCard" },
+      { labelKey: "admin.nav.sessionsSecurity", href: adminConsolePath("sessions"), icon: "Shield" },
     ],
   },
   {
-    title: "Money Movement",
+    titleKey: "admin.sections.moneyMovement",
     items: [
-      { label: "Transactions", href: adminConsolePath("transactions"), icon: "ReceiptText" },
-      { label: "Transfer Reviews", href: adminConsolePath("transfer-reviews"), icon: "ArrowLeftRight" },
-      { label: "Bill Pay Reviews", href: adminConsolePath("bill-pay"), icon: "Receipt" },
-      { label: "Card Applications", href: adminConsolePath("card-applications"), icon: "CreditCard" },
-      { label: "Adjustments", href: adminConsolePath("adjustments"), icon: "SlidersHorizontal" },
-      { label: "Generate Transactions", href: adminConsolePath("transaction-generator"), icon: "Sparkles" },
-      { label: "Transfer Verification", href: adminConsolePath("transfer-verification"), icon: "KeyRound" },
-      { label: "Reconciliation", href: adminConsolePath("reconciliation"), icon: "Scale" },
+      { labelKey: "admin.nav.transactions", href: adminConsolePath("transactions"), icon: "ReceiptText" },
+      {
+        labelKey: "admin.nav.transferReviews",
+        href: adminConsolePath("transfer-reviews"),
+        icon: "ArrowLeftRight",
+      },
+      { labelKey: "admin.nav.billPayReviews", href: adminConsolePath("bill-pay"), icon: "Receipt" },
+      { labelKey: "admin.nav.cardApplications", href: adminConsolePath("card-applications"), icon: "CreditCard" },
+      { labelKey: "admin.nav.adjustments", href: adminConsolePath("adjustments"), icon: "SlidersHorizontal" },
+      {
+        labelKey: "admin.nav.generateTransactions",
+        href: adminConsolePath("transaction-generator"),
+        icon: "Sparkles",
+      },
+      {
+        labelKey: "admin.nav.transferVerification",
+        href: adminConsolePath("transfer-verification"),
+        icon: "KeyRound",
+      },
+      { labelKey: "admin.nav.reconciliation", href: adminConsolePath("reconciliation"), icon: "Scale" },
     ],
   },
   {
-    title: "Risk & Compliance",
+    titleKey: "admin.sections.riskCompliance",
     items: [
-      { label: "Risk Monitoring", href: adminConsolePath("risk"), icon: "ShieldAlert" },
-      { label: "Disputes", href: adminConsolePath("disputes"), icon: "Scale" },
-      { label: "Compliance", href: adminConsolePath("compliance"), icon: "BadgeCheck" },
-      { label: "Audit Logs", href: adminConsolePath("audit-logs"), icon: "ClipboardList" },
-      { label: "Event Logs", href: adminConsolePath("event-logs"), icon: "ListTree" },
+      { labelKey: "admin.nav.riskMonitoring", href: adminConsolePath("risk"), icon: "ShieldAlert" },
+      { labelKey: "admin.nav.disputes", href: adminConsolePath("disputes"), icon: "Scale" },
+      { labelKey: "admin.nav.compliance", href: adminConsolePath("compliance"), icon: "BadgeCheck" },
+      { labelKey: "admin.nav.auditLogs", href: adminConsolePath("audit-logs"), icon: "ClipboardList" },
+      { labelKey: "admin.nav.eventLogs", href: adminConsolePath("event-logs"), icon: "ListTree" },
     ],
   },
   {
-    title: "Operations",
+    titleKey: "admin.sections.operations",
     items: [
-      { label: "Support Tickets", href: adminConsolePath("support"), icon: "CircleHelp" },
-      { label: "Jobs / Worker Queue", href: adminConsolePath("jobs"), icon: "Cog" },
-      { label: "Finance Reports", href: adminConsolePath("finance-reports"), icon: "FileBarChart" },
-      { label: "System Settings", href: adminConsolePath("settings"), icon: "Settings" },
-      { label: "Change password", href: adminConsolePath("settings"), icon: "Shield" },
+      { labelKey: "admin.nav.supportTickets", href: adminConsolePath("support"), icon: "CircleHelp" },
+      { labelKey: "admin.nav.jobsWorkerQueue", href: adminConsolePath("jobs"), icon: "Cog" },
+      { labelKey: "admin.nav.financeReports", href: adminConsolePath("finance-reports"), icon: "FileBarChart" },
+      { labelKey: "admin.nav.systemSettings", href: adminConsolePath("settings"), icon: "Settings" },
+      { labelKey: "admin.nav.changePassword", href: adminConsolePath("settings"), icon: "Shield" },
     ],
   },
 ];
 
 export const adminMobilePrimaryItems: AdminNavItem[] = [
-  { label: "Command", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
-  { label: "Users", href: adminConsolePath("users"), icon: "Users" },
-  { label: "Transfers", href: adminConsolePath("transfer-reviews"), icon: "ArrowLeftRight" },
-  { label: "Bill Pay", href: adminConsolePath("bill-pay"), icon: "Receipt" },
-  { label: "Support", href: adminConsolePath("support"), icon: "CircleHelp" },
-  { label: "More", href: adminConsolePath("settings"), icon: "Settings" },
+  { labelKey: "admin.nav.command", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
+  { labelKey: "admin.nav.users", href: adminConsolePath("users"), icon: "Users" },
+  { labelKey: "admin.nav.transfers", href: adminConsolePath("transfer-reviews"), icon: "ArrowLeftRight" },
+  { labelKey: "admin.nav.billPay", href: adminConsolePath("bill-pay"), icon: "Receipt" },
+  { labelKey: "admin.nav.support", href: adminConsolePath("support"), icon: "CircleHelp" },
+  { labelKey: "admin.nav.more", href: adminConsolePath("settings"), icon: "Settings" },
 ];
 
 export function isAdminNavActive(pathname: string, href: string) {

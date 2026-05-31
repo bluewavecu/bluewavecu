@@ -4,47 +4,31 @@ import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminTransactions } from "@/hooks/useAdminTransactions";
 import { cn } from "@/lib/utils";
 import type { AdminTransactionRecord, TransactionStatus, TransactionType } from "@/types/banking";
 
-const statusFilters: Array<{ label: string; value?: TransactionStatus }> = [
-  { label: "All statuses" },
-  { label: "Pending", value: "PENDING" },
-  { label: "Completed", value: "COMPLETED" },
-  { label: "Failed", value: "FAILED" },
-  { label: "Reversed", value: "REVERSED" },
-];
-
-const typeFilters: Array<{ label: string; value?: TransactionType }> = [
-  { label: "All types" },
-  { label: "Transfer", value: "TRANSFER" },
-  { label: "Deposit", value: "DEPOSIT" },
-  { label: "Payment", value: "PAYMENT" },
-  { label: "Card", value: "CARD" },
-];
-
 const reviewActions: Array<{
   status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">;
-  label: string;
-  confirm: string;
+  labelKey: string;
+  confirmKey: string;
 }> = [
   {
     status: "COMPLETED",
-    label: "Approve",
-    confirm:
-      "Approving this transfer will post ledger entries and update balances. Continue?",
+    labelKey: "admin.transactions.approve",
+    confirmKey: "admin.transactions.approveConfirm",
   },
   {
     status: "FAILED",
-    label: "Fail",
-    confirm: "Mark this pending transfer as failed? Balances will not change.",
+    labelKey: "admin.transactions.fail",
+    confirmKey: "admin.transactions.failConfirm",
   },
   {
     status: "REVERSED",
-    label: "Reverse",
-    confirm: "Reverse this pending transfer review? Balances will not change.",
+    labelKey: "admin.transactions.reverse",
+    confirmKey: "admin.transactions.reverseConfirm",
   },
 ];
 
@@ -100,6 +84,7 @@ function TransactionReviewCard({
   ) => void;
   onDelay: (transactionId: string) => void;
 }) {
+  const { t } = useTranslation();
   const canReview =
     transaction.status === "PENDING" &&
     transaction.type === "TRANSFER" &&
@@ -161,10 +146,10 @@ function TransactionReviewCard({
               key={`${transaction.id}-${action.status}`}
               type="button"
               disabled={isUpdating || Boolean(transaction.postedAt)}
-              onClick={() => onReview(transaction.id, action.status, action.confirm)}
+              onClick={() => onReview(transaction.id, action.status, t(action.confirmKey))}
               className="rounded-full border border-primary-navy/[0.08] px-3 py-1.5 text-xs font-semibold transition hover:border-ocean-blue disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.08]"
             >
-              {action.label}
+              {t(action.labelKey)}
             </button>
           ))}
           <button
@@ -188,6 +173,7 @@ function TransactionReviewCard({
 }
 
 export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: boolean }) {
+  const { t } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>(
     reviewOnly ? "PENDING" : undefined,
   );
@@ -195,6 +181,30 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
     reviewOnly ? "TRANSFER" : undefined,
   );
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const statusFilters = useMemo(
+    () =>
+      [
+        { label: t("status.allStatuses"), value: undefined },
+        { label: t("status.pending"), value: "PENDING" as const },
+        { label: t("status.completed"), value: "COMPLETED" as const },
+        { label: t("status.failed"), value: "FAILED" as const },
+        { label: t("status.reversed"), value: "REVERSED" as const },
+      ] satisfies Array<{ label: string; value?: TransactionStatus }>,
+    [t],
+  );
+
+  const typeFilters = useMemo(
+    () =>
+      [
+        { label: t("status.allTypes"), value: undefined },
+        { label: t("filters.transfer"), value: "TRANSFER" as const },
+        { label: t("filters.deposit"), value: "DEPOSIT" as const },
+        { label: t("filters.payment"), value: "PAYMENT" as const },
+        { label: t("filters.card"), value: "CARD" as const },
+      ] satisfies Array<{ label: string; value?: TransactionType }>,
+    [t],
+  );
 
   const filters = useMemo(
     () => ({
@@ -286,10 +296,12 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
         <div className="flex flex-col gap-4 rounded-lg border border-primary-navy/[0.08] bg-white p-4 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06] sm:flex-row sm:flex-wrap sm:items-end">
           <div className="min-w-[12rem] flex-1">
             <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-bluewave-gray dark:text-white/[0.52]">
-              Filters
+              {t("filters.label")}
             </label>
             <label className="mt-3 block">
-              <span className="text-sm font-semibold text-primary-navy dark:text-white">Status</span>
+              <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                {t("filters.status")}
+              </span>
               <select
                 value={selectedStatus ?? ""}
                 onChange={(event) =>
@@ -300,7 +312,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
                 className={fieldClassName}
               >
                 {statusFilters.map((filter) => (
-                  <option key={filter.label} value={filter.value ?? ""}>
+                  <option key={filter.value ?? "all-statuses"} value={filter.value ?? ""}>
                     {filter.label}
                   </option>
                 ))}
@@ -309,7 +321,9 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
           </div>
 
           <label className="block min-w-[12rem] flex-1">
-            <span className="text-sm font-semibold text-primary-navy dark:text-white">Type</span>
+            <span className="text-sm font-semibold text-primary-navy dark:text-white">
+              {t("filters.type")}
+            </span>
             <select
               value={selectedType ?? ""}
               onChange={(event) =>
@@ -320,7 +334,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
               className={fieldClassName}
             >
               {typeFilters.map((filter) => (
-                <option key={filter.label} value={filter.value ?? ""}>
+                <option key={filter.value ?? "all-types"} value={filter.value ?? ""}>
                   {filter.label}
                 </option>
               ))}

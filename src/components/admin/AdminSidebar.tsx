@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import {
   ADMIN_DASHBOARD_PATH,
   adminMobilePrimaryItems,
@@ -84,6 +85,7 @@ function NavLink({ href, label, iconName }: { href: string; label: string; iconN
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -97,13 +99,18 @@ export function AdminSidebar() {
 
         <nav aria-label="Admin navigation" className="mt-6 flex-1 space-y-6 overflow-y-auto pr-1">
           {adminNavSections.map((section) => (
-            <div key={section.title}>
+            <div key={section.titleKey}>
               <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-bluewave-gray dark:text-white/[0.42]">
-                {section.title}
+                {t(section.titleKey)}
               </p>
               <div className="mt-2 grid gap-1">
                 {section.items.map((item) => (
-                  <NavLink key={item.href} href={item.href} label={item.label} iconName={item.icon} />
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={t(item.labelKey)}
+                    iconName={item.icon}
+                  />
                 ))}
               </div>
             </div>
@@ -142,7 +149,7 @@ export function AdminSidebar() {
                 )}
               >
                 <Icon size={18} aria-hidden="true" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AuthField, authInputClassName } from "@/components/auth/AuthField";
 import { buttonVariants } from "@/components/ui/Button";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import { getSafeRedirectPath } from "@/lib/authSession";
 import { postJson } from "@/lib/clientApi";
 import type { AuthResponse } from "@/types/banking";
@@ -18,6 +19,7 @@ type LoginFormProps = {
 export function LoginForm({ portal = "member" }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpStep, setOtpStep] = useState(false);
@@ -83,7 +85,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
     setIsSubmitting(true);
 
     if (!loginChallengeId) {
-      setError("Sign-in verification expired. Start again with your username and password.");
+      setError(t("auth.login.verificationExpired"));
       setIsSubmitting(false);
       return;
     }
@@ -114,11 +116,11 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
         <div className="rounded-lg border border-ocean-blue/20 bg-ocean-blue/10 px-4 py-3 text-sm text-primary-navy dark:text-white">
           <p className="inline-flex items-start gap-2 font-medium">
             <ShieldCheck size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <span>{otpMessage ?? "Enter the verification code sent to your email."}</span>
+            <span>{otpMessage ?? t("auth.login.otpDefaultMessage")}</span>
           </p>
         </div>
 
-        <AuthField label="Verification code" htmlFor="login-otp" icon={ShieldCheck}>
+        <AuthField label={t("auth.login.verifyCode")} htmlFor="login-otp" icon={ShieldCheck}>
           <input
             id="login-otp"
             type="text"
@@ -150,7 +152,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
             className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
           })}
         >
-          {isSubmitting ? "Verifying..." : "Verify and sign in"}
+          {isSubmitting ? t("auth.login.verifying") : t("auth.login.verifyAndSignIn")}
           <ArrowRight size={18} aria-hidden="true" />
         </button>
 
@@ -165,7 +167,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           }}
           className="w-full text-sm font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
         >
-          Back to sign in
+          {t("auth.login.backToCredentials")}
         </button>
       </form>
     );
@@ -178,7 +180,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           role="status"
           className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-100"
         >
-          Your session expired due to inactivity. Sign in again to continue.
+          {t("auth.login.sessionExpired")}
         </p>
       ) : null}
 
@@ -187,7 +189,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           role="status"
           className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-900 dark:text-emerald-100"
         >
-          Your password was updated. Sign in with your new password.
+          {t("auth.login.passwordReset")}
         </p>
       ) : null}
 
@@ -196,13 +198,13 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           role="status"
           className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-900 dark:text-emerald-100"
         >
-          Email verified{verifiedUsername ? ` for ${verifiedUsername}` : ""}. Sign in with your
-          username and password.
+          {t("auth.login.emailVerified")}
+          {verifiedUsername ? ` (${verifiedUsername})` : ""}
         </p>
       ) : null}
 
       {isAdminPortal ? (
-        <AuthField label="Operations email" htmlFor="login-email" icon={Mail}>
+        <AuthField label={t("auth.login.email")} htmlFor="login-email" icon={Mail}>
           <input
             id="login-email"
             type="email"
@@ -213,7 +215,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           />
         </AuthField>
       ) : (
-        <AuthField label="Username" htmlFor="login-username" icon={AtSign}>
+        <AuthField label={t("auth.login.username")} htmlFor="login-username" icon={AtSign}>
           <input
             id="login-username"
             type="text"
@@ -228,7 +230,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
         </AuthField>
       )}
 
-      <AuthField label="Password" htmlFor="login-password" icon={LockKeyhole}>
+      <AuthField label={t("auth.login.password")} htmlFor="login-password" icon={LockKeyhole}>
         <input
           id="login-password"
           type="password"
@@ -245,7 +247,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
             href={FORGOT_PASSWORD_PATH}
             className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
           >
-            Forgot password?
+            {t("auth.login.forgotPassword")}
           </Link>
         </div>
       ) : null}
@@ -261,7 +263,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
               href={MEMBER_VERIFY_EMAIL_PATH}
               className="mt-2 inline-flex font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
             >
-              Verify email
+              {t("auth.login.verifyEmailLink")}
             </Link>
           ) : null}
         </div>
@@ -274,7 +276,11 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
           className: "w-full disabled:cursor-not-allowed disabled:opacity-60",
         })}
       >
-        {isSubmitting ? "Signing in..." : isAdminPortal ? "Sign in to console" : "Sign in"}
+        {isSubmitting
+          ? t("auth.login.signingIn")
+          : isAdminPortal
+            ? t("auth.login.signInToConsole")
+            : t("auth.login.signIn")}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
     </form>

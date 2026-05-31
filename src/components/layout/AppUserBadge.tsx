@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { PROFILE_PHOTO_UPDATED_EVENT } from "@/components/profile/ProfilePhotoUpload";
 import { MemberAvatar } from "@/components/shared/MemberAvatar";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import { buildAdminAuthUrl, buildMemberAuthUrl } from "@/lib/authRoutes";
 import { getJson, postJson } from "@/lib/clientApi";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ type AppUserBadgeProps = {
 
 export function AppUserBadge({ showLogout = true, grouped = false }: AppUserBadgeProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<HeaderUser | null>(null);
@@ -85,8 +87,8 @@ export function AppUserBadge({ showLogout = true, grouped = false }: AppUserBadg
     router.refresh();
   }
 
-  const displayName = user?.fullName ?? "Member";
-  const displayMeta = user?.email ?? "Signed in";
+  const displayName = user?.fullName ?? t("common.member");
+  const displayMeta = user?.email ?? t("common.signedIn");
 
   return (
     <div ref={containerRef} className="relative">
@@ -139,7 +141,7 @@ export function AppUserBadge({ showLogout = true, grouped = false }: AppUserBadg
               className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-primary-navy transition hover:bg-primary-navy/[0.05] disabled:opacity-60 dark:text-white dark:hover:bg-white/[0.06]"
             >
               <LogOut size={16} aria-hidden="true" />
-              {isSigningOut ? "Signing out..." : "Sign out"}
+              {isSigningOut ? t("common.signingOut") : t("common.signOut")}
             </button>
           ) : null}
         </div>

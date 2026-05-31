@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Search } from "lucide-react";
+import { useTranslation } from "@/i18n/LocaleProvider";
 
 export function AppHeaderSearch() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -27,14 +29,14 @@ export function AppHeaderSearch() {
     >
       <Search size={17} aria-hidden="true" />
       <label className="sr-only" htmlFor="app-header-search">
-        Search transactions
+        {t("common.searchPlaceholder")}
       </label>
       <input
         id="app-header-search"
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search transactions, cards, support"
+        placeholder={t("common.searchPlaceholder")}
         className="w-full bg-transparent text-primary-navy outline-none placeholder:text-bluewave-gray dark:text-white"
       />
     </form>

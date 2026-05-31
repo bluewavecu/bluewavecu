@@ -1,53 +1,55 @@
+"use client";
+
 import { ArrowUpRight, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import {
   INSTITUTION,
   formatInstitutionAddress,
 } from "@/lib/institution";
 
-const footerLinks = [
+const footerGroups = [
   {
-    title: "Accounts",
+    titleKey: "footer.accounts",
     links: [
-      { label: "Personal", href: "/personal" },
-      { label: "Business", href: "/business" },
-      { label: "Savings", href: "/savings" },
-      { label: "Loans", href: "/loans" },
+      { labelKey: "footer.personal", href: "/personal" },
+      { labelKey: "footer.business", href: "/business" },
+      { labelKey: "footer.savings", href: "/savings" },
+      { labelKey: "footer.loans", href: "/loans" },
     ],
   },
   {
-    title: "Resources",
+    titleKey: "footer.resources",
     links: [
-      { label: "Online banking", href: "/auth/login" },
-      { label: "Support", href: "/support" },
-      { label: "Security", href: "/security" },
-      { label: "Mobile App", href: "/mobile-app" },
-      { label: "Rates", href: "/rates" },
+      { labelKey: "footer.onlineBanking", href: "/auth/login" },
+      { labelKey: "footer.support", href: "/support" },
+      { labelKey: "footer.security", href: "/security" },
+      { labelKey: "footer.mobileApp", href: "/mobile-app" },
+      { labelKey: "footer.rates", href: "/rates" },
     ],
   },
   {
-    title: "Company",
+    titleKey: "footer.company",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Careers", href: "/careers" },
-      { label: "Newsroom", href: "/newsroom" },
-      { label: "Contact", href: "/contact" },
+      { labelKey: "footer.about", href: "/about" },
+      { labelKey: "footer.careers", href: "/careers" },
+      { labelKey: "footer.newsroom", href: "/newsroom" },
+      { labelKey: "footer.contact", href: "/contact" },
     ],
   },
-];
+] as const;
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer id="support" className="bg-brand-navy text-white">
       <div className="section-shell py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1.45fr]">
           <div>
             <BrandLogo href="/" displayHeight={44} priority />
-            <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">
-              Member-owned financial services with secure online banking, competitive
-              products, and local support from {INSTITUTION.shortName} Credit Union.
-            </p>
+            <p className="mt-5 max-w-md text-sm leading-6 text-white/[0.68]">{t("footer.tagline")}</p>
 
             <div className="mt-7 grid gap-3 text-sm text-white/[0.72]">
               <span className="flex items-center gap-3">
@@ -72,17 +74,17 @@ export function Footer() {
           </div>
 
           <div className="grid gap-8 sm:grid-cols-3">
-            {footerLinks.map((group) => (
-              <div key={group.title}>
-                <h3 className="text-sm font-semibold text-white">{group.title}</h3>
+            {footerGroups.map((group) => (
+              <div key={group.titleKey}>
+                <h3 className="text-sm font-semibold text-white">{t(group.titleKey)}</h3>
                 <ul className="mt-4 space-y-3">
                   {group.links.map((link) => (
-                    <li key={link.label}>
+                    <li key={link.labelKey}>
                       <Link
                         href={link.href}
                         className="inline-flex items-center gap-1.5 text-sm text-white/[0.64] transition hover:text-light-blue"
                       >
-                        {link.label}
+                        {t(link.labelKey)}
                         <ArrowUpRight size={13} aria-hidden="true" />
                       </Link>
                     </li>
@@ -97,14 +99,14 @@ export function Footer() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
               <p className="text-sm text-white/[0.58]">
-                © {new Date().getFullYear()} {INSTITUTION.legalName}. All rights reserved.
+                © {new Date().getFullYear()} {INSTITUTION.legalName}. {t("footer.rights")}
               </p>
               <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                 <Link href="/privacy" className="text-white/[0.64] transition hover:text-light-blue">
-                  Privacy Policy
+                  {t("footer.privacy")}
                 </Link>
                 <Link href="/terms" className="text-white/[0.64] transition hover:text-light-blue">
-                  Terms of Use
+                  {t("footer.terms")}
                 </Link>
               </div>
             </div>

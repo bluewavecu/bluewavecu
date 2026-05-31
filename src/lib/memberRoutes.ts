@@ -18,53 +18,53 @@ export const MEMBER_FORGOT_TRANSACTION_PIN_PATH = `${MEMBER_BASE_PATH}/forgot-tr
 export const MEMBER_SETTINGS_PATH = `${MEMBER_BASE_PATH}/settings`;
 
 export type MemberNavItem = {
-  label: string;
+  labelKey: string;
   href: string;
   icon: string;
 };
 
 export type MemberNavSection = {
-  title: string;
+  titleKey: string;
   items: MemberNavItem[];
 };
 
 export const memberNavSections: MemberNavSection[] = [
   {
-    title: "Overview",
-    items: [{ label: "Overview", href: MEMBER_DASHBOARD_PATH, icon: "LayoutDashboard" }],
+    titleKey: "member.sections.overview",
+    items: [{ labelKey: "member.nav.overview", href: MEMBER_DASHBOARD_PATH, icon: "LayoutDashboard" }],
   },
   {
-    title: "Money",
+    titleKey: "member.sections.money",
     items: [
-      { label: "Accounts", href: MEMBER_ACCOUNTS_PATH, icon: "WalletCards" },
-      { label: "Transactions", href: MEMBER_TRANSACTIONS_PATH, icon: "ReceiptText" },
-      { label: "Transfers", href: MEMBER_TRANSFERS_PATH, icon: "ArrowLeftRight" },
-      { label: "Bill Pay", href: MEMBER_BILL_PAY_PATH, icon: "Receipt" },
-      { label: "Statements", href: MEMBER_STATEMENTS_PATH, icon: "FileText" },
+      { labelKey: "member.nav.accounts", href: MEMBER_ACCOUNTS_PATH, icon: "WalletCards" },
+      { labelKey: "member.nav.transactions", href: MEMBER_TRANSACTIONS_PATH, icon: "ReceiptText" },
+      { labelKey: "member.nav.transfers", href: MEMBER_TRANSFERS_PATH, icon: "ArrowLeftRight" },
+      { labelKey: "member.nav.billPay", href: MEMBER_BILL_PAY_PATH, icon: "Receipt" },
+      { labelKey: "member.nav.statements", href: MEMBER_STATEMENTS_PATH, icon: "FileText" },
     ],
   },
   {
-    title: "Products",
+    titleKey: "member.sections.products",
     items: [
-      { label: "Cards", href: MEMBER_CARDS_PATH, icon: "CreditCard" },
-      { label: "Loans", href: MEMBER_LOANS_PATH, icon: "Landmark" },
-      { label: "Recipients", href: MEMBER_PAYEES_PATH, icon: "Users" },
+      { labelKey: "member.nav.cards", href: MEMBER_CARDS_PATH, icon: "CreditCard" },
+      { labelKey: "member.nav.loans", href: MEMBER_LOANS_PATH, icon: "Landmark" },
+      { labelKey: "member.nav.recipients", href: MEMBER_PAYEES_PATH, icon: "Users" },
     ],
   },
   {
-    title: "Service",
+    titleKey: "member.sections.service",
     items: [
-      { label: "Disputes", href: MEMBER_DISPUTES_PATH, icon: "Scale" },
-      { label: "Support", href: MEMBER_SUPPORT_PATH, icon: "CircleHelp" },
-      { label: "Notifications", href: MEMBER_NOTIFICATIONS_PATH, icon: "Bell" },
+      { labelKey: "member.nav.disputes", href: MEMBER_DISPUTES_PATH, icon: "Scale" },
+      { labelKey: "member.nav.support", href: MEMBER_SUPPORT_PATH, icon: "CircleHelp" },
+      { labelKey: "member.nav.notifications", href: MEMBER_NOTIFICATIONS_PATH, icon: "Bell" },
     ],
   },
   {
-    title: "Account",
+    titleKey: "member.sections.account",
     items: [
-      { label: "Profile & verification", href: MEMBER_PROFILE_PATH, icon: "UserRound" },
-      { label: "Security", href: MEMBER_SECURITY_PATH, icon: "Shield" },
-      { label: "Settings", href: MEMBER_SETTINGS_PATH, icon: "Settings" },
+      { labelKey: "member.nav.profile", href: MEMBER_PROFILE_PATH, icon: "UserRound" },
+      { labelKey: "member.nav.security", href: MEMBER_SECURITY_PATH, icon: "Shield" },
+      { labelKey: "member.nav.settings", href: MEMBER_SETTINGS_PATH, icon: "Settings" },
     ],
   },
 ];

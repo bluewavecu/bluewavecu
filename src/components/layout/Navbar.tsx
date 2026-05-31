@@ -3,18 +3,20 @@
 import { LogIn, Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
+import { useTranslation } from "@/i18n/LocaleProvider";
 import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
-  { label: "Personal", href: "/personal" },
-  { label: "Business", href: "/business" },
-  { label: "Loans", href: "/loans" },
-  { label: "About", href: "/about" },
-  { label: "Support", href: "/support" },
-];
+const navLinkKeys = [
+  { labelKey: "nav.personal", href: "/personal" },
+  { labelKey: "nav.business", href: "/business" },
+  { labelKey: "nav.loans", href: "/loans" },
+  { labelKey: "nav.about", href: "/about" },
+  { labelKey: "nav.support", href: "/support" },
+] as const;
 
 const loginButtonClassName = buttonVariants({
   variant: "primary",
@@ -32,6 +34,7 @@ const registerButtonClassName = buttonVariants({
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-navy text-white shadow-[0_12px_40px_rgba(20,35,60,0.18)]">
@@ -42,31 +45,37 @@ export function Navbar() {
         <BrandLogo priority displayHeight={44} onClick={() => setOpen(false)} />
 
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:gap-8 lg:flex">
-          {navLinks.map((link) => (
+          {navLinkKeys.map((link) => (
             <Link
-              key={link.label}
+              key={link.labelKey}
               href={link.href}
               className="text-sm font-medium text-white/[0.78] transition hover:text-light-blue"
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+          <LanguageSelector
+            compact
+            className="text-white"
+            selectClassName="border-white/[0.16] bg-white/[0.08] text-white"
+          />
+
           <Link href={MEMBER_LOGIN_PATH} className={loginButtonClassName}>
             <LogIn size={16} aria-hidden="true" />
-            Log in
+            {t("nav.login")}
           </Link>
 
           <Link href={MEMBER_REGISTER_PATH} className={registerButtonClassName}>
             <UserPlus size={16} aria-hidden="true" />
-            Open account
+            {t("nav.openAccount")}
           </Link>
 
           <button
             type="button"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition hover:bg-white/[0.14] sm:h-10 sm:w-10 lg:hidden"
@@ -79,20 +88,23 @@ export function Navbar() {
       <div
         className={cn(
           "overflow-hidden border-t border-white/10 bg-brand-navy transition-[max-height,opacity] duration-300 lg:hidden",
-          open ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0",
+          open ? "max-h-[480px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
         <div className="section-shell flex flex-col gap-1 py-4">
-          {navLinks.map((link) => (
+          {navLinkKeys.map((link) => (
             <Link
-              key={link.label}
+              key={link.labelKey}
               href={link.href}
               onClick={() => setOpen(false)}
               className="rounded-lg px-3 py-2.5 text-sm font-semibold text-white/[0.82] transition hover:bg-white/[0.08] hover:text-light-blue"
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
+          <div className="px-3 py-2">
+            <LanguageSelector className="text-white" selectClassName="w-full border-white/[0.16] bg-white/[0.08] text-white" />
+          </div>
           <Link
             href={MEMBER_REGISTER_PATH}
             onClick={() => setOpen(false)}
@@ -102,7 +114,7 @@ export function Navbar() {
             })}
           >
             <UserPlus size={16} aria-hidden="true" />
-            Open account
+            {t("nav.openAccount")}
           </Link>
         </div>
       </div>
