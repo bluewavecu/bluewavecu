@@ -1,4 +1,5 @@
-import { CreditCard, TrendingUp, WalletCards } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, CreditCard, TrendingUp, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
@@ -92,9 +93,10 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
       </h2>
       {displayAccounts.map((account) => {
         return (
-          <article
+          <Link
             key={account.id}
-            className="overflow-hidden rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            href={`/auth/accounts/${account.id}`}
+            className="group block overflow-hidden rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] transition hover:border-ocean-blue/[0.35] hover:shadow-[0_22px_70px_rgba(10,42,94,0.12)] dark:border-white/[0.08] dark:bg-white/[0.06]"
           >
             <div className={`h-2 bg-gradient-to-r ${account.accent}`} />
             <div className="p-5">
@@ -115,6 +117,10 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
                   )}
                 </span>
               </div>
+              <p className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-royal-blue opacity-0 transition group-hover:opacity-100 dark:text-light-blue">
+                View account
+                <ChevronRight size={14} aria-hidden="true" />
+              </p>
 
               <div className="mt-7">
                 <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
@@ -133,7 +139,7 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
                 </span>
               </div>
             </div>
-          </article>
+          </Link>
         );
       })}
     </section>

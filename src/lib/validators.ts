@@ -543,7 +543,7 @@ export const adjustmentCreateSchema = z.object({
   amount: z.coerce.number().positive(),
   direction: z.enum(["DEBIT", "CREDIT"]),
   reason: z.string().trim().min(5).max(500),
-  effectiveAt: z.coerce.date(),
+  effectiveAt: z.coerce.date().optional(),
 });
 
 export const adminAdjustmentActionSchema = z.object({

@@ -75,7 +75,7 @@ export function useAdminAdjustments(status?: AdjustmentStatus | "ALL") {
       amount: number;
       direction: "DEBIT" | "CREDIT";
       reason: string;
-      effectiveAt: string;
+      effectiveAt?: string;
     }) => {
       setIsSubmitting(true);
       const result = await postJson<{ adjustment: AdjustmentRecord }>(

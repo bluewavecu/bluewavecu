@@ -45,12 +45,20 @@ export function AppHeader({
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
           {hideSearch ? null : <AppHeaderSearch />}
 
-          <NotificationsBell />
-
-          <AppUserBadge />
+          <div
+            className="flex items-stretch overflow-hidden rounded-full border border-primary-navy/[0.08] bg-white shadow-[0_12px_34px_rgba(10,42,94,0.07)] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            aria-label="Account tools"
+          >
+            <NotificationsBell grouped />
+            <span
+              className="my-2 w-px shrink-0 bg-primary-navy/[0.10] dark:bg-white/[0.12]"
+              aria-hidden="true"
+            />
+            <AppUserBadge grouped />
+          </div>
         </div>
       </div>
     </header>

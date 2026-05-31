@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeftRight, ReceiptText, Scale, WalletCards } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, ReceiptText, WalletCards } from "lucide-react";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
-import { DetailDrawer } from "@/components/ui/DetailDrawer";
-import { Amount } from "@/components/ui/Amount";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -15,7 +12,6 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { getShareAccountLabel } from "@/lib/institution";
-import type { PageAccount } from "@/types/banking";
 
 const quickActions = [
   { label: "Transfer funds", href: "/auth/transfers", icon: ArrowLeftRight },
@@ -31,7 +27,6 @@ function getStatusLabel(status: string) {
 
 export function AccountsClient() {
   const { data, error, isLoading, refetch } = useAccounts();
-  const [selectedAccount, setSelectedAccount] = useState<PageAccount | null>(null);
 
   if (isLoading) {
     return <LoadingState title="Loading accounts" message="Retrieving your account information." />;
@@ -92,17 +87,10 @@ export function AccountsClient() {
 
       <div className="grid gap-5 lg:grid-cols-3">
         {data.accounts.map((account) => (
-          <article
+          <Link
             key={account.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => setSelectedAccount(account)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                setSelectedAccount(account);
-              }
-            }}
-            className="cursor-pointer rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.06]"
+            href={`/auth/accounts/${account.id}`}
+            className="group block rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.06]"
           >
             <div className="flex items-start justify-between">
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
@@ -142,10 +130,11 @@ export function AccountsClient() {
                 Routing {account.routingNumber}
               </p>
             </div>
-            <p className="mt-5 text-xs text-bluewave-gray dark:text-white/[0.48]">
-              Tap for details, shortcuts, and activity.
+            <p className="mt-5 inline-flex items-center gap-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
+              View account details
+              <ChevronRight size={14} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
             </p>
-          </article>
+          </Link>
         ))}
       </div>
 
@@ -154,65 +143,6 @@ export function AccountsClient() {
         <StatementExportCard />
       </section>
 
-      <DetailDrawer
-        open={Boolean(selectedAccount)}
-        title={selectedAccount?.displayName ?? "Account"}
-        subtitle={selectedAccount?.accountNumber ? undefined : "Account details"}
-        onClose={() => setSelectedAccount(null)}
-        footer={
-          selectedAccount ? (
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={`/transfers?from=${selectedAccount.id}`}
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy"
-              >
-                <ArrowLeftRight size={16} aria-hidden="true" />
-                Transfer
-              </Link>
-              <Link
-                href="/auth/statements"
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
-              >
-                Statement
-              </Link>
-              <Link
-                href="/auth/disputes"
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
-              >
-                <Scale size={16} aria-hidden="true" />
-                Dispute
-              </Link>
-            </div>
-          ) : null
-        }
-      >
-        {selectedAccount ? (
-          <div className="space-y-4 text-sm">
-            <p className="text-bluewave-gray dark:text-white/[0.58]">
-              Only approved and posted transactions affect balances.
-            </p>
-            <div className="grid gap-3 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
-              <div className="flex justify-between">
-                <span>Available</span>
-                <Amount value={selectedAccount.availableBalance} showSign={false} />
-              </div>
-              <div className="flex justify-between">
-                <span>Current</span>
-                <Amount value={selectedAccount.balance} showSign={false} />
-              </div>
-              <div className="flex justify-between">
-                <span>Routing</span>
-                <span className="font-semibold">{selectedAccount.routingNumber}</span>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <span>Account number</span>
-                <AccountNumberDisplay accountNumber={selectedAccount.accountNumber} />
-              </div>
-            </div>
-            <AccountActivityTimeline accountId={selectedAccount.id} limit={6} />
-          </div>
-        ) : null}
-      </DetailDrawer>
     </section>
   );
 }

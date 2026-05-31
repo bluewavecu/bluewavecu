@@ -12,6 +12,10 @@ export function withPhotoCacheBuster(profilePhotoUrl: string | null | undefined,
     return null;
   }
 
+  if (profilePhotoUrl.startsWith("data:")) {
+    return profilePhotoUrl;
+  }
+
   if (!version) {
     return profilePhotoUrl;
   }

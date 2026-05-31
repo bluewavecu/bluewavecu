@@ -1,4 +1,5 @@
-import { BadgeCheck, Landmark, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { BadgeCheck, ChevronRight, Landmark, ShieldCheck } from "lucide-react";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
@@ -89,7 +90,11 @@ export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
           </p>
         ) : (
           displayAccounts.map((account) => (
-            <div key={account.id} className="rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
+            <Link
+              key={account.id}
+              href={`/auth/accounts/${account.id}`}
+              className="group block rounded-lg bg-[#f7fbff] p-4 transition hover:bg-ocean-blue/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-primary-navy dark:text-white">
@@ -110,7 +115,11 @@ export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
               <p className="mt-2 text-xs font-medium text-bluewave-gray dark:text-white/[0.54]">
                 {account.status}
               </p>
-            </div>
+              <p className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
+                Open account
+                <ChevronRight size={14} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
+              </p>
+            </Link>
           ))
         )}
       </div>

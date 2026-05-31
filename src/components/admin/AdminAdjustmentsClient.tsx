@@ -8,29 +8,12 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminAdjustments } from "@/hooks/useAdminAdjustments";
 import { cn } from "@/lib/utils";
-import type {
-  AdjustmentStatus,
-  AdminAccountRecord,
-  AdminUserSummaryWithKyc,
-} from "@/types/banking";
+import type { AdjustmentStatus, AdminAccountRecord, AdminUserSummaryWithKyc } from "@/types/banking";
 
-const filters: Array<AdjustmentStatus | "ALL"> = [
-  "ALL",
-  "PENDING",
-  "APPROVED",
-  "SCHEDULED",
-  "POSTED",
-  "REJECTED",
-];
+const filters: Array<AdjustmentStatus | "ALL"> = ["ALL", "POSTED", "REJECTED", "PENDING", "APPROVED"];
 
 const fieldClassName =
   "mt-1.5 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-3 py-2.5 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white";
-
-function formatDateTimeLocalValue(date: Date) {
-  const offset = date.getTimezoneOffset();
-  const local = new Date(date.getTime() - offset * 60_000);
-  return local.toISOString().slice(0, 16);
-}
 
 function formatEffectiveAt(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -43,7 +26,7 @@ function formatEffectiveAt(value: string) {
 }
 
 export function AdminAdjustmentsClient() {
-  const [statusFilter, setStatusFilter] = useState<AdjustmentStatus | "ALL">("PENDING");
+  const [statusFilter, setStatusFilter] = useState<AdjustmentStatus | "ALL">("POSTED");
   const [users, setUsers] = useState<AdminUserSummaryWithKyc[]>([]);
   const [accounts, setAccounts] = useState<AdminAccountRecord[]>([]);
   const [userId, setUserId] = useState("");
@@ -51,8 +34,7 @@ export function AdminAdjustmentsClient() {
   const [amount, setAmount] = useState("");
   const [direction, setDirection] = useState<"DEBIT" | "CREDIT">("CREDIT");
   const [reason, setReason] = useState("");
-  const [effectiveAt, setEffectiveAt] = useState(() => formatDateTimeLocalValue(new Date()));
-  const { data, error, isLoading, isForbidden, isSubmitting, refetch, createAdjustment, actionAdjustment } =
+  const { data, error, isLoading, isForbidden, isSubmitting, refetch, createAdjustment } =
     useAdminAdjustments(statusFilter);
 
   const fetchUsers = useCallback(async () => {
@@ -112,7 +94,7 @@ export function AdminAdjustmentsClient() {
   }, [accountId, userAccounts]);
 
   if (isLoading) {
-    return <LoadingState title="Loading adjustments" message="Retrieving credit and debit queue." />;
+    return <LoadingState title="Loading adjustments" message="Retrieving credit and debit history." />;
   }
 
   if (error) {
@@ -133,6 +115,8 @@ export function AdminAdjustmentsClient() {
     );
   }
 
+  const postedCount = data.adjustments.filter((item) => item.status === "POSTED").length;
+
   return (
     <section className="grid gap-5">
       <form
@@ -143,18 +127,19 @@ export function AdminAdjustmentsClient() {
             amount: Number(amount),
             direction,
             reason,
-            effectiveAt: new Date(effectiveAt).toISOString(),
           }).then((ok) => {
             if (ok) {
               setAmount("");
               setReason("");
-              setEffectiveAt(formatDateTimeLocalValue(new Date()));
             }
           });
         }}
         className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]"
       >
         <h2 className="text-lg font-semibold">Credit or debit member account</h2>
+        <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+          Adjustments post immediately to the member balance and transaction history.
+        </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="block">
             <span className="text-sm font-semibold">Member</span>
@@ -220,17 +205,6 @@ export function AdminAdjustmentsClient() {
           </label>
 
           <label className="block md:col-span-2">
-            <span className="text-sm font-semibold">Effective date and time</span>
-            <input
-              required
-              type="datetime-local"
-              value={effectiveAt}
-              onChange={(event) => setEffectiveAt(event.target.value)}
-              className={fieldClassName}
-            />
-          </label>
-
-          <label className="block md:col-span-2">
             <span className="text-sm font-semibold">Reason</span>
             <input
               required
@@ -246,14 +220,14 @@ export function AdminAdjustmentsClient() {
           disabled={isSubmitting}
           className="mt-4 inline-flex h-10 items-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:opacity-70"
         >
-          Create request
+          {isSubmitting ? "Applying..." : "Apply adjustment"}
         </button>
       </form>
 
       <AdminStatCards
         items={[
+          { label: "Posted (this view)", value: postedCount },
           { label: "Pending", value: data.summary.pending },
-          { label: "Approved", value: data.summary.approved },
           { label: "Total", value: data.summary.total },
         ]}
       />
@@ -284,64 +258,25 @@ export function AdminAdjustmentsClient() {
               <th className="px-4 py-3 font-semibold">Type</th>
               <th className="px-4 py-3 font-semibold">Amount</th>
               <th className="px-4 py-3 font-semibold">Reason</th>
-              <th className="px-4 py-3 font-semibold">Effective</th>
+              <th className="px-4 py-3 font-semibold">Posted</th>
               <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
-            {data.adjustments.map((adjustment) => {
-              const isFuture = new Date(adjustment.effectiveAt) > new Date();
-
-              return (
-                <tr key={adjustment.id}>
-                  <td className="px-4 py-3 font-semibold">{adjustment.userName}</td>
-                  <td className="px-4 py-3">{adjustment.direction}</td>
-                  <td className="px-4 py-3">{formatCurrency(adjustment.amount)}</td>
-                  <td className="max-w-xs px-4 py-3 text-bluewave-gray dark:text-white/[0.62]">
-                    {adjustment.reason}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {formatEffectiveAt(adjustment.effectiveAt)}
-                  </td>
-                  <td className="px-4 py-3">{adjustment.status}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      {adjustment.status === "PENDING" ? (
-                        <>
-                          <button
-                            type="button"
-                            disabled={isSubmitting}
-                            onClick={() => void actionAdjustment(adjustment.id, "APPROVE")}
-                            className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isSubmitting}
-                            onClick={() => void actionAdjustment(adjustment.id, "REJECT")}
-                            className="rounded-full bg-red-500/15 px-3 py-1 text-xs font-semibold"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      ) : null}
-                      {adjustment.status === "APPROVED" ? (
-                        <button
-                          type="button"
-                          disabled={isSubmitting}
-                          onClick={() => void actionAdjustment(adjustment.id, "POST")}
-                          className="rounded-full bg-ocean-blue px-3 py-1 text-xs font-semibold text-primary-navy"
-                        >
-                          {isFuture ? "Schedule" : "Post now"}
-                        </button>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+            {data.adjustments.map((adjustment) => (
+              <tr key={adjustment.id}>
+                <td className="px-4 py-3 font-semibold">{adjustment.userName}</td>
+                <td className="px-4 py-3">{adjustment.direction}</td>
+                <td className="px-4 py-3">{formatCurrency(adjustment.amount)}</td>
+                <td className="max-w-xs px-4 py-3 text-bluewave-gray dark:text-white/[0.62]">
+                  {adjustment.reason}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {formatEffectiveAt(adjustment.postedAt ?? adjustment.effectiveAt)}
+                </td>
+                <td className="px-4 py-3">{adjustment.status}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

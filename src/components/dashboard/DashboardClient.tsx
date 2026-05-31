@@ -10,7 +10,6 @@ import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { SecuritySessionCard } from "@/components/dashboard/SecuritySessionCard";
-import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { notifyProfilePhotoUpdated } from "@/components/profile/ProfilePhotoUpload";
 import { ProfilePhotoAvatar } from "@/components/shared/ProfilePhotoAvatar";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -225,7 +224,6 @@ export function DashboardClient() {
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
         <AccountOverview accounts={data.accounts} loans={data.loans} />
         <div className="grid gap-5">
-          <NotificationsPanel limit={5} compact />
           <SecuritySessionCard />
 
           <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-5 text-white shadow-[0_18px_60px_rgba(10,42,94,0.12)]">

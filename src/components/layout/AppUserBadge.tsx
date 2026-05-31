@@ -19,9 +19,10 @@ type MeResponse = {
 
 type AppUserBadgeProps = {
   showLogout?: boolean;
+  grouped?: boolean;
 };
 
-export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
+export function AppUserBadge({ showLogout = true, grouped = false }: AppUserBadgeProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -95,8 +96,12 @@ export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
         aria-haspopup="menu"
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          "inline-flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-primary-navy/[0.08] bg-white py-1 pl-1 pr-2.5 shadow-[0_12px_34px_rgba(10,42,94,0.07)] transition hover:border-ocean-blue/[0.35] dark:border-white/[0.08] dark:bg-white/[0.06]",
-          open && "border-ocean-blue/[0.35]",
+          "inline-flex h-10 max-w-[12rem] items-center gap-2 py-1 pl-1 pr-2.5 transition",
+          grouped
+            ? "rounded-none border-0 bg-transparent shadow-none hover:bg-primary-navy/[0.04] dark:hover:bg-white/[0.06]"
+            : "rounded-full border border-primary-navy/[0.08] bg-white shadow-[0_12px_34px_rgba(10,42,94,0.07)] hover:border-ocean-blue/[0.35] dark:border-white/[0.08] dark:bg-white/[0.06]",
+          open && !grouped && "border-ocean-blue/[0.35]",
+          open && grouped && "bg-primary-navy/[0.04] dark:bg-white/[0.06]",
         )}
       >
         <MemberAvatar fullName={displayName} profilePhotoUrl={profilePhotoUrl} size="sm" />

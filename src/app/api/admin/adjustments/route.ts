@@ -3,7 +3,7 @@ import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import {
   approveAdjustmentRequest,
-  createAdjustmentRequest,
+  createAndPostAdjustment,
   LedgerError,
   postAdjustmentRequest,
   rejectAdjustmentRequest,
@@ -80,23 +80,23 @@ export async function POST(request: NextRequest) {
 
     const input = adjustmentCreateSchema.parse(await request.json());
 
-    const adjustment = await createAdjustmentRequest({
+    const adjustment = await createAndPostAdjustment({
       adminId: auth.admin.id,
       accountId: input.accountId,
       amount: input.amount,
       direction: input.direction,
       reason: input.reason,
-      effectiveAt: input.effectiveAt,
     });
 
     await logAdminAction({
       adminId: auth.admin.id,
-      action: "CREATE_ADJUSTMENT",
+      action: "POST_ADJUSTMENT",
       entityType: "AdjustmentRequest",
       entityId: adjustment.id,
       details: {
         direction: input.direction,
         amount: input.amount,
+        transactionId: adjustment.transactionId,
       },
     });
 

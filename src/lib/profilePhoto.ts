@@ -5,7 +5,10 @@ import {
   getProfilePhotoPublicPath,
   getProfilesUploadRoot,
   resolveProfilePhotoFilePath,
+  usesEphemeralUploadStorage,
 } from "@/lib/uploadStorage";
+
+const MAX_INLINE_PHOTO_BYTES = 2_500_000;
 
 const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["image/jpeg", "jpg"],
@@ -56,15 +59,26 @@ export async function saveProfilePhoto(params: { userId: string; file: File }) {
   }
 
   const buffer = Buffer.from(await params.file.arrayBuffer());
-  const uploadsRoot = getProfilesUploadRoot();
 
-  await ensureUploadDirectory(uploadsRoot);
-  await removeExistingPhotoFiles(params.userId);
+  if (buffer.byteLength > MAX_INLINE_PHOTO_BYTES) {
+    throw new Error("Image is too large. Choose a photo under 2.5 MB.");
+  }
 
-  const absolutePath = resolveProfilePhotoFilePath(params.userId, extension);
-  await writeFile(absolutePath, buffer);
+  let profilePhotoUrl: string;
 
-  const profilePhotoUrl = getProfilePhotoPublicPath(params.userId, extension);
+  if (usesEphemeralUploadStorage()) {
+    const mime = params.file.type?.toLowerCase() || `image/${extension}`;
+    profilePhotoUrl = `data:${mime};base64,${buffer.toString("base64")}`;
+  } else {
+    const uploadsRoot = getProfilesUploadRoot();
+
+    await ensureUploadDirectory(uploadsRoot);
+    await removeExistingPhotoFiles(params.userId);
+
+    const absolutePath = resolveProfilePhotoFilePath(params.userId, extension);
+    await writeFile(absolutePath, buffer);
+    profilePhotoUrl = getProfilePhotoPublicPath(params.userId, extension);
+  }
 
   const profile = await getPrisma().customerProfile.upsert({
     where: { userId: params.userId },
@@ -79,7 +93,9 @@ export async function saveProfilePhoto(params: { userId: string; file: File }) {
 }
 
 export async function removeProfilePhoto(userId: string) {
-  await removeExistingPhotoFiles(userId);
+  if (!usesEphemeralUploadStorage()) {
+    await removeExistingPhotoFiles(userId);
+  }
 
   await getPrisma().customerProfile.updateMany({
     where: { userId },

@@ -127,6 +127,30 @@ export async function createAdjustmentRequest(params: {
   return serializeAdjustment(adjustment);
 }
 
+export async function createAndPostAdjustment(params: {
+  adminId: string;
+  accountId: string;
+  amount: number;
+  direction: LedgerDirection;
+  reason: string;
+}) {
+  const effectiveAt = new Date();
+  const created = await createAdjustmentRequest({
+    ...params,
+    effectiveAt,
+  });
+
+  await approveAdjustmentRequest({
+    adjustmentId: created.id,
+    adminId: params.adminId,
+  });
+
+  return postAdjustmentRequest({
+    adjustmentId: created.id,
+    adminId: params.adminId,
+  });
+}
+
 export async function approveAdjustmentRequest(params: {
   adjustmentId: string;
   adminId: string;

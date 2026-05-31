@@ -44,14 +44,23 @@ export function MemberAvatar({
       aria-hidden={profilePhotoUrl ? undefined : true}
     >
       {profilePhotoUrl ? (
-        <Image
-          src={profilePhotoUrl}
-          alt={`${fullName} profile photo`}
-          width={imageSizes[size]}
-          height={imageSizes[size]}
-          unoptimized
-          className="h-full w-full object-cover"
-        />
+        profilePhotoUrl.startsWith("data:") ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profilePhotoUrl}
+            alt={`${fullName} profile photo`}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Image
+            src={profilePhotoUrl}
+            alt={`${fullName} profile photo`}
+            width={imageSizes[size]}
+            height={imageSizes[size]}
+            unoptimized
+            className="h-full w-full object-cover"
+          />
+        )
       ) : (
         <span className="flex h-full w-full items-center justify-center">{initials}</span>
       )}
