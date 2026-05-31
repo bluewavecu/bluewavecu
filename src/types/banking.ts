@@ -156,6 +156,7 @@ export type DashboardAccount = {
   id: string;
   accountType: AccountType;
   displayName: string;
+  accountNumber: string;
   maskedAccountNumber: string;
   accountNumberLast4: string;
   balance: number;
@@ -239,6 +240,7 @@ export type PageAccount = {
   id: string;
   accountType: AccountType;
   displayName: string;
+  accountNumber: string;
   maskedAccountNumber: string;
   accountNumberLast4: string;
   routingNumber: string;

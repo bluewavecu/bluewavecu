@@ -80,6 +80,61 @@ export async function getLedgerTotalsByAccount() {
   return totals;
 }
 
+function resolveReconciliationStatus(
+  accountBalance: number,
+  ledger: Awaited<ReturnType<typeof calculateAccountLedgerBalance>>,
+): ReconciliationAccountRecord["status"] {
+  const delta = Math.abs(accountBalance - ledger.ledgerBalance);
+
+  if (!ledger.hasLedgerEntries && accountBalance !== 0) {
+    return "NO_LEDGER";
+  }
+
+  if (delta >= 0.01) {
+    return "MISMATCH";
+  }
+
+  return "MATCH";
+}
+
+export async function getReconciliationMetrics() {
+  const prisma = getPrisma();
+
+  const accounts = await prisma.account.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, balance: true },
+  });
+
+  if (accounts.length === 0) {
+    return { mismatchCount: 0, noLedgerCount: 0 };
+  }
+
+  const ledgerResults = await Promise.all(
+    accounts.map((account) => calculateAccountLedgerBalance(account.id)),
+  );
+
+  let mismatchCount = 0;
+  let noLedgerCount = 0;
+
+  accounts.forEach((account, index) => {
+    const ledger = ledgerResults[index]!;
+    const accountBalance = account.balance.toNumber();
+    const status = resolveReconciliationStatus(accountBalance, ledger);
+
+    if (status === "NO_LEDGER") {
+      noLedgerCount += 1;
+      mismatchCount += 1;
+      return;
+    }
+
+    if (status === "MISMATCH") {
+      mismatchCount += 1;
+    }
+  });
+
+  return { mismatchCount, noLedgerCount };
+}
+
 export async function getReconciliationSummary(): Promise<ReconciliationSummary> {
   const prisma = getPrisma();
 
@@ -91,28 +146,20 @@ export async function getReconciliationSummary(): Promise<ReconciliationSummary>
     orderBy: { accountNumber: "asc" },
   });
 
-  const records: ReconciliationAccountRecord[] = [];
+  const eligibleAccounts = accounts.filter((account) => account.accountNumber);
+  const ledgerResults = await Promise.all(
+    eligibleAccounts.map((account) => calculateAccountLedgerBalance(account.id)),
+  );
 
-  for (const account of accounts) {
-    if (!account.accountNumber) {
-      continue;
-    }
-
-    const ledger = await calculateAccountLedgerBalance(account.id);
+  const records: ReconciliationAccountRecord[] = eligibleAccounts.map((account, index) => {
+    const ledger = ledgerResults[index]!;
     const accountBalance = account.balance.toNumber();
     const delta = Number((accountBalance - ledger.ledgerBalance).toFixed(2));
+    const status = resolveReconciliationStatus(accountBalance, ledger);
 
-    let status: ReconciliationAccountRecord["status"] = "MATCH";
-
-    if (!ledger.hasLedgerEntries && accountBalance !== 0) {
-      status = "NO_LEDGER";
-    } else if (Math.abs(delta) >= 0.01) {
-      status = "MISMATCH";
-    }
-
-    records.push({
+    return {
       accountId: account.id,
-      accountNumber: account.accountNumber,
+      accountNumber: account.accountNumber!,
       accountType: account.accountType,
       userId: account.userId,
       userName: account.user.fullName,
@@ -122,8 +169,8 @@ export async function getReconciliationSummary(): Promise<ReconciliationSummary>
       totalDebits: ledger.totalDebits,
       totalCredits: ledger.totalCredits,
       status,
-    });
-  }
+    };
+  });
 
   return {
     accounts: records,

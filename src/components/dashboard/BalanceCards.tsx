@@ -1,5 +1,6 @@
 import { CreditCard, TrendingUp, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
 import type { AccountType, DashboardAccount } from "@/types/banking";
@@ -62,7 +63,7 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
     id: account.id,
     type: getShareAccountLabel(account.accountType),
     name: account.displayName,
-    number: account.maskedAccountNumber,
+    number: account.accountNumber,
     balance: account.balance,
     available: account.availableBalance,
     status: getStatusLabel(account.status),
@@ -125,9 +126,7 @@ export function BalanceCards({ accounts }: BalanceCardsProps) {
               </div>
 
               <div className="mt-6 flex items-center justify-between border-t border-primary-navy/[0.08] pt-4 text-sm dark:border-white/[0.08]">
-                <span className="font-medium text-bluewave-gray dark:text-white/[0.58]">
-                  {account.number}
-                </span>
+                <AccountNumberDisplay accountNumber={account.number} />
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-ocean-blue/[0.10] px-3 py-1 font-semibold text-royal-blue dark:text-light-blue">
                   <TrendingUp size={14} aria-hidden="true" />
                   {account.trend}

@@ -9,6 +9,16 @@ export const accountDisplayNames: Record<AccountType, string> = {
   CREDIT: "Bluewave Rewards Credit",
 };
 
+export function formatAccountNumberForDisplay(accountNumber: string) {
+  const digits = accountNumber.replace(/\D/g, "");
+
+  if (!digits) {
+    return accountNumber;
+  }
+
+  return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
+
 export function maskAccountNumber(accountNumber: string | null | undefined) {
   if (!accountNumber) {
     return {

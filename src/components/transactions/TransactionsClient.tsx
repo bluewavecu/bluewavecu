@@ -18,6 +18,7 @@ import { DateTime } from "@/components/ui/DateTime";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { MEMBER_STATEMENTS_PATH } from "@/lib/memberRoutes";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -510,7 +511,9 @@ export function TransactionsClient() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-bluewave-gray dark:text-white/[0.58]">Account</dt>
-              <dd className="font-semibold">{selectedTransaction.maskedAccountNumber}</dd>
+              <dd>
+                <AccountNumberDisplay accountNumber={selectedTransaction.maskedAccountNumber} />
+              </dd>
             </div>
             {selectedTransaction.reviewedAt ? (
               <div className="flex justify-between gap-4">

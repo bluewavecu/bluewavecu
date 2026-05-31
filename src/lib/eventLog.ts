@@ -130,6 +130,18 @@ export function writeSystemErrorEvent(params: {
   });
 }
 
+function toJsonSafeValue(value: unknown) {
+  if (value === undefined) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(value)) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 export function serializeEventLog(record: {
   id: string;
   eventType: string;
@@ -149,7 +161,7 @@ export function serializeEventLog(record: {
     entityId: record.entityId,
     severity: record.severity,
     message: record.message,
-    metadata: record.metadata,
+    metadata: toJsonSafeValue(record.metadata),
     createdAt: record.createdAt.toISOString(),
   };
 }

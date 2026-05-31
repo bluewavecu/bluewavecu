@@ -3,6 +3,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
 
 import {
+  formatAccountNumberForDisplay,
   getAccountDisplayName,
   maskAccountNumber,
 } from "@/lib/bankingSerialize";
@@ -26,12 +27,16 @@ export async function GET(request: NextRequest) {
 
     const serializedAccounts: PageAccount[] = accounts.map((account) => {
       const masked = maskAccountNumber(account.accountNumber);
+      const accountNumber = account.accountNumber ?? "";
 
       return {
         id: account.id,
         accountType: account.accountType,
         displayName: getAccountDisplayName(account.accountType),
-        maskedAccountNumber: masked.masked,
+        accountNumber,
+        maskedAccountNumber: accountNumber
+          ? formatAccountNumberForDisplay(accountNumber)
+          : masked.masked,
         accountNumberLast4: masked.last4,
         routingNumber: account.routingNumber,
         balance: account.balance.toNumber(),

@@ -13,6 +13,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { cn } from "@/lib/utils";
+import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { getShareAccountLabel } from "@/lib/institution";
 import type { PageAccount } from "@/types/banking";
 
@@ -122,8 +123,11 @@ export function AccountsClient() {
               {account.displayName}
             </h2>
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-              {getShareAccountLabel(account.accountType)} | {account.maskedAccountNumber}
+              {getShareAccountLabel(account.accountType)}
             </p>
+            <div className="mt-2">
+              <AccountNumberDisplay accountNumber={account.accountNumber} />
+            </div>
             <div className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
               <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
                 Available balance
@@ -153,7 +157,7 @@ export function AccountsClient() {
       <DetailDrawer
         open={Boolean(selectedAccount)}
         title={selectedAccount?.displayName ?? "Account"}
-        subtitle={selectedAccount?.maskedAccountNumber}
+        subtitle={selectedAccount?.accountNumber ? undefined : "Account details"}
         onClose={() => setSelectedAccount(null)}
         footer={
           selectedAccount ? (
@@ -200,9 +204,9 @@ export function AccountsClient() {
                 <span>Routing</span>
                 <span className="font-semibold">{selectedAccount.routingNumber}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Account</span>
-                <span className="font-semibold">{selectedAccount.maskedAccountNumber}</span>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span>Account number</span>
+                <AccountNumberDisplay accountNumber={selectedAccount.accountNumber} />
               </div>
             </div>
             <AccountActivityTimeline accountId={selectedAccount.id} limit={6} />

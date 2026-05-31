@@ -4,7 +4,7 @@ import { apiSuccess, handleApiError } from "@/lib/api";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { serializeEventLog } from "@/lib/eventLog";
 import { getPrisma } from "@/lib/prisma";
-import { getReconciliationSummary } from "@/lib/reconciliation";
+import { getReconciliationMetrics } from "@/lib/reconciliation";
 import type {
   AdminAuditLogRecord,
   AdminCommandCenterData,
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
         include: { admin: { select: { id: true, fullName: true, email: true } } },
       }),
       prisma.eventLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
-      getReconciliationSummary(),
+      getReconciliationMetrics(),
       buildOperationalAlerts(prisma),
     ]);
 
@@ -299,15 +299,19 @@ export async function GET(request: NextRequest) {
       }),
     );
 
-    const serializedAuditLogs: AdminAuditLogRecord[] = recentAdminActivity.map((log) => ({
-      id: log.id,
-      action: log.action,
-      entityType: log.entityType,
-      entityId: log.entityId,
-      details: (log.details as Record<string, unknown> | null) ?? null,
-      createdAt: log.createdAt.toISOString(),
-      admin: log.admin,
-    }));
+    const serializedAuditLogs: AdminAuditLogRecord[] = recentAdminActivity
+      .filter((log): log is typeof log & { admin: NonNullable<typeof log.admin> } => Boolean(log.admin))
+      .map((log) => ({
+        id: log.id,
+        action: log.action,
+        entityType: log.entityType,
+        entityId: log.entityId,
+        details: log.details
+          ? (JSON.parse(JSON.stringify(log.details)) as Record<string, unknown>)
+          : null,
+        createdAt: log.createdAt.toISOString(),
+        admin: log.admin,
+      }));
 
     const data: AdminCommandCenterData = {
       metrics: {
@@ -320,7 +324,7 @@ export async function GET(request: NextRequest) {
         openDisputes,
         openSupportTickets,
         highRiskEvents,
-        reconciliationMismatches: reconciliation.totals.mismatchCount,
+        reconciliationMismatches: reconciliation.mismatchCount,
         dueJobs,
         failedJobs,
         totalAccounts,

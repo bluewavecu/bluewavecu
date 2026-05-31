@@ -1,4 +1,5 @@
 import { BadgeCheck, Landmark, ShieldCheck } from "lucide-react";
+import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
 import type { AccountType, DashboardAccount, DashboardLoan } from "@/types/banking";
@@ -53,7 +54,7 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
     id: account.id,
     type: getShareAccountLabel(account.accountType),
     name: account.displayName,
-    number: account.maskedAccountNumber,
+    number: account.accountNumber,
     available: account.availableBalance,
     status: getStatusLabel(account.status),
     accent: meta.accent,
@@ -94,9 +95,10 @@ export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
                   <p className="text-sm font-semibold text-primary-navy dark:text-white">
                     {account.type}
                   </p>
-                  <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.54]">
-                    {account.name} | {account.number}
-                  </p>
+                  <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.54]">{account.name}</p>
+                  <div className="mt-2">
+                    <AccountNumberDisplay accountNumber={account.number} />
+                  </div>
                 </div>
                 <p className="text-sm font-semibold text-primary-navy dark:text-white">
                   {formatCurrency(account.available)}

@@ -3,9 +3,9 @@ import { requireAdmin } from "@/lib/admin";
 import { apiSuccess, handleApiError } from "@/lib/api";
 import { getEmailConfig } from "@/lib/email";
 import { serializeEventLog } from "@/lib/eventLog";
-import { getServerEnv } from "@/lib/env";
+import { tryGetServerEnv } from "@/lib/env";
 import { getPrisma } from "@/lib/prisma";
-import { getReconciliationSummary } from "@/lib/reconciliation";
+import { getReconciliationMetrics } from "@/lib/reconciliation";
 import type { AdminSystemHealthData } from "@/types/banking";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const prisma = getPrisma();
     const now = new Date();
-    const { NODE_ENV } = getServerEnv();
+    const serverEnv = tryGetServerEnv();
     const emailConfig = getEmailConfig();
 
     const [dueJobs, failedJobs, runningJobs, totalJobs, recentCronEvents, reconciliation] =
@@ -39,11 +39,11 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: "desc" },
           take: 5,
         }),
-        getReconciliationSummary(),
+        getReconciliationMetrics(),
       ]);
 
-    const mismatchCount = reconciliation.totals.mismatchCount;
-    const noLedgerCount = reconciliation.accounts.filter((a) => a.status === "NO_LEDGER").length;
+    const mismatchCount = reconciliation.mismatchCount;
+    const noLedgerCount = reconciliation.noLedgerCount;
 
     let status: AdminSystemHealthData["status"] = "healthy";
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       cronConfigured: Boolean(process.env.CRON_SECRET?.trim()),
       demoSeedProtected: process.env.ALLOW_DEMO_SEED !== "true",
       appUrl: process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000",
-      systemMode: NODE_ENV,
+      systemMode: serverEnv?.NODE_ENV ?? process.env.NODE_ENV ?? "production",
       jobs: {
         due: dueJobs,
         failed: failedJobs,

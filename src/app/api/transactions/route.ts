@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
 
-import { maskAccountNumber } from "@/lib/bankingSerialize";
+import { formatAccountNumberForDisplay, maskAccountNumber } from "@/lib/bankingSerialize";
 import { getPrisma } from "@/lib/prisma";
 import type { PageTransaction, TransactionStatus, TransactionType } from "@/types/banking";
 
@@ -90,12 +90,15 @@ export async function GET(request: NextRequest) {
 
     const serializedTransactions: PageTransaction[] = transactions.map((transaction) => {
       const masked = maskAccountNumber(transaction.account.accountNumber);
+      const accountNumber = transaction.account.accountNumber ?? "";
 
       return {
         id: transaction.id,
         accountId: transaction.accountId,
         accountType: transaction.account.accountType,
-        maskedAccountNumber: masked.masked,
+        maskedAccountNumber: accountNumber
+          ? formatAccountNumberForDisplay(accountNumber)
+          : masked.masked,
         type: transaction.type,
         amount: transaction.amount.toNumber(),
         description: transaction.description,

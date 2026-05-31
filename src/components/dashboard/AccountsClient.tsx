@@ -4,6 +4,7 @@ import { BadgeCheck, WalletCards } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { getShareAccountLabel } from "@/lib/institution";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -54,8 +55,11 @@ export function AccountsClient() {
             {account.displayName}
           </h2>
           <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            {getShareAccountLabel(account.accountType)} | {account.maskedAccountNumber}
+            {getShareAccountLabel(account.accountType)}
           </p>
+          <div className="mt-2">
+            <AccountNumberDisplay accountNumber={account.accountNumber} />
+          </div>
           <div className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
             <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
               Available

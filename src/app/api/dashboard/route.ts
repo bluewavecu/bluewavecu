@@ -5,7 +5,11 @@ import { resolveRequestAuth } from "@/lib/requestAuth";
 import { getUserKycStatus } from "@/lib/customerProfile";
 import { withPhotoCacheBuster } from "@/lib/memberAvatar";
 import { getPrisma } from "@/lib/prisma";
-import { getAccountDisplayName, maskAccountNumber } from "@/lib/bankingSerialize";
+import {
+  formatAccountNumberForDisplay,
+  getAccountDisplayName,
+  maskAccountNumber,
+} from "@/lib/bankingSerialize";
 import type {
   DashboardAccount,
   DashboardCard,
@@ -95,12 +99,16 @@ export async function GET(request: NextRequest) {
 
     const serializedAccounts: DashboardAccount[] = accounts.map((account) => {
       const maskedAccount = maskAccountNumber(account.accountNumber);
+      const accountNumber = account.accountNumber ?? "";
 
       return {
         id: account.id,
         accountType: account.accountType,
         displayName: getAccountDisplayName(account.accountType),
-        maskedAccountNumber: maskedAccount.masked,
+        accountNumber,
+        maskedAccountNumber: accountNumber
+          ? formatAccountNumberForDisplay(accountNumber)
+          : maskedAccount.masked,
         accountNumberLast4: maskedAccount.last4,
         balance: account.balance.toNumber(),
         availableBalance: account.availableBalance.toNumber(),

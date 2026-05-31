@@ -159,11 +159,7 @@ export function AccountActivityTimeline({
             <TimelineEntry key={item.id} item={item} />
           ))}
         </div>
-      ) : (
-        <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          No recent activity yet. Posted transfers and support updates will appear here.
-        </p>
-      )}
+      ) : null}
     </section>
   );
 }

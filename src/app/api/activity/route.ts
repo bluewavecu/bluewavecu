@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
 
-import { maskAccountNumber } from "@/lib/bankingSerialize";
+import { formatAccountNumberForDisplay, maskAccountNumber } from "@/lib/bankingSerialize";
 import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
 import { getPrisma } from "@/lib/prisma";
 import type { ActivityTimelineData, ActivityTimelineItem } from "@/types/banking";
@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
 
     for (const entry of ledgerEntries) {
       const masked = maskAccountNumber(entry.account.accountNumber);
+      const accountNumber = entry.account.accountNumber ?? "";
 
       items.push({
         id: `ledger-${entry.id}`,
@@ -94,7 +95,9 @@ export async function GET(request: NextRequest) {
         amount: entry.direction === "DEBIT" ? -entry.amount.toNumber() : entry.amount.toNumber(),
         direction: entry.direction,
         balanceAfter: entry.balanceAfter.toNumber(),
-        maskedAccountNumber: masked.masked,
+        maskedAccountNumber: accountNumber
+          ? formatAccountNumberForDisplay(accountNumber)
+          : masked.masked,
         reference: entry.transaction.reference,
         createdAt: entry.createdAt.toISOString(),
         href: "/auth/transactions",
@@ -107,6 +110,7 @@ export async function GET(request: NextRequest) {
       }
 
       const masked = maskAccountNumber(transaction.account.accountNumber);
+      const accountNumber = transaction.account.accountNumber ?? "";
 
       items.push({
         id: `transaction-${transaction.id}`,
@@ -118,7 +122,9 @@ export async function GET(request: NextRequest) {
         description: transaction.description,
         status: transaction.status,
         amount: transaction.amount.toNumber(),
-        maskedAccountNumber: masked.masked,
+        maskedAccountNumber: accountNumber
+          ? formatAccountNumberForDisplay(accountNumber)
+          : masked.masked,
         reference: transaction.reference,
         createdAt: transaction.createdAt.toISOString(),
         href: transaction.type === "TRANSFER" ? "/auth/transfers" : "/auth/transactions",
