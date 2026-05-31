@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
-import { getEnabledMemberTransferOtpRequirements } from "@/lib/memberTransferOtpSteps";
 import { getPrisma } from "@/lib/prisma";
 import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
 
@@ -41,15 +40,10 @@ export async function POST(request: NextRequest) {
       return apiError("Your account cannot initiate transactions.", 403);
     }
 
-    const adminSteps = await getEnabledMemberTransferOtpRequirements(auth.payload.userId);
-
     return apiSuccess({
-      message: "Transfers are authorized with your transaction PIN.",
-      expiresAt: new Date().toISOString(),
+      message: "Transfers are authorized with your transaction PIN only.",
       requiresTransactionPin: true,
-      otpRequired: false,
-      adminSteps,
-      adminStepsRequired: adminSteps.length > 0,
+      hasTransactionPin: Boolean(user.transactionPinHash),
     });
   } catch (error) {
     return handleApiError(error);

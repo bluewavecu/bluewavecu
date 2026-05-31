@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { postJson } from "@/lib/clientApi";
-import type {
-  TransferData,
-  TransferRequirementsData,
-  TransferRequestInput,
-} from "@/types/banking";
+import type { TransferData, TransferRequirementsData, TransferRequestInput } from "@/types/banking";
 
 type TransferState = {
   isSubmitting: boolean;
@@ -14,8 +10,6 @@ type TransferState = {
   error: string | null;
   successMessage: string | null;
   hasTransactionPin: boolean;
-  adminSteps: TransferRequirementsData["adminSteps"];
-  adminStepsRequired: boolean;
   lastTransfer: TransferData | null;
   submitTransfer: (input: TransferRequestInput) => Promise<boolean>;
   reset: () => void;
@@ -27,8 +21,6 @@ export function useTransfer(): TransferState {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [hasTransactionPin, setHasTransactionPin] = useState(false);
-  const [adminSteps, setAdminSteps] = useState<TransferRequirementsData["adminSteps"]>([]);
-  const [adminStepsRequired, setAdminStepsRequired] = useState(false);
   const [lastTransfer, setLastTransfer] = useState<TransferData | null>(null);
 
   const loadRequirements = useCallback(async () => {
@@ -47,8 +39,6 @@ export function useTransfer(): TransferState {
 
       if (payload.success && payload.data) {
         setHasTransactionPin(payload.data.hasTransactionPin);
-        setAdminSteps(payload.data.adminSteps);
-        setAdminStepsRequired(payload.data.adminStepsRequired);
       }
     } finally {
       setIsLoadingRequirements(false);
@@ -81,8 +71,6 @@ export function useTransfer(): TransferState {
 
     setLastTransfer(result.data);
     setSuccessMessage(result.data.message);
-    setAdminSteps([]);
-    setAdminStepsRequired(false);
     return true;
   }, []);
 
@@ -92,8 +80,6 @@ export function useTransfer(): TransferState {
     error,
     successMessage,
     hasTransactionPin,
-    adminSteps,
-    adminStepsRequired,
     lastTransfer,
     submitTransfer,
     reset,

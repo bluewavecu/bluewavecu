@@ -120,8 +120,6 @@ export function TransfersClient() {
     error,
     successMessage,
     hasTransactionPin,
-    adminSteps,
-    adminStepsRequired,
     submitTransfer,
     reset,
   } = useTransfer();
@@ -144,7 +142,6 @@ export function TransfersClient() {
   const [bankCountry, setBankCountry] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [stepOtpCodes, setStepOtpCodes] = useState<Record<string, string>>({});
   const [transactionPin, setTransactionPin] = useState("");
   const [scheduledSuccess, setScheduledSuccess] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<ScheduledTransferRecord["frequency"]>("ONE_TIME");
@@ -182,7 +179,6 @@ export function TransfersClient() {
     setBankCountry("");
     setAmount("");
     setMemo("");
-    setStepOtpCodes({});
     setTransactionPin("");
     reset();
   }
@@ -196,14 +192,14 @@ export function TransfersClient() {
     reset();
   }
 
-  function buildTransferPayload(): TransferRequestInput | null {
+  function buildTransferPayload(): Omit<TransferRequestInput, "transactionPin"> | null {
     const parsedAmount = parseAmountInput(amount);
 
     if (parsedAmount === null) {
       return null;
     }
 
-    const payload: TransferRequestInput = {
+    const payload: Omit<TransferRequestInput, "transactionPin"> = {
       fromAccountId: fromAccountId || selectedAccount.id,
       transferMethod,
       amount: parsedAmount,
@@ -244,28 +240,16 @@ export function TransfersClient() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const payload = buildTransferPayload();
+    const buildResult = buildTransferPayload();
 
-    if (!payload) {
+    if (!buildResult) {
       return;
     }
 
-    payload.transactionPin = transactionPin.trim();
-
-    if (adminStepsRequired && adminSteps.length > 0) {
-      const codes: NonNullable<TransferRequestInput["stepOtpCodes"]> = {};
-
-      for (const step of adminSteps) {
-        const code = stepOtpCodes[step.stepKey]?.trim();
-        if (code) {
-          codes[step.stepKey] = code;
-        }
-      }
-
-      if (Object.keys(codes).length > 0) {
-        payload.stepOtpCodes = codes;
-      }
-    }
+    const payload: TransferRequestInput = {
+      ...buildResult,
+      transactionPin: transactionPin.trim(),
+    };
 
     const success = await submitTransfer(payload);
 
@@ -543,29 +527,6 @@ export function TransfersClient() {
                   className={inputClassName}
                 />
               </label>
-
-              {adminSteps.map((step) => (
-                <label key={step.stepKey} className="block">
-                  <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                    {step.label}
-                  </span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    required
-                    value={stepOtpCodes[step.stepKey] ?? ""}
-                    onChange={(event) =>
-                      setStepOtpCodes((current) => ({
-                        ...current,
-                        [step.stepKey]: event.target.value.replace(/\D/g, "").slice(0, 6),
-                      }))
-                    }
-                    className={inputClassName}
-                  />
-                </label>
-              ))}
 
               {hasTransactionPin ? (
                 <label className="block">

@@ -464,16 +464,12 @@ export type TransferRequestInput = {
   bankCountry?: string;
   amount: number;
   memo?: string;
-  otpCode?: string;
-  transactionPin?: string;
-  stepOtpCodes?: Partial<Record<TransferOtpStepKey, string>>;
+  transactionPin: string;
 };
 
 export type TransferRequirementsData = {
   requiresTransactionPin: boolean;
   hasTransactionPin: boolean;
-  adminSteps: TransferOtpStepRequirement[];
-  adminStepsRequired: boolean;
 };
 
 export type TransferOtpStepRequirement = {
@@ -482,18 +478,12 @@ export type TransferOtpStepRequirement = {
   order: number;
 };
 
-export type TransferOtpRequestInput = Omit<
-  TransferRequestInput,
-  "otpCode" | "transactionPin" | "stepOtpCodes"
->;
+export type TransferOtpRequestInput = Omit<TransferRequestInput, "transactionPin">;
 
 export type TransferOtpData = {
   message: string;
-  expiresAt: string;
   requiresTransactionPin: boolean;
-  otpRequired: boolean;
-  adminSteps: TransferOtpStepRequirement[];
-  adminStepsRequired: boolean;
+  hasTransactionPin: boolean;
 };
 
 export type TransferData = {

@@ -8,12 +8,7 @@ const OTP_TTL_MS = 10 * 60 * 1000;
 export function normalizeTransferChallengePayload(
   payload: TransferInput | TransferOtpRequestInput,
 ) {
-  const {
-    otpCode: _otpCode,
-    transactionPin: _transactionPin,
-    stepOtpCodes: _stepOtpCodes,
-    ...transferDetails
-  } = payload as TransferInput;
+  const { transactionPin: _transactionPin, ...transferDetails } = payload as TransferInput;
 
   return JSON.stringify(transferDetails);
 }

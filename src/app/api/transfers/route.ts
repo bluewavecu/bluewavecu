@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
     const result = await submitMemberTransfer({
       userId: payload.userId,
       input,
-      otpCode: input.otpCode,
       transactionPin: input.transactionPin,
-      stepOtpCodes: input.stepOtpCodes,
     });
 
     return apiSuccess(result, { status: 201 });

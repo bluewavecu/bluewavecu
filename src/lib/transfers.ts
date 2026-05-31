@@ -15,7 +15,6 @@ import { postApprovedTransferTransaction } from "@/lib/ledger";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib/risk";
-import { verifyMemberTransferOtpCodesForUser } from "@/lib/memberTransferOtpSteps";
 import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
 import { verifyTransactionPin } from "@/lib/transactionOtp";
 import { getTransferMethodLabel, isInternationalWireMethod } from "@/data/transferMethods";
@@ -73,9 +72,7 @@ function buildTransferDescription(input: {
 export async function submitMemberTransfer(params: {
   userId: string;
   input: TransferInput;
-  otpCode?: string;
-  transactionPin?: string;
-  stepOtpCodes?: TransferInput["stepOtpCodes"];
+  transactionPin: string;
 }) {
   const prisma = getPrisma();
   const user = await prisma.user.findUnique({
@@ -129,15 +126,6 @@ export async function submitMemberTransfer(params: {
 
   if (!pinMatches) {
     throw new TransferRequestError("Transaction PIN is incorrect.", 400);
-  }
-
-  const adminStepVerification = await verifyMemberTransferOtpCodesForUser({
-    userId: params.userId,
-    stepOtpCodes: params.stepOtpCodes ?? params.input.stepOtpCodes,
-  });
-
-  if (!adminStepVerification.ok) {
-    throw new TransferRequestError(adminStepVerification.message, 400);
   }
 
   const account = await prisma.account.findFirst({

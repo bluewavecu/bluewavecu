@@ -393,31 +393,9 @@ export const transferOtpRequestSchema = refineTransferPayload(transferPayloadBas
 
 export const transferSchema = refineTransferPayload(
   transferPayloadBaseSchema.extend({
-    otpCode: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z
-        .string()
-        .regex(/^\d{6}$/, "Verification code must be 6 digits")
-        .optional(),
-    ),
-    transactionPin: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z
-        .string()
-        .regex(/^\d{6}$/, "Transaction PIN must be 6 digits")
-        .optional(),
-    ),
-    stepOtpCodes: z.preprocess((value) => {
-      if (!value || typeof value !== "object") {
-        return undefined;
-      }
-
-      const entries = Object.entries(value as Record<string, unknown>).filter(
-        ([, code]) => typeof code === "string" && code.trim().length > 0,
-      );
-
-      return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-    }, z.record(z.string(), z.string().regex(/^\d{6}$/, "Verification code must be 6 digits")).optional()),
+    transactionPin: z
+      .string()
+      .regex(/^\d{6}$/, "Transaction PIN must be 6 digits"),
   }),
 );
 

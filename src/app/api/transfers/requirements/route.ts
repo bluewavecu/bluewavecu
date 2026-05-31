@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth } from "@/lib/requestAuth";
-import { getEnabledMemberTransferOtpRequirements } from "@/lib/memberTransferOtpSteps";
 import { getPrisma } from "@/lib/prisma";
 import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
 
@@ -41,13 +40,9 @@ export async function GET(request: NextRequest) {
       return apiError("Your account cannot initiate transactions.", 403);
     }
 
-    const adminSteps = await getEnabledMemberTransferOtpRequirements(auth.payload.userId);
-
     return apiSuccess({
       requiresTransactionPin: true,
       hasTransactionPin: Boolean(user.transactionPinHash),
-      adminSteps,
-      adminStepsRequired: adminSteps.length > 0,
     });
   } catch (error) {
     return handleApiError(error);
