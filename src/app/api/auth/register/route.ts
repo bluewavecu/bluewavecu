@@ -11,6 +11,7 @@ import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
 import { describeRequestedAccounts } from "@/lib/memberAccounts";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
+import { setUserTransactionPin } from "@/lib/transactionOtp";
 import { maskEmailAddress } from "@/lib/username";
 import { registerSchema } from "@/lib/validators";
 
@@ -78,6 +79,11 @@ export async function POST(request: NextRequest) {
       country: input.country,
       occupation: input.occupation,
       accountTypes: input.accountTypes,
+    });
+
+    await setUserTransactionPin({
+      userId: user.id,
+      pin: input.transactionPin,
     });
 
     const challenge = await createEmailVerificationOtpChallenge(user.id);

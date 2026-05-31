@@ -252,6 +252,7 @@ model User {
   trustedDevices      TrustedDevice[]
   cardApplications    CardApplication[]
   passwordResets      PasswordReset[]
+  transactionPinResetOtps TransactionPinResetOtp[]
   idVerificationSubmissions IdVerificationSubmission[]
   transferOtpSteps      MemberTransferOtpStep[]
 
@@ -844,6 +845,20 @@ model PasswordReset {
   id         String    @id @default(cuid())
   userId     String
   tokenHash  String    @unique
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model TransactionPinResetOtp {
+  id         String    @id @default(cuid())
+  userId     String
   codeHash   String
   expiresAt  DateTime
   consumedAt DateTime?

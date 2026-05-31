@@ -442,6 +442,37 @@ export async function sendTransactionPinEmail(params: {
   );
 }
 
+export async function sendTransactionPinResetOtpEmail(params: {
+  email: string;
+  fullName: string;
+  code: string;
+  expiresMinutes?: number;
+}) {
+  const expiresMinutes = params.expiresMinutes ?? 15;
+  const content = buildTransactionalEmail({
+    title: "Reset your transaction PIN",
+    preheader: "Use this one-time code to choose a new transaction PIN.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>We received a request to reset the transaction PIN on your Bluewave account. Enter the verification code below to continue.</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.code)}</p>
+      <p>This code expires in ${expiresMinutes} minutes. If you did not request this change, contact member services immediately.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour transaction PIN reset code is ${params.code}. It expires in ${expiresMinutes} minutes.`,
+    primaryAction: { label: "Reset transaction PIN", href: "/auth/forgot-transaction-pin" },
+    securityNotice: "Never share this code with anyone, including Bluewave staff.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your Bluewave transaction PIN reset code",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-pin-reset/${params.email}/${params.code}`,
+    },
+    "sendTransactionPinResetOtpEmail",
+  );
+}
+
 function buildAdjustmentPostedMessage(direction: "DEBIT" | "CREDIT", amount: number) {
   const formatted = formatEmailCurrency(amount);
 

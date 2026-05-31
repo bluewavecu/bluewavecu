@@ -32,10 +32,6 @@ export async function POST(request: NextRequest) {
       return apiError(error.message, 400);
     }
 
-    if (error instanceof Error && error.message.includes("2 MB")) {
-      return apiError(error.message, 400);
-    }
-
     return handleApiError(error);
   }
 }

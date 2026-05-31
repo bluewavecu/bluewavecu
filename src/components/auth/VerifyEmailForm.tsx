@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { AuthField, authInputClassName } from "@/components/auth/AuthField";
@@ -206,16 +205,6 @@ export function VerifyEmailForm({
       >
         {isResending ? "Sending new code..." : "Resend verification code"}
       </button>
-
-      <p className="text-center text-sm text-bluewave-gray dark:text-white/[0.62]">
-        Already verified?{" "}
-        <Link
-          href={MEMBER_LOGIN_PATH}
-          className="font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
-        >
-          Sign in
-        </Link>
-      </p>
     </div>
   );
 }

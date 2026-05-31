@@ -14,6 +14,7 @@ export const MEMBER_SUPPORT_PATH = `${MEMBER_BASE_PATH}/support`;
 export const MEMBER_NOTIFICATIONS_PATH = `${MEMBER_BASE_PATH}/notifications`;
 export const MEMBER_PROFILE_PATH = `${MEMBER_BASE_PATH}/profile`;
 export const MEMBER_SECURITY_PATH = `${MEMBER_BASE_PATH}/security`;
+export const MEMBER_FORGOT_TRANSACTION_PIN_PATH = `${MEMBER_BASE_PATH}/forgot-transaction-pin`;
 export const MEMBER_SETTINGS_PATH = `${MEMBER_BASE_PATH}/settings`;
 
 export type MemberNavItem = {
@@ -83,6 +84,7 @@ export const memberProtectedPaths = [
   MEMBER_NOTIFICATIONS_PATH,
   MEMBER_PROFILE_PATH,
   MEMBER_SECURITY_PATH,
+  MEMBER_FORGOT_TRANSACTION_PIN_PATH,
   MEMBER_SETTINGS_PATH,
 ];
 

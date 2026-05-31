@@ -2,6 +2,7 @@
 
 import { CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
@@ -10,11 +11,18 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { SecuritySessionCard } from "@/components/dashboard/SecuritySessionCard";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
-import { MemberAvatar } from "@/components/shared/MemberAvatar";
+import { notifyProfilePhotoUpdated } from "@/components/profile/ProfilePhotoUpload";
+import { ProfilePhotoAvatar } from "@/components/shared/ProfilePhotoAvatar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatCurrency } from "@/lib/formatCurrency";
+import {
+  formatMembershipStatusLabel,
+  membershipStatusTone,
+} from "@/lib/membershipStatus";
+import { withPhotoCacheBuster } from "@/lib/memberAvatar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const skeletonCards = ["balance", "savings", "card"];
@@ -48,6 +56,42 @@ function DashboardSkeleton() {
 
 export function DashboardClient() {
   const { data, error, isLoading, refetch } = useDashboardData();
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  async function handlePhotoUpload(file: File) {
+    setIsUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      const response = await fetch("/api/profile/photo", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const payload = (await response.json()) as {
+        success: boolean;
+        data?: { profilePhotoUrl: string | null };
+      };
+
+      if (!payload.success || !payload.data) {
+        return false;
+      }
+
+      const profilePhotoUrl = withPhotoCacheBuster(
+        payload.data.profilePhotoUrl,
+        String(Date.now()),
+      );
+      notifyProfilePhotoUpdated(profilePhotoUrl);
+      await refetch();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -81,41 +125,40 @@ export function DashboardClient() {
   return (
     <div className="space-y-5">
       <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <MemberAvatar
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <ProfilePhotoAvatar
               fullName={data.user.fullName}
               profilePhotoUrl={data.user.profilePhotoUrl}
-              size="xl"
-              ring
+              onUpload={handlePhotoUpload}
+              isUploading={isUploadingPhoto}
             />
-            <div>
-              <h2 className="text-2xl font-bold text-primary-navy dark:text-white">
-                Welcome back, {data.user.firstName}
-              </h2>
-              <p className="mt-4 text-base font-bold text-primary-navy dark:text-white">
-                Available Balance:{" "}
-                <span className="text-4xl font-extrabold tracking-tight text-royal-blue dark:text-light-blue">
-                  {formatCurrency(totalAvailable)}
-                </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-bold text-primary-navy dark:text-white sm:text-2xl">
+                  Welcome back, {data.user.firstName}
+                </h2>
+                <StatusBadge
+                  label={`Account status: ${formatMembershipStatusLabel(data.user.status)}`}
+                  tone={membershipStatusTone(data.user.status)}
+                />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-primary-navy dark:text-white sm:mt-4 sm:text-base">
+                Available Balance
               </p>
-              {!data.user.profilePhotoUrl ? (
-                <Link
-                  href="/auth/profile"
-                  className="mt-3 inline-flex text-sm font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
-                >
-                  Add your profile photo
-                </Link>
-              ) : null}
+              <p className="mt-1 text-3xl font-extrabold tracking-tight text-royal-blue dark:text-light-blue sm:text-4xl">
+                {formatCurrency(totalAvailable)}
+              </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={refetch}
-            className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-full border border-primary-navy/[0.10] bg-[#f7fbff] px-4 text-sm font-semibold text-primary-navy transition hover:border-ocean-blue/[0.40] hover:text-royal-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary-navy/[0.10] bg-[#f7fbff] text-primary-navy transition hover:border-ocean-blue/[0.40] hover:text-royal-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            aria-label="Refresh dashboard"
           >
             <RefreshCw size={16} aria-hidden="true" />
-            Refresh
           </button>
         </div>
       </section>

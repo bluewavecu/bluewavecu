@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AuthField, authInputClassName } from "@/components/auth/AuthField";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import { buttonVariants } from "@/components/ui/Button";
 import {
   DEFAULT_SIGNUP_ACCOUNT_TYPES,
@@ -43,6 +44,10 @@ export function RegisterForm() {
     DEFAULT_SIGNUP_ACCOUNT_TYPES[0] ?? "SAVINGS",
   );
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [transactionPin, setTransactionPin] = useState("");
+  const [confirmTransactionPin, setConfirmTransactionPin] = useState("");
 
   function handlePhoneChange(value: string) {
     setPhone(formatUsPhoneInput(value));
@@ -60,11 +65,21 @@ export function RegisterForm() {
     }
 
     const formData = new FormData(event.currentTarget);
-    const password = String(formData.get("password") ?? "");
-    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+    const passwordValue = password;
+    const confirmPasswordValue = confirmPassword;
 
-    if (password !== confirmPassword) {
+    if (passwordValue !== confirmPasswordValue) {
       setError("Passwords must match.");
+      return;
+    }
+
+    if (transactionPin !== confirmTransactionPin) {
+      setError("Transaction PINs must match.");
+      return;
+    }
+
+    if (transactionPin.length !== 6) {
+      setError("Choose a 6-digit transaction PIN.");
       return;
     }
 
@@ -83,7 +98,9 @@ export function RegisterForm() {
       city: String(formData.get("city") ?? ""),
       state: String(formData.get("state") ?? ""),
       postalCode: String(formData.get("postalCode") ?? ""),
-      password,
+      password: passwordValue,
+      transactionPin,
+      confirmTransactionPin,
       accountTypes: resolveAccountTypes(selectedAccountType),
     });
 
@@ -288,25 +305,62 @@ export function RegisterForm() {
 
           <div className="grid gap-4 border-t border-primary-navy/[0.06] pt-6 sm:grid-cols-2 dark:border-white/[0.06]">
             <AuthField label="Password" htmlFor="register-password" icon={LockKeyhole}>
-              <input
+              <PasswordInput
                 id="register-password"
-                type="password"
                 name="password"
                 autoComplete="new-password"
                 required
                 minLength={8}
-                className={authInputClassName}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
               />
             </AuthField>
             <AuthField label="Confirm password" htmlFor="register-confirm-password" icon={LockKeyhole}>
-              <input
+              <PasswordInput
                 id="register-confirm-password"
-                type="password"
                 name="confirmPassword"
                 autoComplete="new-password"
                 required
                 minLength={8}
-                className={authInputClassName}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+            </AuthField>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <AuthField label="Transaction PIN" htmlFor="register-transaction-pin" icon={LockKeyhole}>
+              <PasswordInput
+                id="register-transaction-pin"
+                name="transactionPin"
+                autoComplete="off"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                value={transactionPin}
+                onChange={(event) =>
+                  setTransactionPin(event.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+              />
+            </AuthField>
+            <AuthField
+              label="Confirm transaction PIN"
+              htmlFor="register-confirm-transaction-pin"
+              icon={LockKeyhole}
+            >
+              <PasswordInput
+                id="register-confirm-transaction-pin"
+                name="confirmTransactionPin"
+                autoComplete="off"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                value={confirmTransactionPin}
+                onChange={(event) =>
+                  setConfirmTransactionPin(event.target.value.replace(/\D/g, "").slice(0, 6))
+                }
               />
             </AuthField>
           </div>

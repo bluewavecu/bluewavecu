@@ -85,6 +85,8 @@ export const registerSchema = z
       .max(16)
       .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
     password: z.string().min(8, "Password must be at least 8 characters").max(128),
+    transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits"),
+    confirmTransactionPin: z.string().regex(/^\d{6}$/, "Confirm your 6-digit PIN"),
     accountTypes: z
       .array(z.enum(SIGNUP_ACCOUNT_TYPE_VALUES))
       .min(1, "Select at least one account type")
@@ -92,7 +94,11 @@ export const registerSchema = z
         message: "A savings account is required for membership",
       }),
   })
-  .transform((input) => ({
+  .refine((input) => input.transactionPin === input.confirmTransactionPin, {
+    message: "Transaction PINs must match",
+    path: ["confirmTransactionPin"],
+  })
+  .transform(({ confirmTransactionPin: _confirmTransactionPin, ...input }) => ({
     ...input,
     fullName: `${input.firstName} ${input.lastName}`.trim(),
     country: "US",
@@ -593,6 +599,20 @@ export const contactFormSchema = z.object({
   topic: z.string().trim().min(2).max(80),
   message: z.string().trim().min(10).max(4000),
 });
+
+export const transactionPinResetRequestSchema = z.object({});
+
+export const transactionPinResetSchema = z
+  .object({
+    challengeId: z.string().min(1, "Verification session expired. Request a new code."),
+    otpCode: z.string().regex(/^\d{6}$/, "Enter the 6-digit verification code"),
+    transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits"),
+    confirmTransactionPin: z.string().regex(/^\d{6}$/, "Confirm your 6-digit PIN"),
+  })
+  .refine((input) => input.transactionPin === input.confirmTransactionPin, {
+    message: "Transaction PINs must match",
+    path: ["confirmTransactionPin"],
+  });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { SessionsClient } from "@/components/security/SessionsClient";
 import { FORGOT_PASSWORD_PATH } from "@/lib/authRoutes";
+import { MEMBER_FORGOT_TRANSACTION_PIN_PATH } from "@/lib/memberRoutes";
 
 export function SecurityClient() {
   return (
@@ -19,6 +20,14 @@ export function SecurityClient() {
           request password reset instructions
         </Link>
         . We will email you a secure link and verification code.
+      </InfoPanel>
+
+      <InfoPanel title="Forgot your transaction PIN?">
+        Reset your 6-digit transaction PIN with a one-time email verification code.{" "}
+        <Link href={MEMBER_FORGOT_TRANSACTION_PIN_PATH} className="font-semibold text-royal-blue">
+          Reset transaction PIN
+        </Link>
+        .
       </InfoPanel>
 
       <SessionsClient />

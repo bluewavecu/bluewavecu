@@ -2,14 +2,34 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getPrisma } from "@/lib/prisma";
 
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["image/jpeg", "jpg"],
+  ["image/jpg", "jpg"],
   ["image/png", "png"],
   ["image/webp", "webp"],
+  ["image/gif", "gif"],
+  ["image/bmp", "bmp"],
+  ["image/heic", "heic"],
+  ["image/heif", "heif"],
+  ["image/avif", "avif"],
+  ["image/tiff", "tiff"],
 ]);
 
 const uploadsRoot = path.join(process.cwd(), "public", "uploads", "profiles");
+
+function getExtensionForFile(file: File) {
+  const mapped = ALLOWED_MIME_TYPES.get(file.type.toLowerCase());
+  if (mapped) {
+    return mapped;
+  }
+
+  if (file.type.startsWith("image/")) {
+    const subtype = file.type.split("/")[1]?.split("+")[0]?.replace(/[^a-z0-9]/gi, "") ?? "img";
+    return subtype || "img";
+  }
+
+  return null;
+}
 
 function getPhotoAbsolutePath(userId: string, extension: string) {
   return path.join(uploadsRoot, `${userId}.${extension}`);
@@ -21,26 +41,25 @@ function getPhotoPublicPath(userId: string, extension: string) {
 
 async function removeExistingPhotoFiles(userId: string) {
   await Promise.all(
-    ["jpg", "jpeg", "png", "webp"].map(async (extension) => {
-      try {
-        await unlink(getPhotoAbsolutePath(userId, extension));
-      } catch {
-        // Ignore missing files.
-      }
-    }),
+    ["jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "heif", "avif", "tiff", "img"].map(
+      async (extension) => {
+        try {
+          await unlink(getPhotoAbsolutePath(userId, extension));
+        } catch {
+          // Ignore missing files.
+        }
+      },
+    ),
   );
 }
 
 export async function saveProfilePhoto(params: { userId: string; file: File }) {
-  if (!ALLOWED_MIME_TYPES.has(params.file.type)) {
-    throw new Error("Upload a JPG, PNG, or WEBP photo.");
+  const extension = getExtensionForFile(params.file);
+
+  if (!extension) {
+    throw new Error("Upload an image file.");
   }
 
-  if (params.file.size > MAX_PHOTO_BYTES) {
-    throw new Error("Photo must be 2 MB or smaller.");
-  }
-
-  const extension = ALLOWED_MIME_TYPES.get(params.file.type)!;
   const buffer = Buffer.from(await params.file.arrayBuffer());
 
   await mkdir(uploadsRoot, { recursive: true });
