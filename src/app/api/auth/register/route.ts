@@ -12,7 +12,8 @@ import { describeRequestedAccounts } from "@/lib/memberAccounts";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { setUserTransactionPin } from "@/lib/transactionOtp";
-import { maskEmailAddress } from "@/lib/username";
+import { getSignupAnnualIncomeAmount } from "@/data/signupAnnualIncome";
+import { findUserByUsername, maskEmailAddress } from "@/lib/username";
 import { registerSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
@@ -54,9 +55,7 @@ export async function POST(request: NextRequest) {
       return apiError("An account with this email already exists", 409);
     }
 
-    const existingUsername = await prisma.user.findUnique({
-      where: { username: input.username },
-    });
+    const existingUsername = await findUserByUsername(prisma, input.username);
 
     if (existingUsername) {
       return apiError("This username is already taken", 409);
@@ -78,6 +77,7 @@ export async function POST(request: NextRequest) {
       postalCode: input.postalCode,
       country: input.country,
       occupation: input.occupation,
+      annualIncome: getSignupAnnualIncomeAmount(input.annualIncomeRange) ?? undefined,
       accountTypes: input.accountTypes,
     });
 

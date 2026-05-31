@@ -1,3 +1,5 @@
+import type { PrismaClient } from "@/generated/prisma/client";
+
 export const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,32}$/;
 
 export function normalizeUsername(username: string) {
@@ -6,6 +8,20 @@ export function normalizeUsername(username: string) {
 
 export function isValidUsername(username: string) {
   return USERNAME_PATTERN.test(username.trim());
+}
+
+export async function findUserByUsername(
+  prisma: Pick<PrismaClient, "user">,
+  username: string,
+) {
+  return prisma.user.findFirst({
+    where: {
+      username: {
+        equals: normalizeUsername(username),
+        mode: "insensitive",
+      },
+    },
+  });
 }
 
 export function maskEmailAddress(email: string) {

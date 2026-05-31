@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { MathChallengeField } from "@/components/shared/MathChallengeField";
 import { postJson } from "@/lib/clientApi";
 
 const topics = [
@@ -14,6 +15,9 @@ const topics = [
   "Media inquiry",
   "Rates inquiry",
 ];
+
+const contactInputClassName =
+  "mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue";
 
 type ContactFormClientProps = {
   defaultTopic?: string;
@@ -28,6 +32,9 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
     topic: defaultTopic ?? "General inquiry",
     message: defaultMessage ?? "",
   });
+  const [mathAnswer, setMathAnswer] = useState("");
+  const [mathToken, setMathToken] = useState("");
+  const [mathChallengeKey, setMathChallengeKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [thankYouReference, setThankYouReference] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,11 +56,18 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
     setIsSubmitting(true);
     setError(null);
 
-    const result = await postJson<{ reference: string }>("/api/contact", form);
+    const result = await postJson<{ reference: string }>("/api/contact", {
+      ...form,
+      mathToken,
+      mathAnswer,
+    });
     setIsSubmitting(false);
 
     if (!result.success) {
       setError("error" in result ? result.error : "Unable to send your message.");
+      if (result.error.toLowerCase().includes("answer")) {
+        setMathChallengeKey((current) => current + 1);
+      }
       return;
     }
 
@@ -65,6 +79,8 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
       topic: defaultTopic ?? "General inquiry",
       message: defaultMessage ?? "",
     });
+    setMathAnswer("");
+    setMathChallengeKey((current) => current + 1);
   }
 
   return (
@@ -112,7 +128,7 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
               required
               value={form.fullName}
               onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue"
+              className={contactInputClassName}
             />
           </label>
 
@@ -123,7 +139,7 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
               type="email"
               value={form.email}
               onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue"
+              className={contactInputClassName}
             />
           </label>
 
@@ -132,7 +148,7 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
             <input
               value={form.phone}
               onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue"
+              className={contactInputClassName}
             />
           </label>
 
@@ -141,7 +157,7 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
             <select
               value={form.topic}
               onChange={(event) => setForm((current) => ({ ...current, topic: event.target.value }))}
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue"
+              className={contactInputClassName}
             >
               {topics.map((topic) => (
                 <option key={topic} value={topic}>
@@ -158,9 +174,19 @@ export function ContactFormClient({ defaultTopic, defaultMessage }: ContactFormC
               rows={6}
               value={form.message}
               onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm outline-none focus:border-ocean-blue"
+              className={contactInputClassName}
             />
           </label>
+
+          <div className="sm:col-span-2">
+            <MathChallengeField
+              key={mathChallengeKey}
+              value={mathAnswer}
+              onChange={setMathAnswer}
+              onTokenChange={setMathToken}
+              inputClassName={contactInputClassName}
+            />
+          </div>
         </div>
 
         {error ? <p className="mt-4 text-sm text-red-700">{error}</p> : null}

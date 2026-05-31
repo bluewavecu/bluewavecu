@@ -20,6 +20,7 @@ import {
   generateSixDigitCode,
   setUserTransactionPin,
 } from "@/lib/transactionOtp";
+import { findUserByUsername } from "@/lib/username";
 import { shouldRevokeSessionsOnStatusChange } from "@/lib/userAccess";
 import { adminCreateMemberSchema, adminUpdateUserStatusSchema } from "@/lib/validators";
 import type { AdminUserSummaryWithKyc, KycStatus, UserRole, UserStatus } from "@/types/banking";
@@ -97,9 +98,7 @@ export async function POST(request: NextRequest) {
       return apiError("An account with this email already exists", 409);
     }
 
-    const existingUsername = await prisma.user.findUnique({
-      where: { username: input.username },
-    });
+    const existingUsername = await findUserByUsername(prisma, input.username);
 
     if (existingUsername) {
       return apiError("This username is already taken", 409);

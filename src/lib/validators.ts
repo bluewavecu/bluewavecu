@@ -1,11 +1,32 @@
 import { z } from "zod";
 import { SIGNUP_ACCOUNT_TYPE_VALUES } from "@/data/signupAccountTypes";
+import { SIGNUP_ANNUAL_INCOME_VALUES } from "@/data/signupAnnualIncome";
 import { US_STATE_CODES } from "@/data/usStates";
+import { verifyMathChallenge } from "@/lib/mathChallenge";
 import {
   getUsPhoneValidationError,
   normalizeUsPhone,
 } from "@/lib/phoneNumber";
 import { USERNAME_PATTERN } from "@/lib/username";
+
+const mathChallengeSchema = z.object({
+  mathToken: z.string().trim().min(1),
+  mathAnswer: z.string().trim().min(1),
+});
+
+function withMathChallenge<T extends z.ZodTypeAny>(schema: T) {
+  return schema
+    .and(mathChallengeSchema)
+    .superRefine((input, context) => {
+      if (!verifyMathChallenge(input.mathToken, input.mathAnswer)) {
+        context.addIssue({
+          code: "custom",
+          path: ["mathAnswer"],
+          message: "Incorrect answer",
+        });
+      }
+    });
+}
 
 function parseDateOfBirth(value: string) {
   const parsed = new Date(`${value}T00:00:00.000Z`);
@@ -45,7 +66,7 @@ const usPhoneSchema = z
   })
   .transform((value) => normalizeUsPhone(value));
 
-export const registerSchema = z
+const registerSchemaBase = z
   .object({
     firstName: z.string().trim().min(1, "First name is required").max(60),
     lastName: z.string().trim().min(1, "Last name is required").max(60),
@@ -74,6 +95,9 @@ export const registerSchema = z
         "You must be at least 18 years old to enroll",
       ),
     occupation: z.string().trim().min(2, "Occupation is required").max(120),
+    annualIncomeRange: z.enum(SIGNUP_ANNUAL_INCOME_VALUES, {
+      message: "Select your annual income range",
+    }),
     addressLine1: z.string().trim().min(3, "Street address is required").max(160),
     addressLine2: z.string().trim().max(160).optional(),
     city: z.string().trim().min(2, "City is required").max(80),
@@ -105,6 +129,8 @@ export const registerSchema = z
     dateOfBirth: parseDateOfBirth(input.dateOfBirth)!,
     addressLine2: input.addressLine2?.trim() || undefined,
   }));
+
+export const registerSchema = withMathChallenge(registerSchemaBase);
 
 export const adminCreateMemberSchema = z
   .object({
@@ -574,7 +600,6 @@ export const profileUpdateSchema = z.object({
   postalCode: z.string().trim().min(3).max(20).optional(),
   country: z.string().trim().min(2).max(80).optional(),
   employmentStatus: z.string().trim().min(2).max(80).optional(),
-  annualIncome: z.coerce.number().nonnegative().optional(),
 });
 
 export const profileSubmitSchema = z.object({
@@ -592,13 +617,15 @@ export const adminKycUpdateSchema = z
     path: ["reviewNote"],
   });
 
-export const contactFormSchema = z.object({
+const contactFormSchemaBase = z.object({
   fullName: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().email(),
   phone: z.string().trim().max(32).optional(),
   topic: z.string().trim().min(2).max(80),
   message: z.string().trim().min(10).max(4000),
 });
+
+export const contactFormSchema = withMathChallenge(contactFormSchemaBase);
 
 export const transactionPinResetRequestSchema = z.object({});
 

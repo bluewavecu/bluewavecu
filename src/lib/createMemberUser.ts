@@ -21,6 +21,7 @@ export type CreateMemberUserInput = {
   postalCode: string;
   country: string;
   occupation: string;
+  annualIncome?: number;
   accountTypes: SignupAccountType[];
   kycStatus?: KycStatus;
 };
@@ -56,6 +57,7 @@ async function createMemberUserInTransaction(
       postalCode: params.postalCode,
       country: params.country,
       employmentStatus: params.occupation,
+      ...(params.annualIncome !== undefined ? { annualIncome: params.annualIncome } : {}),
       kycStatus,
       ...(kycStatus === "VERIFIED" ? { kycReviewedAt: new Date() } : {}),
     },

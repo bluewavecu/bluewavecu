@@ -28,8 +28,14 @@ export async function POST(request: NextRequest) {
 
     return apiSuccess({ profilePhotoUrl });
   } catch (error) {
-    if (error instanceof Error && error.message.includes("Upload")) {
-      return apiError(error.message, 400);
+    if (error instanceof Error) {
+      if (error.message.includes("Upload")) {
+        return apiError(error.message, 400);
+      }
+
+      if ("code" in error && error.code === "ENOENT") {
+        return apiError("Unable to save photo. Please try again.", 500);
+      }
     }
 
     return handleApiError(error);

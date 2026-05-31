@@ -5,6 +5,7 @@ import {
   AtSign,
   Briefcase,
   Calendar,
+  DollarSign,
   LockKeyhole,
   Mail,
   MapPin,
@@ -16,12 +17,14 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AuthField, authInputClassName } from "@/components/auth/AuthField";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { MathChallengeField } from "@/components/shared/MathChallengeField";
 import { buttonVariants } from "@/components/ui/Button";
 import {
   DEFAULT_SIGNUP_ACCOUNT_TYPES,
   SIGNUP_ACCOUNT_TYPE_OPTIONS,
   type SignupAccountType,
 } from "@/data/signupAccountTypes";
+import { SIGNUP_ANNUAL_INCOME_OPTIONS } from "@/data/signupAnnualIncome";
 import { US_STATE_OPTIONS } from "@/data/usStates";
 import { postJson } from "@/lib/clientApi";
 import { MEMBER_VERIFY_EMAIL_PATH } from "@/lib/authRoutes";
@@ -48,6 +51,10 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [transactionPin, setTransactionPin] = useState("");
   const [confirmTransactionPin, setConfirmTransactionPin] = useState("");
+  const [annualIncomeRange, setAnnualIncomeRange] = useState("");
+  const [mathAnswer, setMathAnswer] = useState("");
+  const [mathToken, setMathToken] = useState("");
+  const [mathChallengeKey, setMathChallengeKey] = useState(0);
 
   function handlePhoneChange(value: string) {
     setPhone(formatUsPhoneInput(value));
@@ -93,6 +100,7 @@ export function RegisterForm() {
       phone,
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
       occupation: String(formData.get("occupation") ?? ""),
+      annualIncomeRange,
       addressLine1: String(formData.get("addressLine1") ?? ""),
       addressLine2: String(formData.get("addressLine2") ?? "") || undefined,
       city: String(formData.get("city") ?? ""),
@@ -102,12 +110,17 @@ export function RegisterForm() {
       transactionPin,
       confirmTransactionPin,
       accountTypes: resolveAccountTypes(selectedAccountType),
+      mathToken,
+      mathAnswer,
     });
 
     setIsSubmitting(false);
 
     if (!result.success) {
       setError(result.error);
+      if (result.error.toLowerCase().includes("answer")) {
+        setMathChallengeKey((current) => current + 1);
+      }
       return;
     }
 
@@ -212,6 +225,26 @@ export function RegisterForm() {
               />
             </AuthField>
           </div>
+
+          <AuthField label="Annual income (USD)" htmlFor="register-annual-income" icon={DollarSign}>
+            <select
+              id="register-annual-income"
+              name="annualIncomeRange"
+              required
+              value={annualIncomeRange}
+              onChange={(event) => setAnnualIncomeRange(event.target.value)}
+              className={authInputClassName}
+            >
+              <option value="" disabled>
+                Select
+              </option>
+              {SIGNUP_ANNUAL_INCOME_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </AuthField>
 
           <AuthField label="Choose account" htmlFor="register-account-type" icon={WalletCards}>
             <select
@@ -364,6 +397,13 @@ export function RegisterForm() {
               />
             </AuthField>
           </div>
+
+          <MathChallengeField
+            key={mathChallengeKey}
+            value={mathAnswer}
+            onChange={setMathAnswer}
+            onTokenChange={setMathToken}
+          />
       </div>
 
       {error ? (

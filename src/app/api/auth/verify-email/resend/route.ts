@@ -8,7 +8,7 @@ import { writeSecurityEvent } from "@/lib/eventLog";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { resendEmailVerificationSchema } from "@/lib/validators";
-import { maskEmailAddress } from "@/lib/username";
+import { findUserByUsername, maskEmailAddress } from "@/lib/username";
 
 export const runtime = "nodejs";
 
@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
 
     const input = resendEmailVerificationSchema.parse(await request.json());
     const prisma = getPrisma();
-    const user = await prisma.user.findUnique({
-      where: { username: input.username },
-    });
+    const user = await findUserByUsername(prisma, input.username);
 
     if (!user || user.role !== "USER") {
       return apiError("No pending email verification found for this username.", 404);

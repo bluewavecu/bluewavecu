@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { ProfilePhotoAvatar } from "@/components/shared/ProfilePhotoAvatar";
 import { cn } from "@/lib/utils";
 
@@ -23,17 +22,8 @@ export function ProfilePhotoUpload({
   isUploading = false,
   className,
 }: ProfilePhotoUploadProps) {
-  const [localError, setLocalError] = useState<string | null>(null);
-
   async function handleUpload(file: File) {
-    setLocalError(null);
-    const ok = await onUpload(file);
-
-    if (!ok) {
-      setLocalError("Unable to upload photo. Please try again.");
-    }
-
-    return ok;
+    return onUpload(file);
   }
 
   return (
@@ -44,11 +34,6 @@ export function ProfilePhotoUpload({
         onUpload={handleUpload}
         isUploading={isUploading}
       />
-      {localError ? (
-        <p className="sr-only" role="alert">
-          {localError}
-        </p>
-      ) : null}
     </div>
   );
 }

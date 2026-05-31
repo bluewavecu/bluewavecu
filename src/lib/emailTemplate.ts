@@ -109,6 +109,21 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
     <title>${escapeHtml(options.title)}</title>
+    <style type="text/css">
+      :root { color-scheme: light only; supported-color-schemes: light; }
+      @media (prefers-color-scheme: dark) {
+        .email-body,
+        .email-body p,
+        .email-body div,
+        .email-body h1 {
+          background-color: #FFFFFF !important;
+          color: #334155 !important;
+        }
+        .email-body h1 {
+          color: #0A2A5E !important;
+        }
+      }
+    </style>
     <!--[if mso]>
       <style type="text/css">
         body, table, td { font-family: Arial, Helvetica, sans-serif !important; }
@@ -134,11 +149,11 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
               <td style="height: 4px; background: linear-gradient(90deg, #0A2A5E 0%, #0D47A1 45%, #00A8E8 100%); font-size: 0; line-height: 0;">&nbsp;</td>
             </tr>
             <tr>
-              <td style="padding: 32px 32px 28px; background-color: #FFFFFF; border-left: 1px solid #D7E2EE; border-right: 1px solid #D7E2EE; font-family: Arial, Helvetica, sans-serif; color: #0A2A5E;">
-                <h1 style="margin: 0 0 18px; font-size: 24px; line-height: 1.3; font-weight: 700; color: #0A2A5E;">
+              <td class="email-body" style="padding: 32px 32px 28px; background-color: #FFFFFF !important; border-left: 1px solid #D7E2EE; border-right: 1px solid #D7E2EE; font-family: Arial, Helvetica, sans-serif; color: #0A2A5E !important;">
+                <h1 style="margin: 0 0 18px; font-size: 24px; line-height: 1.3; font-weight: 700; color: #0A2A5E !important;">
                   ${escapeHtml(options.title)}
                 </h1>
-                <div style="font-size: 15px; line-height: 1.7; color: #334155;">
+                <div style="font-size: 15px; line-height: 1.7; color: #334155 !important;">
                   ${options.bodyHtml}
                 </div>
                 ${buildPrimaryActionButton(options.primaryAction, appUrl)}

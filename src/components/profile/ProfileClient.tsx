@@ -20,7 +20,6 @@ type ProfileFormState = {
   postalCode: string;
   country: string;
   employmentStatus: string;
-  annualIncome: string;
 };
 
 function profileToForm(profile: CustomerProfileRecord): ProfileFormState {
@@ -33,7 +32,6 @@ function profileToForm(profile: CustomerProfileRecord): ProfileFormState {
     postalCode: profile.postalCode ?? "",
     country: profile.country ?? "US",
     employmentStatus: profile.employmentStatus ?? "",
-    annualIncome: profile.annualIncome !== null ? String(profile.annualIncome) : "",
   };
 }
 
@@ -101,7 +99,6 @@ export function ProfileClient() {
     form.postalCode,
     form.country,
     form.employmentStatus,
-    form.annualIncome,
   ];
   const completenessPercent = Math.round(
     (completenessFields.filter((value) => value.trim().length > 0).length /
@@ -122,7 +119,6 @@ export function ProfileClient() {
       postalCode: form.postalCode || undefined,
       country: form.country || undefined,
       employmentStatus: form.employmentStatus || undefined,
-      annualIncome: form.annualIncome ? Number(form.annualIncome) : undefined,
     });
 
     if (ok) {
@@ -319,23 +315,6 @@ export function ProfileClient() {
                 setDraft((current) => ({
                   ...(current ?? profileToForm(profile)),
                   country: event.target.value,
-                }))
-              }
-              className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">Annual income (USD)</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.annualIncome}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...(current ?? profileToForm(profile)),
-                  annualIncome: event.target.value,
                 }))
               }
               className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"

@@ -1,6 +1,11 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { unlink, writeFile } from "node:fs/promises";
 import { getPrisma } from "@/lib/prisma";
+import {
+  ensureUploadDirectory,
+  getProfilePhotoPublicPath,
+  getProfilesUploadRoot,
+  resolveProfilePhotoFilePath,
+} from "@/lib/uploadStorage";
 
 const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["image/jpeg", "jpg"],
@@ -15,7 +20,7 @@ const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["image/tiff", "tiff"],
 ]);
 
-const uploadsRoot = path.join(process.cwd(), "public", "uploads", "profiles");
+const KNOWN_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "heif", "avif", "tiff", "img"];
 
 function getExtensionForFile(file: File) {
   const mapped = ALLOWED_MIME_TYPES.get(file.type.toLowerCase());
@@ -31,25 +36,15 @@ function getExtensionForFile(file: File) {
   return null;
 }
 
-function getPhotoAbsolutePath(userId: string, extension: string) {
-  return path.join(uploadsRoot, `${userId}.${extension}`);
-}
-
-function getPhotoPublicPath(userId: string, extension: string) {
-  return `/uploads/profiles/${userId}.${extension}`;
-}
-
 async function removeExistingPhotoFiles(userId: string) {
   await Promise.all(
-    ["jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "heif", "avif", "tiff", "img"].map(
-      async (extension) => {
-        try {
-          await unlink(getPhotoAbsolutePath(userId, extension));
-        } catch {
-          // Ignore missing files.
-        }
-      },
-    ),
+    KNOWN_EXTENSIONS.map(async (extension) => {
+      try {
+        await unlink(resolveProfilePhotoFilePath(userId, extension));
+      } catch {
+        // Ignore missing files.
+      }
+    }),
   );
 }
 
@@ -61,14 +56,15 @@ export async function saveProfilePhoto(params: { userId: string; file: File }) {
   }
 
   const buffer = Buffer.from(await params.file.arrayBuffer());
+  const uploadsRoot = getProfilesUploadRoot();
 
-  await mkdir(uploadsRoot, { recursive: true });
+  await ensureUploadDirectory(uploadsRoot);
   await removeExistingPhotoFiles(params.userId);
 
-  const absolutePath = getPhotoAbsolutePath(params.userId, extension);
+  const absolutePath = resolveProfilePhotoFilePath(params.userId, extension);
   await writeFile(absolutePath, buffer);
 
-  const profilePhotoUrl = getPhotoPublicPath(params.userId, extension);
+  const profilePhotoUrl = getProfilePhotoPublicPath(params.userId, extension);
 
   const profile = await getPrisma().customerProfile.upsert({
     where: { userId: params.userId },

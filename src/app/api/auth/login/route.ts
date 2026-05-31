@@ -18,7 +18,7 @@ import { getClientIp, getUserAgent } from "@/lib/requestContext";
 import { applyRiskAssessment, scoreLoginRisk } from "@/lib/risk";
 import { createUserSession } from "@/lib/sessions";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
-import { maskEmailAddress } from "@/lib/username";
+import { findUserByUsername, maskEmailAddress } from "@/lib/username";
 import { loginSchema } from "@/lib/validators";
 import { getLoginBlockMessage } from "@/lib/userAccess";
 import type { UserRole, UserStatus } from "@/types/banking";
@@ -246,9 +246,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { username: input.username! },
-    });
+    const user = await findUserByUsername(prisma, input.username!);
 
     if (!user) {
       void writeSecurityEvent({
