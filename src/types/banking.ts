@@ -455,15 +455,25 @@ export type CreateSupportTicketInput = {
 
 export type TransferRequestInput = {
   fromAccountId: string;
-  transferMethod: "DIRECT_DEPOSIT" | "ACH" | "WIRE";
+  transferMethod: "DIRECT_DEPOSIT" | "WIRE" | "INTERNATIONAL_WIRE";
   toAccountNumber?: string;
   recipientName?: string;
   receiverAddress?: string;
+  swiftCode?: string;
+  beneficiaryBankName?: string;
+  bankCountry?: string;
   amount: number;
   memo?: string;
   otpCode?: string;
   transactionPin?: string;
   stepOtpCodes?: Partial<Record<TransferOtpStepKey, string>>;
+};
+
+export type TransferRequirementsData = {
+  requiresTransactionPin: boolean;
+  hasTransactionPin: boolean;
+  adminSteps: TransferOtpStepRequirement[];
+  adminStepsRequired: boolean;
 };
 
 export type TransferOtpStepRequirement = {

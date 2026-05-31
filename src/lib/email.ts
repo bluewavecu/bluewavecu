@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { getEmailLogoInlineAttachment } from "@/lib/emailLogoAttachment";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import {
@@ -25,6 +26,7 @@ export type EmailPayload = {
   attachments?: Array<{
     filename: string;
     content: Buffer | string;
+    contentId?: string;
   }>;
 };
 
@@ -91,6 +93,17 @@ function buildTransactionalEmail(options: {
   };
 }
 
+function buildSendAttachments(payload: EmailPayload) {
+  const logo = getEmailLogoInlineAttachment();
+  const attachments = payload.attachments ?? [];
+
+  if (attachments.some((attachment) => attachment.contentId === logo.contentId)) {
+    return attachments;
+  }
+
+  return [...attachments, logo];
+}
+
 export async function sendEmail(payload: EmailPayload) {
   const config = getEmailConfig();
 
@@ -104,6 +117,8 @@ export async function sendEmail(payload: EmailPayload) {
     ? { idempotencyKey: payload.idempotencyKey }
     : undefined;
 
+  const attachments = buildSendAttachments(payload);
+
   const { data, error } = await resend.emails.send(
     {
       from: config.emailFrom,
@@ -112,11 +127,12 @@ export async function sendEmail(payload: EmailPayload) {
       html: payload.html,
       text: payload.text,
       ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
-      ...(payload.attachments?.length
+      ...(attachments.length
         ? {
-            attachments: payload.attachments.map((attachment) => ({
+            attachments: attachments.map((attachment) => ({
               filename: attachment.filename,
               content: attachment.content,
+              ...(attachment.contentId ? { contentId: attachment.contentId } : {}),
             })),
           }
         : {}),

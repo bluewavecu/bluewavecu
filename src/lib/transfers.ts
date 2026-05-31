@@ -2,7 +2,6 @@ import { randomUUID } from "crypto";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import {
   getBankingPolicy,
-  userRequiresTransactionOtp,
   userRequiresTransferReview,
 } from "@/lib/bankingPolicy";
 import {
@@ -16,10 +15,10 @@ import { postApprovedTransferTransaction } from "@/lib/ledger";
 import { createTransferNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
 import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib/risk";
-import { verifyTransferOtpChallenge, verifyTransactionPin } from "@/lib/transactionOtp";
 import { verifyMemberTransferOtpCodesForUser } from "@/lib/memberTransferOtpSteps";
 import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
-import { getTransferMethodLabel } from "@/data/transferMethods";
+import { verifyTransactionPin } from "@/lib/transactionOtp";
+import { getTransferMethodLabel, isInternationalWireMethod } from "@/data/transferMethods";
 import type { TransferInput } from "@/lib/validators";
 import type { PageTransaction } from "@/types/banking";
 
@@ -38,6 +37,9 @@ function buildTransferDescription(input: {
   recipientName?: string;
   toAccountNumber?: string;
   receiverAddress?: string;
+  swiftCode?: string;
+  beneficiaryBankName?: string;
+  bankCountry?: string;
   memo?: string;
 }) {
   const methodLabel = getTransferMethodLabel(input.transferMethod);
@@ -49,7 +51,15 @@ function buildTransferDescription(input: {
 
   let base = `${methodLabel} to ${recipientLabel}`;
 
+  if (isInternationalWireMethod(input.transferMethod)) {
+    base = `${base} | ${input.beneficiaryBankName} (${input.bankCountry}) | SWIFT ${input.swiftCode}`;
+  }
+
   if (input.transferMethod === "WIRE" && input.receiverAddress) {
+    base = `${base} | ${input.receiverAddress.trim()}`;
+  }
+
+  if (isInternationalWireMethod(input.transferMethod) && input.receiverAddress) {
     base = `${base} | ${input.receiverAddress.trim()}`;
   }
 
@@ -98,34 +108,27 @@ export async function submitMemberTransfer(params: {
     throw new TransferRequestError("Your account cannot initiate transactions.", 403);
   }
 
-  if (params.input.transferMethod === "ACH") {
-    throw new TransferRequestError("ACH is not functional for now. Please try again later.", 503);
-  }
-
   const policy = await getBankingPolicy();
-  const requiresOtp = userRequiresTransactionOtp({
-    transactionsUnrestricted: user.transactionsUnrestricted,
-    policy,
-  });
   const requiresReview = userRequiresTransferReview({
     transactionsUnrestricted: user.transactionsUnrestricted,
     policy,
   });
 
-  if (requiresOtp) {
-    if (!params.otpCode) {
-      throw new TransferRequestError("Email verification code is required.", 400);
-    }
+  if (!user.transactionPinHash) {
+    throw new TransferRequestError(
+      "Set a transaction PIN in Security before transferring funds.",
+      400,
+    );
+  }
 
-    const otpResult = await verifyTransferOtpChallenge({
-      userId: params.userId,
-      otpCode: params.otpCode,
-      payload: params.input,
-    });
+  if (!params.transactionPin) {
+    throw new TransferRequestError("Transaction PIN is required.", 400);
+  }
 
-    if (!otpResult.ok) {
-      throw new TransferRequestError(otpResult.message, 400);
-    }
+  const pinMatches = await verifyTransactionPin(params.transactionPin, user.transactionPinHash);
+
+  if (!pinMatches) {
+    throw new TransferRequestError("Transaction PIN is incorrect.", 400);
   }
 
   const adminStepVerification = await verifyMemberTransferOtpCodesForUser({
@@ -135,19 +138,6 @@ export async function submitMemberTransfer(params: {
 
   if (!adminStepVerification.ok) {
     throw new TransferRequestError(adminStepVerification.message, 400);
-  }
-
-  const pinMatches = await verifyTransactionPin(
-    params.transactionPin ?? "",
-    user.transactionPinHash,
-  );
-
-  if (!pinMatches) {
-    throw new TransferRequestError("Transaction PIN is incorrect.", 400);
-  }
-
-  if (user.transactionPinHash && !params.transactionPin) {
-    throw new TransferRequestError("Transaction PIN is required.", 400);
   }
 
   const account = await prisma.account.findFirst({

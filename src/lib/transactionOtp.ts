@@ -1,9 +1,22 @@
 import { createHash, randomInt } from "crypto";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import type { TransferInput } from "@/lib/validators";
+import type { TransferInput, TransferOtpRequestInput } from "@/lib/validators";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
+
+export function normalizeTransferChallengePayload(
+  payload: TransferInput | TransferOtpRequestInput,
+) {
+  const {
+    otpCode: _otpCode,
+    transactionPin: _transactionPin,
+    stepOtpCodes: _stepOtpCodes,
+    ...transferDetails
+  } = payload as TransferInput;
+
+  return JSON.stringify(transferDetails);
+}
 
 function hashOtpCode(code: string) {
   return createHash("sha256").update(code).digest("hex");
@@ -69,7 +82,7 @@ export async function verifyTransferOtpChallenge(params: {
 
   const storedPayload = challenge.payload as TransferInput;
 
-  if (JSON.stringify(storedPayload) !== JSON.stringify(params.payload)) {
+  if (normalizeTransferChallengePayload(storedPayload) !== normalizeTransferChallengePayload(params.payload)) {
     return {
       ok: false as const,
       message: "Transfer details changed after verification. Request a new code.",

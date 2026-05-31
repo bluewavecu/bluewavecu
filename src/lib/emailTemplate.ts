@@ -1,5 +1,6 @@
 import {
   EMAIL_LOGO,
+  EMAIL_LOGO_CONTENT_ID,
   getEmailLogoDisplayDimensions,
 } from "@/lib/branding";
 import { readEnv } from "@/lib/databaseEnv";
@@ -36,7 +37,7 @@ export function getEmailAppUrl() {
 }
 
 export function getEmailLogoUrl(appUrl = getEmailAppUrl()) {
-  return `${appUrl.replace(/\/$/, "")}${EMAIL_LOGO.src}`;
+  return `cid:${EMAIL_LOGO_CONTENT_ID}`;
 }
 
 function buildPrimaryActionButton(action: EmailLayoutOptions["primaryAction"], appUrl: string) {

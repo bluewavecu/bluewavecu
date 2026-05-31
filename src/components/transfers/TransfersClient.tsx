@@ -23,7 +23,12 @@ import { useMemberSummary } from "@/hooks/useMemberSummary";
 import { useScheduledTransfers } from "@/hooks/useScheduledTransfers";
 import { useTransfer } from "@/hooks/useTransfer";
 import { cn } from "@/lib/utils";
-import { TRANSFER_METHOD_OPTIONS, type TransferMethod } from "@/data/transferMethods";
+import {
+  isInternationalWireMethod,
+  isDomesticWireMethod,
+  TRANSFER_METHOD_OPTIONS,
+  type TransferMethod,
+} from "@/data/transferMethods";
 import type { ScheduledTransferRecord, TransferRequestInput } from "@/types/banking";
 
 type TransferTab = "transfer" | "scheduled";
@@ -101,6 +106,9 @@ function ScheduledTransferRow({
   );
 }
 
+const inputClassName =
+  "mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white";
+
 export function TransfersClient() {
   const [activeTab, setActiveTab] = useState<TransferTab>("transfer");
   const [transferMethod, setTransferMethod] = useState<TransferMethod>("DIRECT_DEPOSIT");
@@ -108,17 +116,13 @@ export function TransfersClient() {
     useAccounts();
   const {
     isSubmitting,
-    isSendingOtp,
+    isLoadingRequirements,
     error,
     successMessage,
-    otpMessage,
-    requiresTransactionPin,
-    otpRequired,
+    hasTransactionPin,
     adminSteps,
     adminStepsRequired,
-    verificationRequired,
     submitTransfer,
-    requestOtp,
     reset,
   } = useTransfer();
   const {
@@ -135,12 +139,13 @@ export function TransfersClient() {
   const [recipientName, setRecipientName] = useState("");
   const [toAccountNumber, setToAccountNumber] = useState("");
   const [receiverAddress, setReceiverAddress] = useState("");
+  const [swiftCode, setSwiftCode] = useState("");
+  const [beneficiaryBankName, setBeneficiaryBankName] = useState("");
+  const [bankCountry, setBankCountry] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [otpCode, setOtpCode] = useState("");
   const [stepOtpCodes, setStepOtpCodes] = useState<Record<string, string>>({});
   const [transactionPin, setTransactionPin] = useState("");
-  const [verificationSent, setVerificationSent] = useState(false);
   const [scheduledSuccess, setScheduledSuccess] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<ScheduledTransferRecord["frequency"]>("ONE_TIME");
   const [scheduledFor, setScheduledFor] = useState("");
@@ -172,21 +177,23 @@ export function TransfersClient() {
     setRecipientName("");
     setToAccountNumber("");
     setReceiverAddress("");
+    setSwiftCode("");
+    setBeneficiaryBankName("");
+    setBankCountry("");
     setAmount("");
     setMemo("");
-    setOtpCode("");
     setStepOtpCodes({});
     setTransactionPin("");
-    setVerificationSent(false);
     reset();
   }
 
   function handleTransferMethodChange(method: TransferMethod) {
-    if (method === "ACH") {
-      clearTransferFormFields();
-    }
-
     setTransferMethod(method);
+    setReceiverAddress("");
+    setSwiftCode("");
+    setBeneficiaryBankName("");
+    setBankCountry("");
+    reset();
   }
 
   function buildTransferPayload(): TransferRequestInput | null {
@@ -205,7 +212,6 @@ export function TransfersClient() {
     const trimmedRecipient = recipientName.trim();
     const trimmedAccount = toAccountNumber.trim();
     const trimmedMemo = memo.trim();
-    const trimmedReceiverAddress = receiverAddress.trim();
 
     if (trimmedRecipient) {
       payload.recipientName = trimmedRecipient;
@@ -215,12 +221,21 @@ export function TransfersClient() {
       payload.toAccountNumber = trimmedAccount;
     }
 
-    if (trimmedReceiverAddress) {
-      payload.receiverAddress = trimmedReceiverAddress;
-    }
-
     if (trimmedMemo) {
       payload.memo = trimmedMemo;
+    }
+
+    if (isDomesticWireMethod(transferMethod) || isInternationalWireMethod(transferMethod)) {
+      const trimmedAddress = receiverAddress.trim();
+      if (trimmedAddress) {
+        payload.receiverAddress = trimmedAddress;
+      }
+    }
+
+    if (isInternationalWireMethod(transferMethod)) {
+      payload.swiftCode = swiftCode.trim();
+      payload.beneficiaryBankName = beneficiaryBankName.trim();
+      payload.bankCountry = bankCountry.trim();
     }
 
     return payload;
@@ -235,56 +250,24 @@ export function TransfersClient() {
       return;
     }
 
-    if (!verificationSent) {
-      reset();
-      const sent = await requestOtp(payload);
-
-      if (!sent) {
-        return;
-      }
-
-      if (!verificationRequired) {
-        const success = await submitTransfer(payload);
-
-        if (success) {
-          clearTransferFormFields();
-        }
-
-        return;
-      }
-
-      setVerificationSent(true);
-      setStepOtpCodes({});
-      return;
-    }
-
-    const confirmPayload: TransferRequestInput = { ...payload };
-
-    if (otpRequired && otpCode.trim()) {
-      confirmPayload.otpCode = otpCode.trim();
-    }
-
-    if (requiresTransactionPin && transactionPin.trim()) {
-      confirmPayload.transactionPin = transactionPin.trim();
-    }
+    payload.transactionPin = transactionPin.trim();
 
     if (adminStepsRequired && adminSteps.length > 0) {
       const codes: NonNullable<TransferRequestInput["stepOtpCodes"]> = {};
 
       for (const step of adminSteps) {
         const code = stepOtpCodes[step.stepKey]?.trim();
-
         if (code) {
           codes[step.stepKey] = code;
         }
       }
 
       if (Object.keys(codes).length > 0) {
-        confirmPayload.stepOtpCodes = codes;
+        payload.stepOtpCodes = codes;
       }
     }
 
-    const success = await submitTransfer(confirmPayload);
+    const success = await submitTransfer(payload);
 
     if (success) {
       clearTransferFormFields();
@@ -321,13 +304,12 @@ export function TransfersClient() {
     }
   }
 
+  const accountLabel = isInternationalWireMethod(transferMethod)
+    ? "IBAN or account number"
+    : "Recipient account number";
+
   return (
     <section className="grid gap-5">
-      <InfoPanel title="How transfers are processed">
-        Transfers require email verification before submission. Approved transfers stay pending until
-        member services review them unless your account has friction-free transfer access.
-      </InfoPanel>
-
       {summary?.needsProfileCompletion ? (
         <InfoPanel title="Profile verification recommended" variant="warning">
           Your profile is not fully verified. High-value transfers may receive additional review.{" "}
@@ -381,12 +363,21 @@ export function TransfersClient() {
                       {successMessage}
                     </p>
                     <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                      Your transfer request has been submitted and is pending review. Account
-                      balances remain unchanged.
+                      Your transfer request has been submitted. Account balances update once the
+                      transfer is approved and posted.
                     </p>
                   </div>
                 </div>
               </div>
+            ) : null}
+
+            {!isLoadingRequirements && !hasTransactionPin ? (
+              <InfoPanel title="Transaction PIN required" variant="warning" className="mt-6">
+                Set a 6-digit transaction PIN before sending transfers.{" "}
+                <Link href="/auth/security" className="font-semibold text-royal-blue underline">
+                  Set up in Security
+                </Link>
+              </InfoPanel>
             ) : null}
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -397,7 +388,7 @@ export function TransfersClient() {
                 <select
                   value={fromAccountId || selectedAccount.id}
                   onChange={(event) => setFromAccountId(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 >
                   {accountsData.accounts.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -437,40 +428,90 @@ export function TransfersClient() {
                 </div>
               </fieldset>
 
-              {transferMethod === "ACH" ? (
-                <EmptyState
-                  title="ACH unavailable"
-                  message="ACH is not functional for now. Please try again later."
-                />
-              ) : (
-                <>
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                  Recipient name
+                  {isInternationalWireMethod(transferMethod) ? "Beneficiary name" : "Recipient name"}
                 </span>
                 <input
                   type="text"
+                  required={isInternationalWireMethod(transferMethod)}
                   value={recipientName}
                   onChange={(event) => setRecipientName(event.target.value)}
-                  placeholder="Recipient name"
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                  Recipient account number
+                  {accountLabel}
                 </span>
                 <input
                   type="text"
+                  required={isInternationalWireMethod(transferMethod)}
                   value={toAccountNumber}
                   onChange={(event) => setToAccountNumber(event.target.value)}
-                  placeholder="Account number"
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 
-              {transferMethod === "WIRE" ? (
+              {isInternationalWireMethod(transferMethod) ? (
+                <>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                      SWIFT / BIC
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={swiftCode}
+                      onChange={(event) => setSwiftCode(event.target.value.toUpperCase())}
+                      className={inputClassName}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                      Beneficiary bank
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={beneficiaryBankName}
+                      onChange={(event) => setBeneficiaryBankName(event.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                      Bank country
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={bankCountry}
+                      onChange={(event) => setBankCountry(event.target.value)}
+                      placeholder="Country"
+                      className={inputClassName}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                      Beneficiary address
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={receiverAddress}
+                      onChange={(event) => setReceiverAddress(event.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                </>
+              ) : null}
+
+              {isDomesticWireMethod(transferMethod) ? (
                 <label className="block">
                   <span className="text-sm font-semibold text-primary-navy dark:text-white">
                     Receiver address
@@ -480,8 +521,7 @@ export function TransfersClient() {
                     required
                     value={receiverAddress}
                     onChange={(event) => setReceiverAddress(event.target.value)}
-                    placeholder="house number, city, state zipcode"
-                    className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                    className={inputClassName}
                   />
                 </label>
               ) : null}
@@ -490,12 +530,7 @@ export function TransfersClient() {
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
                   Amount
                 </span>
-                <AmountInput
-                  required
-                  value={amount}
-                  onChange={setAmount}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
-                />
+                <AmountInput required value={amount} onChange={setAmount} className={inputClassName} />
               </label>
 
               <label className="block">
@@ -504,83 +539,52 @@ export function TransfersClient() {
                   type="text"
                   value={memo}
                   onChange={(event) => setMemo(event.target.value)}
-                  placeholder="Optional transfer note"
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  placeholder="Optional"
+                  className={inputClassName}
                 />
               </label>
 
-              {otpMessage ? (
-                <p className="rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-primary-navy dark:text-white">
-                  {otpMessage}
-                </p>
-              ) : null}
+              {adminSteps.map((step) => (
+                <label key={step.stepKey} className="block">
+                  <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                    {step.label}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                    value={stepOtpCodes[step.stepKey] ?? ""}
+                    onChange={(event) =>
+                      setStepOtpCodes((current) => ({
+                        ...current,
+                        [step.stepKey]: event.target.value.replace(/\D/g, "").slice(0, 6),
+                      }))
+                    }
+                    className={inputClassName}
+                  />
+                </label>
+              ))}
 
-              {verificationSent ? (
-                <>
-                  {otpRequired ? (
-                    <label className="block">
-                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                        Email verification code
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]{6}"
-                        maxLength={6}
-                        required
-                        value={otpCode}
-                        onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ""))}
-                        placeholder="6-digit code"
-                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
-                      />
-                    </label>
-                  ) : null}
-
-                  {adminSteps.map((step) => (
-                    <label key={step.stepKey} className="block">
-                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                        {step.label}
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]{6}"
-                        maxLength={6}
-                        required
-                        value={stepOtpCodes[step.stepKey] ?? ""}
-                        onChange={(event) =>
-                          setStepOtpCodes((current) => ({
-                            ...current,
-                            [step.stepKey]: event.target.value.replace(/\D/g, "").slice(0, 6),
-                          }))
-                        }
-                        placeholder="6-digit code from member services"
-                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
-                      />
-                    </label>
-                  ))}
-
-                  {requiresTransactionPin ? (
-                    <label className="block">
-                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                        Transaction PIN
-                      </span>
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        pattern="[0-9]{6}"
-                        maxLength={6}
-                        required
-                        value={transactionPin}
-                        onChange={(event) =>
-                          setTransactionPin(event.target.value.replace(/\D/g, ""))
-                        }
-                        placeholder="6-digit PIN"
-                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
-                      />
-                    </label>
-                  ) : null}
-                </>
+              {hasTransactionPin ? (
+                <label className="block">
+                  <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                    Transaction PIN
+                  </span>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                    value={transactionPin}
+                    onChange={(event) =>
+                      setTransactionPin(event.target.value.replace(/\D/g, ""))
+                    }
+                    className={inputClassName}
+                  />
+                </label>
               ) : null}
 
               {error ? (
@@ -591,31 +595,21 @@ export function TransfersClient() {
 
               <button
                 type="submit"
-                disabled={isSubmitting || isSendingOtp}
+                disabled={isSubmitting || isLoadingRequirements || !hasTransactionPin}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSendingOtp
-                  ? "Preparing verification..."
-                  : isSubmitting
-                    ? "Submitting..."
-                    : verificationSent
-                      ? "Confirm transfer"
-                      : verificationRequired
-                        ? "Continue to verification"
-                        : "Submit transfer"}
+                {isSubmitting ? "Submitting..." : "Submit transfer"}
                 <ArrowLeftRight size={17} aria-hidden="true" />
               </button>
-                </>
-              )}
             </form>
           </div>
 
           <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-6 text-white shadow-[0_18px_60px_rgba(10,42,94,0.12)]">
             <CalendarClock size={24} className="text-light-blue" aria-hidden="true" />
-            <h2 className="mt-5 text-2xl font-semibold">How transfer review works</h2>
+            <h2 className="mt-5 text-2xl font-semibold">Transfer review</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/[0.68]">
-              Submitted transfers stay pending until member services completes review. Balances update
-              once the transfer is approved and posted to your account.
+              Transfers are authorized with your transaction PIN. Pending transfers are reviewed by
+              member services before posting.
             </p>
           </div>
         </div>
@@ -630,10 +624,6 @@ export function TransfersClient() {
                 <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
                   Schedule a transfer
                 </h2>
-                <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  Scheduled transfers create future review requests and require member services approval
-                  before posting.
-                </p>
               </div>
             </div>
 
@@ -651,7 +641,7 @@ export function TransfersClient() {
                 <select
                   value={fromAccountId || selectedAccount.id}
                   onChange={(event) => setFromAccountId(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 >
                   {accountsData.accounts.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -669,7 +659,7 @@ export function TransfersClient() {
                   type="text"
                   value={recipientName}
                   onChange={(event) => setRecipientName(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 
@@ -681,7 +671,7 @@ export function TransfersClient() {
                   type="text"
                   value={toAccountNumber}
                   onChange={(event) => setToAccountNumber(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 
@@ -694,7 +684,7 @@ export function TransfersClient() {
                     required
                     value={amount}
                     onChange={setAmount}
-                    className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                    className={inputClassName}
                   />
                 </label>
 
@@ -707,7 +697,7 @@ export function TransfersClient() {
                     onChange={(event) =>
                       setFrequency(event.target.value as ScheduledTransferRecord["frequency"])
                     }
-                    className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                    className={inputClassName}
                   >
                     <option value="ONE_TIME">One time</option>
                     <option value="WEEKLY">Weekly</option>
@@ -726,7 +716,7 @@ export function TransfersClient() {
                   required
                   value={scheduledFor}
                   onChange={(event) => setScheduledFor(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 
@@ -736,7 +726,7 @@ export function TransfersClient() {
                   type="text"
                   value={memo}
                   onChange={(event) => setMemo(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  className={inputClassName}
                 />
               </label>
 

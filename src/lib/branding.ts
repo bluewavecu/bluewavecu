@@ -45,3 +45,5 @@ export function getEmailLogoDisplayDimensions(
     height: Math.round((displayWidth * asset.height) / asset.width),
   };
 }
+
+export const EMAIL_LOGO_CONTENT_ID = "bluewave-email-logo";

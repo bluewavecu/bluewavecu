@@ -7,7 +7,7 @@ import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const auth = await resolveRequestAuth(request);
 
@@ -44,10 +44,8 @@ export async function POST(request: NextRequest) {
     const adminSteps = await getEnabledMemberTransferOtpRequirements(auth.payload.userId);
 
     return apiSuccess({
-      message: "Transfers are authorized with your transaction PIN.",
-      expiresAt: new Date().toISOString(),
       requiresTransactionPin: true,
-      otpRequired: false,
+      hasTransactionPin: Boolean(user.transactionPinHash),
       adminSteps,
       adminStepsRequired: adminSteps.length > 0,
     });

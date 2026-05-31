@@ -325,32 +325,79 @@ export const resetPasswordSchema = z
     path: ["code"],
   });
 
-export const transferSchema = z
-  .object({
-    fromAccountId: z.string().min(1, "Source account is required"),
-    transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
-      message: "Select a transfer method",
-    }),
-    toAccountNumber: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(4).max(20).optional(),
-    ),
-    recipientName: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(2).max(120).optional(),
-    ),
-    amount: z.preprocess(
-      normalizeAmountValue,
-      z.coerce.number().positive("Amount must be greater than zero"),
-    ),
-    memo: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().max(180).optional(),
-    ),
-    receiverAddress: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(5).max(240).optional(),
-    ),
+const transferPayloadBaseSchema = z.object({
+  fromAccountId: z.string().min(1, "Source account is required"),
+  transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
+    message: "Select a transfer method",
+  }),
+  toAccountNumber: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(4).max(34).optional(),
+  ),
+  recipientName: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(2).max(120).optional(),
+  ),
+  amount: z.preprocess(
+    normalizeAmountValue,
+    z.coerce.number().positive("Amount must be greater than zero"),
+  ),
+  memo: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().max(180).optional(),
+  ),
+  receiverAddress: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(5).max(240).optional(),
+  ),
+  swiftCode: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(8).max(11).optional(),
+  ),
+  beneficiaryBankName: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(2).max(120).optional(),
+  ),
+  bankCountry: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().trim().min(2).max(60).optional(),
+  ),
+});
+
+type TransferPayloadBase = z.infer<typeof transferPayloadBaseSchema>;
+
+function refineTransferPayload<T extends z.ZodType<TransferPayloadBase>>(schema: T) {
+  return schema
+    .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
+      message: "Recipient account number or name is required",
+      path: ["toAccountNumber"],
+    })
+    .refine((data) => data.transferMethod !== "WIRE" || Boolean(data.receiverAddress?.trim()), {
+      message: "Receiver address is required for wire transfers",
+      path: ["receiverAddress"],
+    })
+    .refine(
+      (data) =>
+        data.transferMethod !== "INTERNATIONAL_WIRE" ||
+        Boolean(
+          data.recipientName?.trim() &&
+            data.toAccountNumber?.trim() &&
+            data.swiftCode?.trim() &&
+            data.beneficiaryBankName?.trim() &&
+            data.bankCountry?.trim() &&
+            data.receiverAddress?.trim(),
+        ),
+      {
+        message: "Complete all international wire fields",
+        path: ["swiftCode"],
+      },
+    );
+}
+
+export const transferOtpRequestSchema = refineTransferPayload(transferPayloadBaseSchema);
+
+export const transferSchema = refineTransferPayload(
+  transferPayloadBaseSchema.extend({
     otpCode: z.preprocess(
       (value) => (value === "" || value === null || value === undefined ? undefined : value),
       z
@@ -376,59 +423,8 @@ export const transferSchema = z
 
       return entries.length > 0 ? Object.fromEntries(entries) : undefined;
     }, z.record(z.string(), z.string().regex(/^\d{6}$/, "Verification code must be 6 digits")).optional()),
-  })
-  .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
-    message: "Recipient account number or name is required",
-    path: ["toAccountNumber"],
-  })
-  .refine((data) => data.transferMethod !== "ACH", {
-    message: "ACH is not functional for now. Please try again later.",
-    path: ["transferMethod"],
-  })
-  .refine((data) => data.transferMethod !== "WIRE" || Boolean(data.receiverAddress?.trim()), {
-    message: "Receiver address is required for wire transfers",
-    path: ["receiverAddress"],
-  });
-
-export const transferOtpRequestSchema = z
-  .object({
-    fromAccountId: z.string().min(1, "Source account is required"),
-    transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
-      message: "Select a transfer method",
-    }),
-    toAccountNumber: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(4).max(20).optional(),
-    ),
-    recipientName: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(2).max(120).optional(),
-    ),
-    amount: z.preprocess(
-      normalizeAmountValue,
-      z.coerce.number().positive("Amount must be greater than zero"),
-    ),
-    memo: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().max(180).optional(),
-    ),
-    receiverAddress: z.preprocess(
-      (value) => (value === "" || value === null || value === undefined ? undefined : value),
-      z.string().trim().min(5).max(240).optional(),
-    ),
-  })
-  .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
-    message: "Recipient account number or name is required",
-    path: ["toAccountNumber"],
-  })
-  .refine((data) => data.transferMethod !== "ACH", {
-    message: "ACH is not functional for now. Please try again later.",
-    path: ["transferMethod"],
-  })
-  .refine((data) => data.transferMethod !== "WIRE" || Boolean(data.receiverAddress?.trim()), {
-    message: "Receiver address is required for wire transfers",
-    path: ["receiverAddress"],
-  });
+  }),
+);
 
 export const supportTicketSchema = z.object({
   subject: z.string().trim().min(3).max(160),
@@ -731,6 +727,7 @@ export type BillPaymentUpdateInput = z.infer<typeof billPaymentUpdateSchema>;
 export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
+export type TransferOtpRequestInput = z.infer<typeof transferOtpRequestSchema>;
 export type CardApplyInput = z.infer<typeof cardApplySchema>;
 export type AdminIssueMemberCardInput = z.infer<typeof adminIssueMemberCardSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
