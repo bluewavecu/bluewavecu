@@ -35,7 +35,7 @@ export function AuthPageShell({
 }: AuthPageShellProps) {
   return (
     <main className="min-h-screen bg-[#eef5fb] dark:bg-[#061222]">
-      <div className="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+      <div className="grid lg:min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <section className="relative hidden overflow-hidden bg-primary-navy p-10 text-white lg:flex lg:flex-col">
           <div className="banking-grid absolute inset-0 opacity-[0.32]" />
           <div className="relative z-10 flex h-full flex-col">
@@ -66,27 +66,37 @@ export function AuthPageShell({
           </div>
         </section>
 
-        <section className="flex min-h-screen flex-col px-4 py-8 sm:px-6 sm:py-10">
-          <div className={cn("mx-auto flex w-full flex-1 flex-col", wide ? "max-w-5xl" : "max-w-md")}>
-            <AuthLogo priority className="mb-6 sm:mb-8" />
+        <section className="flex flex-col px-4 py-6 sm:px-6 sm:py-8 lg:min-h-screen lg:py-10">
+          <div
+            className={cn(
+              "mx-auto w-full lg:flex lg:flex-1 lg:flex-col",
+              wide ? "max-w-5xl" : "max-w-md",
+            )}
+          >
+            <AuthLogo priority className="mb-4 sm:mb-6 lg:mb-8" />
 
-            <div className="flex flex-1 flex-col rounded-xl border border-primary-navy/[0.08] bg-white shadow-[0_24px_80px_rgba(10,42,94,0.10)] dark:border-white/[0.08] dark:bg-[#0a1a2e]">
-              <div className="border-b border-primary-navy/[0.06] px-6 py-6 dark:border-white/[0.06] sm:px-8">
-                <p className="text-sm font-semibold uppercase tracking-wide text-ocean-blue">
+            <div
+              className={cn(
+                "rounded-xl border border-primary-navy/[0.08] bg-white shadow-[0_24px_80px_rgba(10,42,94,0.10)] dark:border-white/[0.08] dark:bg-[#0a1a2e]",
+                wide && "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col",
+              )}
+            >
+              <div className="border-b border-primary-navy/[0.06] px-5 py-4 dark:border-white/[0.06] sm:px-8 sm:py-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ocean-blue sm:text-sm">
                   {eyebrow}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-primary-navy dark:text-white sm:text-3xl">
+                <h2 className="mt-1 text-xl font-semibold text-primary-navy dark:text-white sm:mt-2 sm:text-2xl lg:text-3xl">
                   {title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
+                <p className="mt-1 text-sm leading-5 text-bluewave-gray dark:text-white/[0.62] sm:mt-2 sm:leading-6">
                   {description}
                 </p>
               </div>
 
               <div
                 className={cn(
-                  "flex-1 px-6 py-6 sm:px-8 sm:py-7",
-                  wide && "max-h-[calc(100svh-14rem)] overflow-y-auto lg:max-h-none lg:overflow-visible",
+                  "px-5 py-5 sm:px-8 sm:py-7",
+                  wide && "lg:flex-1 lg:overflow-y-auto lg:overscroll-contain",
                 )}
               >
                 {children}

@@ -95,8 +95,7 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <div className="space-y-6">
+      <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <AuthField label="First name" htmlFor="register-first-name" icon={UserRound}>
               <input
@@ -179,6 +178,25 @@ export function RegisterForm() {
               />
             </AuthField>
           </div>
+
+          <AuthField label="Choose account" htmlFor="register-account-type" icon={WalletCards}>
+            <select
+              id="register-account-type"
+              name="accountType"
+              required
+              value={selectedAccountType}
+              onChange={(event) =>
+                setSelectedAccountType(event.target.value as SignupAccountType)
+              }
+              className={authInputClassName}
+            >
+              {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </AuthField>
 
           <div className="border-t border-primary-navy/[0.06] pt-6 dark:border-white/[0.06]">
             <AuthField label="Street address" htmlFor="register-address-1" icon={MapPin}>
@@ -275,28 +293,6 @@ export function RegisterForm() {
               />
             </AuthField>
           </div>
-        </div>
-
-        <aside className="rounded-xl border border-primary-navy/[0.08] bg-[#f7fbff] p-5 dark:border-white/[0.08] dark:bg-white/[0.04]">
-          <AuthField label="Choose account" htmlFor="register-account-type" icon={WalletCards}>
-            <select
-              id="register-account-type"
-              name="accountType"
-              required
-              value={selectedAccountType}
-              onChange={(event) =>
-                setSelectedAccountType(event.target.value as SignupAccountType)
-              }
-              className={authInputClassName}
-            >
-              {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </AuthField>
-        </aside>
       </div>
 
       {error ? (
