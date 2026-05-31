@@ -15,14 +15,16 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { parseAmountInput } from "@/lib/amountInput";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useMemberSummary } from "@/hooks/useMemberSummary";
 import { useScheduledTransfers } from "@/hooks/useScheduledTransfers";
 import { useTransfer } from "@/hooks/useTransfer";
 import { cn } from "@/lib/utils";
 import { TRANSFER_METHOD_OPTIONS, type TransferMethod } from "@/data/transferMethods";
-import type { ScheduledTransferRecord } from "@/types/banking";
+import type { ScheduledTransferRecord, TransferRequestInput } from "@/types/banking";
 
 type TransferTab = "transfer" | "scheduled";
 
@@ -165,23 +167,46 @@ export function TransfersClient() {
     accountsData.accounts.find((account) => account.id === fromAccountId) ??
     accountsData.accounts[0];
 
+  function buildTransferPayload(): TransferRequestInput | null {
+    const parsedAmount = parseAmountInput(amount);
+
+    if (parsedAmount === null) {
+      return null;
+    }
+
+    const payload: TransferRequestInput = {
+      fromAccountId: fromAccountId || selectedAccount.id,
+      transferMethod,
+      amount: parsedAmount,
+    };
+
+    const trimmedRecipient = recipientName.trim();
+    const trimmedAccount = toAccountNumber.trim();
+    const trimmedMemo = memo.trim();
+
+    if (trimmedRecipient) {
+      payload.recipientName = trimmedRecipient;
+    }
+
+    if (trimmedAccount) {
+      payload.toAccountNumber = trimmedAccount;
+    }
+
+    if (trimmedMemo) {
+      payload.memo = trimmedMemo;
+    }
+
+    return payload;
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const parsedAmount = Number.parseFloat(amount);
+    const payload = buildTransferPayload();
 
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+    if (!payload) {
       return;
     }
-
-    const payload = {
-      fromAccountId: fromAccountId || selectedAccount.id,
-      transferMethod,
-      recipientName: recipientName.trim() || undefined,
-      toAccountNumber: toAccountNumber.trim() || undefined,
-      amount: parsedAmount,
-      memo: memo.trim() || undefined,
-    };
 
     if (!verificationSent) {
       reset();
@@ -213,12 +238,33 @@ export function TransfersClient() {
       return;
     }
 
-    const success = await submitTransfer({
-      ...payload,
-      otpCode: otpRequired ? otpCode : undefined,
-      stepOtpCodes,
-      transactionPin: requiresTransactionPin ? transactionPin : undefined,
-    });
+    const confirmPayload: TransferRequestInput = { ...payload };
+
+    if (otpRequired && otpCode.trim()) {
+      confirmPayload.otpCode = otpCode.trim();
+    }
+
+    if (requiresTransactionPin && transactionPin.trim()) {
+      confirmPayload.transactionPin = transactionPin.trim();
+    }
+
+    if (adminStepsRequired && adminSteps.length > 0) {
+      const codes: NonNullable<TransferRequestInput["stepOtpCodes"]> = {};
+
+      for (const step of adminSteps) {
+        const code = stepOtpCodes[step.stepKey]?.trim();
+
+        if (code) {
+          codes[step.stepKey] = code;
+        }
+      }
+
+      if (Object.keys(codes).length > 0) {
+        confirmPayload.stepOtpCodes = codes;
+      }
+    }
+
+    const success = await submitTransfer(confirmPayload);
 
     if (success) {
       setRecipientName("");
@@ -236,9 +282,9 @@ export function TransfersClient() {
     event.preventDefault();
     setScheduledSuccess(null);
 
-    const parsedAmount = Number.parseFloat(amount);
+    const parsedAmount = parseAmountInput(amount);
 
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0 || !scheduledFor) {
+    if (parsedAmount === null || !scheduledFor) {
       return;
     }
 
@@ -408,14 +454,10 @@ export function TransfersClient() {
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
                   Amount
                 </span>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                <AmountInput
                   required
                   value={amount}
-                  onChange={(event) => setAmount(event.target.value)}
-                  placeholder="0.00"
+                  onChange={setAmount}
                   className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
                 />
               </label>
@@ -610,13 +652,10 @@ export function TransfersClient() {
                   <span className="text-sm font-semibold text-primary-navy dark:text-white">
                     Amount
                   </span>
-                  <input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
+                  <AmountInput
                     required
                     value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
+                    onChange={setAmount}
                     className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
                   />
                 </label>

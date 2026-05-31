@@ -6,7 +6,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { parseAmountInput } from "@/lib/amountInput";
 import { useAdminAdjustments } from "@/hooks/useAdminAdjustments";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { cn } from "@/lib/utils";
 import type { AdjustmentStatus, AdminAccountRecord, AdminUserSummaryWithKyc } from "@/types/banking";
 
@@ -122,9 +124,15 @@ export function AdminAdjustmentsClient() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
+          const parsedAmount = parseAmountInput(amount);
+
+          if (parsedAmount === null) {
+            return;
+          }
+
           void createAdjustment({
             accountId,
-            amount: Number(amount),
+            amount: parsedAmount,
             direction,
             reason,
           }).then((ok) => {
@@ -193,13 +201,10 @@ export function AdminAdjustmentsClient() {
 
           <label className="block">
             <span className="text-sm font-semibold">Amount</span>
-            <input
+            <AmountInput
               required
-              type="number"
-              min="0.01"
-              step="0.01"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={setAmount}
               className={fieldClassName}
             />
           </label>

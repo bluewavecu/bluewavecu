@@ -2,7 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { Send } from "lucide-react";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { parseAmountInput } from "@/lib/amountInput";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useBillPay } from "@/hooks/useBillPay";
 import { usePayees } from "@/hooks/usePayees";
@@ -30,8 +32,8 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
     event.preventDefault();
     setSuccessMessage(null);
 
-    const parsedAmount = Number.parseFloat(amount);
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0 || !payeeId) {
+    const parsedAmount = parseAmountInput(amount);
+    if (parsedAmount === null || !payeeId) {
       return;
     }
 
@@ -104,13 +106,10 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
 
         <label className="block">
           <span className="text-sm font-semibold text-primary-navy dark:text-white">Amount</span>
-          <input
+          <AmountInput
             required
-            type="number"
-            min="0.01"
-            step="0.01"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={setAmount}
             className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
           />
         </label>

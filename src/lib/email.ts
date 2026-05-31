@@ -22,6 +22,10 @@ export type EmailPayload = {
   text?: string;
   idempotencyKey?: string;
   replyTo?: string | string[];
+  attachments?: Array<{
+    filename: string;
+    content: Buffer | string;
+  }>;
 };
 
 export type EmailConfig = {
@@ -108,6 +112,14 @@ export async function sendEmail(payload: EmailPayload) {
       html: payload.html,
       text: payload.text,
       ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
+      ...(payload.attachments?.length
+        ? {
+            attachments: payload.attachments.map((attachment) => ({
+              filename: attachment.filename,
+              content: attachment.content,
+            })),
+          }
+        : {}),
     },
     requestOptions,
   );
@@ -713,6 +725,42 @@ export async function sendTransferStatusEmail(params: {
       idempotencyKey: `transfer-status/${params.reference}/${params.status}`,
     },
     "sendTransferStatusEmail",
+  );
+}
+
+export async function sendTransactionReceiptEmail(params: {
+  email: string;
+  fullName: string;
+  reference: string;
+  amount: number;
+  filename: string;
+  pdfBuffer: Buffer;
+}) {
+  const content = buildTransactionalEmail({
+    title: "Your transaction receipt",
+    preheader: `Receipt for ${params.reference}`,
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>Your transaction receipt for <strong>${escapeHtml(params.reference)}</strong> (${escapeHtml(formatEmailCurrency(params.amount))}) is attached as a PDF.</p>
+      <p>Keep this receipt for your records or forward it to anyone who needs confirmation of the payment.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour transaction receipt for ${params.reference} (${formatEmailCurrency(params.amount)}) is attached as a PDF.`,
+    primaryAction: { label: "View transactions", href: "/auth/transactions" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: `Transaction receipt ${params.reference}`,
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-receipt/${params.reference}`,
+      attachments: [
+        {
+          filename: params.filename,
+          content: params.pdfBuffer,
+        },
+      ],
+    },
+    "sendTransactionReceiptEmail",
   );
 }
 

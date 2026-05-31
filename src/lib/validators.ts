@@ -2,6 +2,7 @@ import { z } from "zod";
 import { SIGNUP_ACCOUNT_TYPE_VALUES } from "@/data/signupAccountTypes";
 import { SIGNUP_ANNUAL_INCOME_VALUES } from "@/data/signupAnnualIncome";
 import { TRANSFER_METHOD_VALUES } from "@/data/transferMethods";
+import { normalizeAmountValue } from "@/lib/amountInput";
 import { US_STATE_CODES } from "@/data/usStates";
 import { verifyMathChallenge } from "@/lib/mathChallenge";
 import {
@@ -330,24 +331,47 @@ export const transferSchema = z
     transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
       message: "Select a transfer method",
     }),
-    toAccountNumber: z.string().trim().min(4).max(20).optional(),
-    recipientName: z.string().trim().min(2).max(120).optional(),
-    amount: z.coerce.number().positive("Amount must be greater than zero"),
-    memo: z.string().trim().max(180).optional(),
-    otpCode: z.string().regex(/^\d{6}$/, "Verification code must be 6 digits").optional(),
-    transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits").optional(),
-    stepOtpCodes: z
-      .record(
-        z.enum([
-          "IDENTITY_CHECK",
-          "AMOUNT_CONFIRMATION",
-          "BENEFICIARY_VERIFICATION",
-          "SECURITY_CLEARANCE",
-          "FINAL_RELEASE",
-        ]),
-        z.string().regex(/^\d{6}$/, "Verification code must be 6 digits"),
-      )
-      .optional(),
+    toAccountNumber: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(4).max(20).optional(),
+    ),
+    recipientName: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(2).max(120).optional(),
+    ),
+    amount: z.preprocess(
+      normalizeAmountValue,
+      z.coerce.number().positive("Amount must be greater than zero"),
+    ),
+    memo: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().max(180).optional(),
+    ),
+    otpCode: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z
+        .string()
+        .regex(/^\d{6}$/, "Verification code must be 6 digits")
+        .optional(),
+    ),
+    transactionPin: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z
+        .string()
+        .regex(/^\d{6}$/, "Transaction PIN must be 6 digits")
+        .optional(),
+    ),
+    stepOtpCodes: z.preprocess((value) => {
+      if (!value || typeof value !== "object") {
+        return undefined;
+      }
+
+      const entries = Object.entries(value as Record<string, unknown>).filter(
+        ([, code]) => typeof code === "string" && code.trim().length > 0,
+      );
+
+      return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+    }, z.record(z.string(), z.string().regex(/^\d{6}$/, "Verification code must be 6 digits")).optional()),
   })
   .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
     message: "Recipient account number or name is required",
@@ -360,10 +384,22 @@ export const transferOtpRequestSchema = z
     transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
       message: "Select a transfer method",
     }),
-    toAccountNumber: z.string().trim().min(4).max(20).optional(),
-    recipientName: z.string().trim().min(2).max(120).optional(),
-    amount: z.coerce.number().positive("Amount must be greater than zero"),
-    memo: z.string().trim().max(180).optional(),
+    toAccountNumber: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(4).max(20).optional(),
+    ),
+    recipientName: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(2).max(120).optional(),
+    ),
+    amount: z.preprocess(
+      normalizeAmountValue,
+      z.coerce.number().positive("Amount must be greater than zero"),
+    ),
+    memo: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().max(180).optional(),
+    ),
   })
   .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
     message: "Recipient account number or name is required",
@@ -465,7 +501,10 @@ export const scheduledTransferSchema = z
     fromAccountId: z.string().min(1, "Source account is required"),
     destinationAccountNumber: z.string().trim().min(4).max(20).optional(),
     recipientName: z.string().trim().min(2).max(120).optional(),
-    amount: z.coerce.number().positive("Amount must be greater than zero"),
+    amount: z.preprocess(
+      normalizeAmountValue,
+      z.coerce.number().positive("Amount must be greater than zero"),
+    ),
     memo: z.string().trim().max(180).optional(),
     frequency: z.enum(["ONE_TIME", "WEEKLY", "BIWEEKLY", "MONTHLY"]),
     scheduledFor: z.coerce.date(),
@@ -505,7 +544,7 @@ export const payeeUpdateSchema = payeeCreateSchema.partial().extend({
 export const billPaymentCreateSchema = z.object({
   fromAccountId: z.string().min(1),
   payeeId: z.string().min(1),
-  amount: z.coerce.number().positive(),
+  amount: z.preprocess(normalizeAmountValue, z.coerce.number().positive()),
   memo: z.string().trim().max(180).optional(),
   dueDate: z.coerce.date().optional(),
   scheduledFor: z.coerce.date().optional(),
@@ -540,7 +579,7 @@ export const adminDisputeUpdateSchema = z.object({
 
 export const adjustmentCreateSchema = z.object({
   accountId: z.string().min(1),
-  amount: z.coerce.number().positive(),
+  amount: z.preprocess(normalizeAmountValue, z.coerce.number().positive()),
   direction: z.enum(["DEBIT", "CREDIT"]),
   reason: z.string().trim().min(5).max(500),
   effectiveAt: z.coerce.date().optional(),

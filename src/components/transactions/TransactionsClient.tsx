@@ -7,6 +7,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
+  Mail,
   Repeat2,
   Search,
   SlidersHorizontal,
@@ -20,6 +21,7 @@ import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { postJson } from "@/lib/clientApi";
 import { MEMBER_STATEMENTS_PATH } from "@/lib/memberRoutes";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -293,6 +295,8 @@ export function TransactionsClient() {
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState<PageTransaction | null>(null);
+  const [receiptMessage, setReceiptMessage] = useState<string | null>(null);
+  const [isEmailingReceipt, setIsEmailingReceipt] = useState(false);
   const activeSearchQuery = searchQuery || urlQuery;
 
   const filters = useMemo(
@@ -332,6 +336,25 @@ export function TransactionsClient() {
     setSelectedAccountId("");
     setSelectedStatus(undefined);
     setSelectedType(undefined);
+  }
+
+  async function handleEmailReceipt(transactionId: string) {
+    setReceiptMessage(null);
+    setIsEmailingReceipt(true);
+
+    const result = await postJson<{ message: string }>(
+      `/api/transactions/${transactionId}/receipt/email`,
+      {},
+    );
+
+    setIsEmailingReceipt(false);
+
+    if (!result.success) {
+      setReceiptMessage(result.error);
+      return;
+    }
+
+    setReceiptMessage(result.data.message);
   }
 
   if (isLoading) {
@@ -479,20 +502,49 @@ export function TransactionsClient() {
         open={Boolean(selectedTransaction)}
         title={selectedTransaction?.description ?? "Transaction"}
         subtitle={selectedTransaction?.reference}
-        onClose={() => setSelectedTransaction(null)}
+        onClose={() => {
+          setSelectedTransaction(null);
+          setReceiptMessage(null);
+        }}
         footer={
-          selectedTransaction?.status === "COMPLETED" ? (
-            <Link
-              href="/auth/disputes"
-              className="inline-flex h-10 items-center rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy"
-            >
-              Dispute transaction
-            </Link>
+          selectedTransaction ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a
+                href={`/api/transactions/${selectedTransaction.id}/receipt`}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold text-primary-navy dark:border-white/[0.10] dark:text-white"
+              >
+                <Download size={16} aria-hidden="true" />
+                Download PDF receipt
+              </a>
+              <button
+                type="button"
+                disabled={isEmailingReceipt}
+                onClick={() => void handleEmailReceipt(selectedTransaction.id)}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                <Mail size={16} aria-hidden="true" />
+                {isEmailingReceipt ? "Sending..." : "Email receipt"}
+              </button>
+              {selectedTransaction.status === "COMPLETED" ? (
+                <Link
+                  href="/auth/disputes"
+                  className="inline-flex h-10 items-center rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold text-primary-navy dark:border-white/[0.10] dark:text-white"
+                >
+                  Dispute transaction
+                </Link>
+              ) : null}
+            </div>
           ) : null
         }
       >
         {selectedTransaction ? (
-          <dl className="space-y-3 text-sm">
+          <>
+            {receiptMessage ? (
+              <p className="mb-4 rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-royal-blue dark:text-light-blue">
+                {receiptMessage}
+              </p>
+            ) : null}
+            <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-bluewave-gray dark:text-white/[0.58]">Amount</dt>
               <dd>
@@ -523,7 +575,8 @@ export function TransactionsClient() {
                 </dd>
               </div>
             ) : null}
-          </dl>
+            </dl>
+          </>
         ) : null}
       </DetailDrawer>
     </section>

@@ -6,7 +6,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { parseAmountInput, formatAmountInput } from "@/lib/amountInput";
 import { useLoans } from "@/hooks/useLoans";
 import { postJson } from "@/lib/clientApi";
 
@@ -36,20 +38,20 @@ export function LoansClient() {
   const { data, error, isLoading, refetch } = useLoans();
   const primaryOffer = data?.offers[0];
   const [estimateAmount, setEstimateAmount] = useState(
-    primaryOffer ? String(primaryOffer.preApprovedAmount) : "25000",
+    formatAmountInput(primaryOffer ? String(primaryOffer.preApprovedAmount) : "25000"),
   );
   const [estimateTerm, setEstimateTerm] = useState(
     primaryOffer ? String(primaryOffer.termMonths) : "48",
   );
   const [applyLoanType, setApplyLoanType] = useState("Personal Loan");
-  const [applyAmount, setApplyAmount] = useState("25000");
+  const [applyAmount, setApplyAmount] = useState(formatAmountInput("25000"));
   const [applyTerm, setApplyTerm] = useState("48");
   const [applyPurpose, setApplyPurpose] = useState("");
   const [applyMessage, setApplyMessage] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
 
   const estimate = useMemo(() => {
-    const principal = Number.parseFloat(estimateAmount) || 0;
+    const principal = parseAmountInput(estimateAmount) ?? 0;
     const termMonths = Number.parseInt(estimateTerm, 10) || 0;
     const estimatedRate = 8.99;
     const monthlyPayment = estimateMonthlyPayment(principal, estimatedRate, termMonths);
@@ -202,12 +204,9 @@ export function LoansClient() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-semibold">Loan amount</span>
-              <input
-                type="number"
-                min="1000"
-                step="500"
+              <AmountInput
                 value={estimateAmount}
-                onChange={(event) => setEstimateAmount(event.target.value)}
+                onChange={setEstimateAmount}
                 className="mt-2 w-full rounded-lg border border-white/[0.12] bg-white/[0.08] px-4 py-3 text-sm text-white outline-none"
               />
             </label>
@@ -254,9 +253,17 @@ export function LoansClient() {
             event.preventDefault();
             setIsApplying(true);
             setApplyMessage(null);
+            const parsedAmount = parseAmountInput(applyAmount);
+
+            if (!parsedAmount) {
+              setIsApplying(false);
+              setApplyMessage("Enter a valid loan amount.");
+              return;
+            }
+
             const result = await postJson<{ message: string }>("/api/loans/apply", {
               loanType: applyLoanType,
-              requestedAmount: Number.parseFloat(applyAmount),
+              requestedAmount: parsedAmount,
               termMonths: Number.parseInt(applyTerm, 10),
               purpose: applyPurpose,
             });
@@ -280,12 +287,10 @@ export function LoansClient() {
           </label>
           <label className="block">
             <span className="text-sm font-semibold">Requested amount</span>
-            <input
+            <AmountInput
               required
-              type="number"
-              min="1000"
               value={applyAmount}
-              onChange={(e) => setApplyAmount(e.target.value)}
+              onChange={setApplyAmount}
               className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
             />
           </label>
