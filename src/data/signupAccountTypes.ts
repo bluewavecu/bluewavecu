@@ -5,17 +5,17 @@ export type SignupAccountType = Extract<
   "SAVINGS" | "CHECKING" | "BUSINESS" | "MONEY_MARKET" | "CERTIFICATE"
 >;
 
+export type SignupAccountSelection = "SAVINGS_ONLY" | Exclude<SignupAccountType, "SAVINGS">;
+
 export const SIGNUP_ACCOUNT_TYPE_OPTIONS: Array<{
   value: SignupAccountType;
   label: string;
   description: string;
-  required?: boolean;
 }> = [
   {
     value: "SAVINGS",
     label: "Savings account",
-    description: "Required membership share savings for all Bluewave members.",
-    required: true,
+    description: "Membership share savings included for every member.",
   },
   {
     value: "CHECKING",
@@ -40,6 +40,27 @@ export const SIGNUP_ACCOUNT_TYPE_OPTIONS: Array<{
 ];
 
 export const DEFAULT_SIGNUP_ACCOUNT_TYPES: SignupAccountType[] = ["SAVINGS"];
+
+export const SIGNUP_ACCOUNT_SELECTION_OPTIONS: Array<{
+  value: SignupAccountSelection;
+  label: string;
+}> = [
+  { value: "SAVINGS_ONLY", label: "No additional account" },
+  ...SIGNUP_ACCOUNT_TYPE_OPTIONS.filter((option) => option.value !== "SAVINGS").map((option) => ({
+    value: option.value as Exclude<SignupAccountType, "SAVINGS">,
+    label: option.label,
+  })),
+];
+
+export const DEFAULT_SIGNUP_ACCOUNT_SELECTION: SignupAccountSelection = "CHECKING";
+
+export function resolveSignupAccountTypes(selection: SignupAccountSelection): SignupAccountType[] {
+  if (selection === "SAVINGS_ONLY") {
+    return ["SAVINGS"];
+  }
+
+  return ["SAVINGS", selection];
+}
 
 export const SIGNUP_ACCOUNT_TYPE_VALUES = SIGNUP_ACCOUNT_TYPE_OPTIONS.map(
   (option) => option.value,

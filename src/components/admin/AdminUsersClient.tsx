@@ -345,6 +345,29 @@ export function AdminUsersClient() {
               >
                 Close account
               </button>
+              <button
+                type="button"
+                disabled={isUpdating || memberDetail.user.role === "ADMIN"}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Permanently delete ${memberDetail.user.fullName}? This removes the member, accounts, transactions, and all related records. This cannot be undone.`,
+                    )
+                  ) {
+                    void manageUser({
+                      userId: memberDetail.user.id,
+                      action: "PURGE",
+                    }).then((success) => {
+                      if (success) {
+                        setSelectedUserId(null);
+                      }
+                    });
+                  }
+                }}
+                className="rounded-full border border-red-600/[0.35] bg-red-600/[0.08] px-3 py-1.5 text-xs font-semibold text-red-800 dark:text-red-200"
+              >
+                Delete permanently
+              </button>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

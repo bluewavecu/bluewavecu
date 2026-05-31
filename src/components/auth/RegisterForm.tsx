@@ -20,9 +20,10 @@ import { PasswordInput } from "@/components/auth/PasswordInput";
 import { MathChallengeField } from "@/components/shared/MathChallengeField";
 import { buttonVariants } from "@/components/ui/Button";
 import {
-  DEFAULT_SIGNUP_ACCOUNT_TYPES,
-  SIGNUP_ACCOUNT_TYPE_OPTIONS,
-  type SignupAccountType,
+  DEFAULT_SIGNUP_ACCOUNT_SELECTION,
+  SIGNUP_ACCOUNT_SELECTION_OPTIONS,
+  resolveSignupAccountTypes,
+  type SignupAccountSelection,
 } from "@/data/signupAccountTypes";
 import { SIGNUP_ANNUAL_INCOME_OPTIONS } from "@/data/signupAnnualIncome";
 import { US_STATE_OPTIONS } from "@/data/usStates";
@@ -31,20 +32,12 @@ import { MEMBER_VERIFY_EMAIL_PATH } from "@/lib/authRoutes";
 import { formatUsPhoneInput, getUsPhoneValidationError } from "@/lib/phoneNumber";
 import type { RegisterResponse } from "@/types/banking";
 
-function resolveAccountTypes(selected: SignupAccountType): SignupAccountType[] {
-  if (selected === "SAVINGS") {
-    return ["SAVINGS"];
-  }
-
-  return ["SAVINGS", selected];
-}
-
 export function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedAccountType, setSelectedAccountType] = useState<SignupAccountType>(
-    DEFAULT_SIGNUP_ACCOUNT_TYPES[0] ?? "SAVINGS",
+  const [selectedAccountType, setSelectedAccountType] = useState<SignupAccountSelection>(
+    DEFAULT_SIGNUP_ACCOUNT_SELECTION,
   );
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -109,7 +102,7 @@ export function RegisterForm() {
       password: passwordValue,
       transactionPin,
       confirmTransactionPin,
-      accountTypes: resolveAccountTypes(selectedAccountType),
+      accountTypes: resolveSignupAccountTypes(selectedAccountType),
       mathToken,
       mathAnswer,
     });
@@ -253,11 +246,11 @@ export function RegisterForm() {
               required
               value={selectedAccountType}
               onChange={(event) =>
-                setSelectedAccountType(event.target.value as SignupAccountType)
+                setSelectedAccountType(event.target.value as SignupAccountSelection)
               }
               className={authInputClassName}
             >
-              {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => (
+              {SIGNUP_ACCOUNT_SELECTION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

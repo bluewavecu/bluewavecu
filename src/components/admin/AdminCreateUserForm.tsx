@@ -8,7 +8,6 @@ import {
 } from "@/components/admin/AdminFilterBar";
 import { buttonVariants } from "@/components/ui/Button";
 import {
-  DEFAULT_SIGNUP_ACCOUNT_TYPES,
   SIGNUP_ACCOUNT_TYPE_OPTIONS,
   type SignupAccountType,
 } from "@/data/signupAccountTypes";
@@ -41,16 +40,10 @@ export function AdminCreateUserForm({
   onSubmit,
   onCancel,
 }: AdminCreateUserFormProps) {
-  const [selectedAccountTypes, setSelectedAccountTypes] = useState<SignupAccountType[]>(
-    DEFAULT_SIGNUP_ACCOUNT_TYPES,
-  );
+  const [selectedAccountTypes, setSelectedAccountTypes] = useState<SignupAccountType[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
 
-  function toggleAccountType(accountType: SignupAccountType, required?: boolean) {
-    if (required) {
-      return;
-    }
-
+  function toggleAccountType(accountType: SignupAccountType) {
     setSelectedAccountTypes((current) =>
       current.includes(accountType)
         ? current.filter((value) => value !== accountType)
@@ -62,10 +55,7 @@ export function AdminCreateUserForm({
     event.preventDefault();
     setFormError(null);
 
-    if (!selectedAccountTypes.includes("SAVINGS")) {
-      setFormError("A savings account is required for membership.");
-      return;
-    }
+    const accountTypes = [...new Set<SignupAccountType>(["SAVINGS", ...selectedAccountTypes])];
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get("password") ?? "");
@@ -90,7 +80,7 @@ export function AdminCreateUserForm({
       state: String(formData.get("state") ?? "") as AdminCreateMemberInput["state"],
       postalCode: String(formData.get("postalCode") ?? ""),
       password,
-      accountTypes: selectedAccountTypes,
+      accountTypes,
       status: String(formData.get("status") ?? "PENDING") as "PENDING" | "ACTIVE",
       kycStatus: String(formData.get("kycStatus") ?? "NOT_STARTED") as KycStatus,
       markEmailVerified: formData.get("markEmailVerified") === "on",
@@ -101,7 +91,7 @@ export function AdminCreateUserForm({
 
     if (created) {
       event.currentTarget.reset();
-      setSelectedAccountTypes(DEFAULT_SIGNUP_ACCOUNT_TYPES);
+      setSelectedAccountTypes([]);
     }
   }
 
@@ -213,9 +203,15 @@ export function AdminCreateUserForm({
       </AdminFilterBar>
 
       <div className="rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
-        <p className="text-sm font-semibold text-primary-navy dark:text-white">Account types</p>
+        <p className="text-sm font-semibold text-primary-navy dark:text-white">
+          Additional account types
+        </p>
+        <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.58]">
+          Share savings is included automatically for every member.
+        </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          {SIGNUP_ACCOUNT_TYPE_OPTIONS.map((option) => {
+          {SIGNUP_ACCOUNT_TYPE_OPTIONS.filter((option) => option.value !== "SAVINGS").map(
+            (option) => {
             const checked = selectedAccountTypes.includes(option.value);
 
             return (
@@ -226,14 +222,12 @@ export function AdminCreateUserForm({
                   checked
                     ? "border-ocean-blue bg-white dark:bg-white/[0.06]"
                     : "border-primary-navy/[0.08] dark:border-white/[0.08]",
-                  option.required && "cursor-default",
                 )}
               >
                 <input
                   type="checkbox"
                   checked={checked}
-                  disabled={option.required}
-                  onChange={() => toggleAccountType(option.value, option.required)}
+                  onChange={() => toggleAccountType(option.value)}
                   className="mt-0.5 h-4 w-4 rounded border-primary-navy/20 text-ocean-blue"
                 />
                 <span>
@@ -246,7 +240,8 @@ export function AdminCreateUserForm({
                 </span>
               </label>
             );
-          })}
+          },
+          )}
         </div>
       </div>
 

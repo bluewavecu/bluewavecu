@@ -18,7 +18,7 @@ type AdminManageUserInput = {
   status?: UserStatus;
   statusNote?: string;
   transactionsUnrestricted?: boolean;
-  action?: "REINSTATE" | "DELETE" | "GENERATE_TRANSACTION_PIN" | "CLEAR_TRANSACTION_PIN";
+  action?: "REINSTATE" | "DELETE" | "PURGE" | "GENERATE_TRANSACTION_PIN" | "CLEAR_TRANSACTION_PIN";
 };
 
 type AdminUsersState = {
@@ -133,10 +133,31 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
     setIsUpdating(true);
     setUpdateError(null);
 
-    const result = await patchJson<{ user: AdminUserSummary }>("/api/admin/users", input);
+    const result = await patchJson<{ user?: AdminUserSummary; purged?: boolean; userId?: string; message?: string }>(
+      "/api/admin/users",
+      input,
+    );
 
     if (!result.success) {
       setUpdateError(result.error);
+      setIsUpdating(false);
+      return false;
+    }
+
+    if (result.data.purged && result.data.userId) {
+      setData((current) =>
+        current
+          ? {
+              users: current.users.filter((user) => user.id !== result.data.userId),
+            }
+          : current,
+      );
+      setIsUpdating(false);
+      return true;
+    }
+
+    if (!result.data.user) {
+      setUpdateError("Unable to update member.");
       setIsUpdating(false);
       return false;
     }
@@ -145,7 +166,7 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
       current
         ? {
             users: current.users.map((user) =>
-              user.id === input.userId ? { ...user, ...result.data.user } : user,
+              user.id === input.userId ? { ...user, ...result.data.user! } : user,
             ),
           }
         : current,

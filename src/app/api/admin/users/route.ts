@@ -14,6 +14,7 @@ import { writeAdminEvent } from "@/lib/eventLog";
 import { describeRequestedAccounts, provisionMembershipAccounts } from "@/lib/memberAccounts";
 import { createAccountNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
+import { purgeMemberUser, PurgeMemberUserError } from "@/lib/purgeMemberUser";
 import { revokeAllUserSessions } from "@/lib/sessions";
 import {
   clearUserTransactionPin,
@@ -277,8 +278,44 @@ export async function PATCH(request: NextRequest) {
       return apiError("User not found", 404);
     }
 
-    if (existing.role === "ADMIN" && input.action === "DELETE") {
+    if (existing.role === "ADMIN" && (input.action === "DELETE" || input.action === "PURGE")) {
       return apiError("Operations admin accounts cannot be deleted.", 400);
+    }
+
+    if (input.action === "PURGE") {
+      const purged = await purgeMemberUser({
+        userId: input.userId,
+        actorAdminId: auth.admin.id,
+      });
+
+      await logAdminAction({
+        adminId: auth.admin.id,
+        action: "PURGE_MEMBER",
+        entityType: "User",
+        entityId: purged.userId,
+        details: {
+          email: purged.email,
+          username: purged.username,
+          fullName: purged.fullName,
+        },
+      });
+
+      void writeAdminEvent({
+        eventType: "MEMBER_PURGED",
+        actorId: auth.admin.id,
+        entityId: purged.userId,
+        message: `${auth.admin.fullName} permanently deleted member ${purged.fullName}.`,
+        metadata: {
+          email: purged.email,
+          username: purged.username,
+        },
+      });
+
+      return apiSuccess({
+        purged: true,
+        userId: purged.userId,
+        message: `${purged.fullName} was permanently deleted from the system.`,
+      });
     }
 
     let generatedPin: string | null = null;
@@ -403,6 +440,10 @@ export async function PATCH(request: NextRequest) {
 
     return apiSuccess({ user: serializeUser(updated) });
   } catch (error) {
+    if (error instanceof PurgeMemberUserError) {
+      return apiError(error.message, error.status);
+    }
+
     return handleApiError(error);
   }
 }

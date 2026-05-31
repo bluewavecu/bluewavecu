@@ -495,7 +495,13 @@ export const adminUpdateUserStatusSchema = z.object({
   statusNote: z.string().trim().max(500).optional(),
   transactionsUnrestricted: z.boolean().optional(),
   action: z
-    .enum(["REINSTATE", "DELETE", "GENERATE_TRANSACTION_PIN", "CLEAR_TRANSACTION_PIN"])
+    .enum([
+      "REINSTATE",
+      "DELETE",
+      "PURGE",
+      "GENERATE_TRANSACTION_PIN",
+      "CLEAR_TRANSACTION_PIN",
+    ])
     .optional(),
 });
 
