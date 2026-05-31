@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { privatePageMetadata } from "@/lib/siteMetadata";
 import { mapContactTopic } from "@/lib/contact";
 import { ContactPage } from "@/components/marketing/ContactPage";
 
-export const metadata: Metadata = {
-  title: "Contact | Bluewave Credit Union",
-  description: "Contact Bluewave Credit Union for support, lending, business banking, and careers.",
-};
+export const metadata = privatePageMetadata("Contact");
 
 type ContactRoutePageProps = {
   searchParams: Promise<{ topic?: string; role?: string }>;

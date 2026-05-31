@@ -82,7 +82,6 @@ export function buildEmailPlainTextFooter(appUrl = getEmailAppUrl()) {
     `Member services: ${INSTITUTION.phone.display}`,
     `Email: ${INSTITUTION.email}`,
     `Hours: ${INSTITUTION.memberServicesHours}`,
-    `Routing number: ${INSTITUTION.routingNumber}`,
     "",
     INSTITUTION.ncuaDisclaimer,
     "",
@@ -207,7 +206,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
                   <a href="mailto:${escapeHtml(INSTITUTION.email)}" style="color: #8FD6FF; text-decoration: none;">${escapeHtml(INSTITUTION.email)}</a>
                 </p>
                 <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.72);">
-                  ${escapeHtml(INSTITUTION.memberServicesHoursShort)} · Routing ${escapeHtml(INSTITUTION.routingNumber)}
+                  ${escapeHtml(INSTITUTION.memberServicesHoursShort)}
                 </p>
                 <p style="margin: 0 0 16px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.68);">
                   ${escapeHtml(INSTITUTION.ncuaDisclaimer)}

@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { privatePageMetadata } from "@/lib/siteMetadata";
 import { LegalDocumentPage } from "@/components/marketing/LegalDocumentPage";
 import { INSTITUTION } from "@/lib/institution";
 
-export const metadata: Metadata = {
-  title: "Terms of Use | Bluewave Credit Union",
-  description: "Terms governing use of Bluewave Credit Union websites and digital banking services.",
-};
+export const metadata = privatePageMetadata("Terms");
 
 const sections = [
   {

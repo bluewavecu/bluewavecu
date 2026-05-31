@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { privatePageMetadata } from "@/lib/siteMetadata";
 import { CareersPage } from "@/components/marketing/CareersPage";
 
-export const metadata: Metadata = {
-  title: "Careers | Bluewave Credit Union",
-  description: "Explore careers at Bluewave Credit Union and help build modern member banking.",
-};
+export const metadata = privatePageMetadata("Careers");
 
 export default function CareersRoutePage() {
   return <CareersPage />;

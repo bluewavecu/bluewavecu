@@ -22,15 +22,11 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=()",
   },
-  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex" },
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 ];
-
-const crawlableSecurityHeaders = securityHeaders.filter(
-  (header) => header.key !== "X-Robots-Tag",
-);
 
 const legacyMemberRedirects = [
   "dashboard",
@@ -78,20 +74,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/auth/:path*",
-        headers: securityHeaders,
-      },
-      {
-        source: "/lex/auth/:path*",
-        headers: securityHeaders,
-      },
-      {
-        source: "/api/:path*",
-        headers: securityHeaders,
-      },
-      {
         source: "/(.*)",
-        headers: crawlableSecurityHeaders,
+        headers: securityHeaders,
       },
     ];
   },

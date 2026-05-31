@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { privatePageMetadata } from "@/lib/siteMetadata";
 import { LegalDocumentPage } from "@/components/marketing/LegalDocumentPage";
 import { INSTITUTION } from "@/lib/institution";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | Bluewave Credit Union",
-  description: "How Bluewave Credit Union collects, uses, and protects member information.",
-};
+export const metadata = privatePageMetadata("Privacy");
 
 const sections = [
   {

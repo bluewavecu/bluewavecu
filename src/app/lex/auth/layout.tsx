@@ -1,17 +1,7 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { blockSearchIndexing } from "@/lib/siteMetadata";
 
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
-    },
-  },
-};
+export const metadata = blockSearchIndexing;
 
 export default function AdminAuthLayout({ children }: { children: ReactNode }) {
   return children;

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { MarketingCtaBand } from "@/components/marketing/MarketingCtaBand";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { newsArticles } from "@/data/marketingPages";
+import { privatePageMetadata } from "@/lib/siteMetadata";
 
 type NewsArticlePageProps = {
   params: Promise<{ articleId: string }>;
@@ -15,18 +15,15 @@ export function generateStaticParams() {
   return newsArticles.map((article) => ({ articleId: article.id }));
 }
 
-export async function generateMetadata({ params }: NewsArticlePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: NewsArticlePageProps) {
   const { articleId } = await params;
   const article = newsArticles.find((item) => item.id === articleId);
 
   if (!article) {
-    return { title: "Article | Bluewave Credit Union" };
+    return privatePageMetadata("Article");
   }
 
-  return {
-    title: `${article.title} | Bluewave Credit Union`,
-    description: article.summary,
-  };
+  return privatePageMetadata(article.title);
 }
 
 export default async function NewsArticlePage({ params }: NewsArticlePageProps) {
