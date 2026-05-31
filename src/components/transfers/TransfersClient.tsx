@@ -5,12 +5,14 @@ import { FormEvent, useState } from "react";
 import {
   ArrowLeftRight,
   CalendarClock,
-  CheckCircle2,
   PauseCircle,
   PlayCircle,
   Send,
   XCircle,
 } from "lucide-react";
+import { CountrySelect } from "@/components/payments/CountrySelect";
+import { PaymentFlowProgress } from "@/components/payments/PaymentFlowProgress";
+import { TransactionPinStep } from "@/components/payments/TransactionPinStep";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { InfoPanel } from "@/components/ui/InfoPanel";
@@ -32,6 +34,7 @@ import {
 import type { ScheduledTransferRecord, TransferRequestInput } from "@/types/banking";
 
 type TransferTab = "transfer" | "scheduled";
+type TransferWizardStep = "details" | "pin" | "processing";
 
 function formatScheduleDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -118,7 +121,6 @@ export function TransfersClient() {
     isSubmitting,
     isLoadingRequirements,
     error,
-    successMessage,
     hasTransactionPin,
     submitTransfer,
     reset,
@@ -143,6 +145,11 @@ export function TransfersClient() {
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [transactionPin, setTransactionPin] = useState("");
+  const [wizardStep, setWizardStep] = useState<TransferWizardStep>("details");
+  const [processingComplete, setProcessingComplete] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
+  const [completedTransactionId, setCompletedTransactionId] = useState<string | null>(null);
+  const [completedMessage, setCompletedMessage] = useState("");
   const [scheduledSuccess, setScheduledSuccess] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<ScheduledTransferRecord["frequency"]>("ONE_TIME");
   const [scheduledFor, setScheduledFor] = useState("");
@@ -180,6 +187,11 @@ export function TransfersClient() {
     setAmount("");
     setMemo("");
     setTransactionPin("");
+    setWizardStep("details");
+    setProcessingComplete(false);
+    setProcessingError(null);
+    setCompletedTransactionId(null);
+    setCompletedMessage("");
     reset();
   }
 
@@ -237,25 +249,52 @@ export function TransfersClient() {
     return payload;
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleDetailsContinue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const buildResult = buildTransferPayload();
-
-    if (!buildResult) {
+    if (!buildTransferPayload()) {
       return;
     }
 
-    const payload: TransferRequestInput = {
+    setProcessingError(null);
+    reset();
+    setWizardStep("pin");
+  }
+
+  async function handlePinAuthorize() {
+    const buildResult = buildTransferPayload();
+
+    if (!buildResult || transactionPin.trim().length !== 6) {
+      return;
+    }
+
+    setWizardStep("processing");
+    setProcessingComplete(false);
+    setProcessingError(null);
+
+    const result = await submitTransfer({
       ...buildResult,
       transactionPin: transactionPin.trim(),
-    };
+    });
 
-    const success = await submitTransfer(payload);
-
-    if (success) {
-      clearTransferFormFields();
+    if (!result.ok) {
+      setProcessingError(result.error);
+      return;
     }
+
+    setCompletedTransactionId(result.data.transaction.id);
+    setCompletedMessage(result.data.message);
+    setProcessingComplete(true);
+  }
+
+  function handleFlowDone() {
+    clearTransferFormFields();
+  }
+
+  function handleFlowRetry() {
+    setProcessingError(null);
+    setProcessingComplete(false);
+    setWizardStep("pin");
   }
 
   async function handleScheduledSubmit(event: FormEvent<HTMLFormElement>) {
@@ -338,23 +377,33 @@ export function TransfersClient() {
               </div>
             </div>
 
-            {successMessage ? (
-              <div className="mt-6 rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] p-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 text-royal-blue dark:text-light-blue" size={20} />
-                  <div>
-                    <p className="font-semibold text-primary-navy dark:text-white">
-                      {successMessage}
-                    </p>
-                    <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                      Your transfer request has been submitted. Account balances update once the
-                      transfer is approved and posted.
-                    </p>
-                  </div>
-                </div>
+            {wizardStep === "processing" ? (
+              <div className="mt-6">
+                <PaymentFlowProgress
+                  isActive
+                  isComplete={processingComplete}
+                  error={processingError}
+                  successTitle="Transfer successful"
+                  successMessage={completedMessage}
+                  receiptTransactionId={completedTransactionId}
+                  onDone={handleFlowDone}
+                  onRetry={handleFlowRetry}
+                />
               </div>
-            ) : null}
-
+            ) : wizardStep === "pin" ? (
+              <div className="mt-6">
+                <TransactionPinStep
+                  value={transactionPin}
+                  onChange={setTransactionPin}
+                  onBack={() => setWizardStep("details")}
+                  onSubmit={() => void handlePinAuthorize()}
+                  error={error}
+                  isSubmitting={isSubmitting}
+                  inputClassName={inputClassName}
+                />
+              </div>
+            ) : (
+            <>
             {!isLoadingRequirements && !hasTransactionPin ? (
               <InfoPanel title="Transaction PIN required" variant="warning" className="mt-6">
                 Set a 6-digit transaction PIN before sending transfers.{" "}
@@ -364,7 +413,7 @@ export function TransfersClient() {
               </InfoPanel>
             ) : null}
 
-            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+            <form className="mt-6 space-y-4" onSubmit={handleDetailsContinue}>
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
                   From account
@@ -470,12 +519,10 @@ export function TransfersClient() {
                     <span className="text-sm font-semibold text-primary-navy dark:text-white">
                       Bank country
                     </span>
-                    <input
-                      type="text"
+                    <CountrySelect
                       required
                       value={bankCountry}
-                      onChange={(event) => setBankCountry(event.target.value)}
-                      placeholder="Country"
+                      onChange={setBankCountry}
                       className={inputClassName}
                     />
                   </label>
@@ -528,41 +575,17 @@ export function TransfersClient() {
                 />
               </label>
 
-              {hasTransactionPin ? (
-                <label className="block">
-                  <span className="text-sm font-semibold text-primary-navy dark:text-white">
-                    Transaction PIN
-                  </span>
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    required
-                    value={transactionPin}
-                    onChange={(event) =>
-                      setTransactionPin(event.target.value.replace(/\D/g, ""))
-                    }
-                    className={inputClassName}
-                  />
-                </label>
-              ) : null}
-
-              {error ? (
-                <p className="rounded-lg border border-red-500/[0.20] bg-red-500/[0.08] px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
-                  {error}
-                </p>
-              ) : null}
-
               <button
                 type="submit"
-                disabled={isSubmitting || isLoadingRequirements || !hasTransactionPin}
+                disabled={isLoadingRequirements || !hasTransactionPin}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSubmitting ? "Submitting..." : "Submit transfer"}
+                Continue to PIN
                 <ArrowLeftRight size={17} aria-hidden="true" />
               </button>
             </form>
+            </>
+            )}
           </div>
 
           <div className="rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-6 text-white shadow-[0_18px_60px_rgba(10,42,94,0.12)]">

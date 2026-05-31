@@ -546,7 +546,7 @@ export const payeeUpdateSchema = payeeCreateSchema.partial().extend({
   status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
 });
 
-export const billPaymentCreateSchema = z.object({
+export const billPaymentPayloadSchema = z.object({
   fromAccountId: z.string().min(1),
   payeeId: z.string().min(1),
   amount: z.preprocess(normalizeAmountValue, z.coerce.number().positive()),
@@ -554,6 +554,10 @@ export const billPaymentCreateSchema = z.object({
   dueDate: z.coerce.date().optional(),
   scheduledFor: z.coerce.date().optional(),
   submitForReview: z.boolean().optional(),
+});
+
+export const billPaymentCreateSchema = billPaymentPayloadSchema.extend({
+  transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits"),
 });
 
 export const billPaymentUpdateSchema = z.object({
@@ -695,6 +699,7 @@ export const transactionPinResetSchema = z
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PayeeCreateInput = z.infer<typeof payeeCreateSchema>;
 export type PayeeUpdateInput = z.infer<typeof payeeUpdateSchema>;
+export type BillPaymentPayloadInput = z.infer<typeof billPaymentPayloadSchema>;
 export type BillPaymentCreateInput = z.infer<typeof billPaymentCreateSchema>;
 export type BillPaymentUpdateInput = z.infer<typeof billPaymentUpdateSchema>;
 export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewSchema>;

@@ -121,3 +121,31 @@ export async function clearUserTransactionPin(userId: string) {
     data: { transactionPinHash: null },
   });
 }
+
+export async function verifyMemberTransactionPinForUser(params: {
+  userId: string;
+  transactionPin: string;
+}) {
+  const user = await getPrisma().user.findUnique({
+    where: { id: params.userId },
+    select: { transactionPinHash: true },
+  });
+
+  if (!user?.transactionPinHash) {
+    return {
+      ok: false as const,
+      message: "Set a transaction PIN in Security before continuing.",
+    };
+  }
+
+  const pinMatches = await verifyTransactionPin(
+    params.transactionPin,
+    user.transactionPinHash,
+  );
+
+  if (!pinMatches) {
+    return { ok: false as const, message: "Transaction PIN is incorrect." };
+  }
+
+  return { ok: true as const };
+}

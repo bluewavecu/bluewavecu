@@ -4,14 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 import { postJson } from "@/lib/clientApi";
 import type { TransferData, TransferRequirementsData, TransferRequestInput } from "@/types/banking";
 
+type TransferSubmitResult =
+  | { ok: true; data: TransferData }
+  | { ok: false; error: string };
+
 type TransferState = {
   isSubmitting: boolean;
   isLoadingRequirements: boolean;
   error: string | null;
-  successMessage: string | null;
   hasTransactionPin: boolean;
-  lastTransfer: TransferData | null;
-  submitTransfer: (input: TransferRequestInput) => Promise<boolean>;
+  submitTransfer: (input: TransferRequestInput) => Promise<TransferSubmitResult>;
   reset: () => void;
 };
 
@@ -19,9 +21,7 @@ export function useTransfer(): TransferState {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingRequirements, setIsLoadingRequirements] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [hasTransactionPin, setHasTransactionPin] = useState(false);
-  const [lastTransfer, setLastTransfer] = useState<TransferData | null>(null);
 
   const loadRequirements = useCallback(async () => {
     setIsLoadingRequirements(true);
@@ -51,14 +51,11 @@ export function useTransfer(): TransferState {
 
   const reset = useCallback(() => {
     setError(null);
-    setSuccessMessage(null);
-    setLastTransfer(null);
   }, []);
 
-  const submitTransfer = useCallback(async (input: TransferRequestInput) => {
+  const submitTransfer = useCallback(async (input: TransferRequestInput): Promise<TransferSubmitResult> => {
     setIsSubmitting(true);
     setError(null);
-    setSuccessMessage(null);
 
     const result = await postJson<TransferData>("/api/transfers", input);
 
@@ -66,21 +63,17 @@ export function useTransfer(): TransferState {
 
     if (!result.success) {
       setError(result.error);
-      return false;
+      return { ok: false, error: result.error };
     }
 
-    setLastTransfer(result.data);
-    setSuccessMessage(result.data.message);
-    return true;
+    return { ok: true, data: result.data };
   }, []);
 
   return {
     isSubmitting,
     isLoadingRequirements,
     error,
-    successMessage,
     hasTransactionPin,
-    lastTransfer,
     submitTransfer,
     reset,
   };

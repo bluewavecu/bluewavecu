@@ -67,6 +67,7 @@ export function useBillPay() {
       dueDate?: string;
       scheduledFor?: string;
       submitForReview?: boolean;
+      transactionPin: string;
     }) => {
       setIsSubmitting(true);
       setError(null);
@@ -77,10 +78,10 @@ export function useBillPay() {
       setIsSubmitting(false);
       if (!result.success) {
         setError(result.error);
-        return false;
+        return { ok: false as const, error: result.error };
       }
       await fetchBillPayments();
-      return true;
+      return { ok: true as const, data: result.data };
     },
     [fetchBillPayments],
   );

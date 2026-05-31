@@ -26,7 +26,7 @@ import type {
   PayeeStatus,
 } from "@/types/banking";
 import type {
-  BillPaymentCreateInput,
+  BillPaymentPayloadInput,
   PayeeCreateInput,
   PayeeUpdateInput,
 } from "@/lib/validators";
@@ -195,7 +195,7 @@ export async function softDeletePayee(userId: string, payeeId: string) {
   return result.count > 0;
 }
 
-export async function createBillPayment(userId: string, input: BillPaymentCreateInput) {
+export async function createBillPayment(userId: string, input: BillPaymentPayloadInput) {
   const prisma = getPrisma();
 
   const [account, payee] = await Promise.all([

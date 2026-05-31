@@ -9,6 +9,7 @@ import {
 } from "@/lib/billPay";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
+import { verifyMemberTransactionPinForUser } from "@/lib/transactionOtp";
 import { billPaymentCreateSchema } from "@/lib/validators";
 import type { BillPaymentsData } from "@/types/banking";
 
@@ -56,9 +57,20 @@ export async function POST(request: NextRequest) {
     }
 
     const input = billPaymentCreateSchema.parse(await request.json());
-    const billPayment = await createBillPayment(payload.userId, input);
 
-    if (input.submitForReview) {
+    const pinVerification = await verifyMemberTransactionPinForUser({
+      userId: payload.userId,
+      transactionPin: input.transactionPin,
+    });
+
+    if (!pinVerification.ok) {
+      return apiError(pinVerification.message, 400);
+    }
+
+    const { transactionPin: _transactionPin, ...billPaymentInput } = input;
+    const billPayment = await createBillPayment(payload.userId, billPaymentInput);
+
+    if (billPaymentInput.submitForReview) {
       const submitted = await submitBillPaymentForReview(payload.userId, billPayment.id);
       return apiSuccess(
         {
