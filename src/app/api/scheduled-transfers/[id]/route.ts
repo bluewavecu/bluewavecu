@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { resolveRequestAuth } from "@/lib/requestAuth";
+import { resolveMemberWriteAuth } from "@/lib/requestAuth";
 
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { createNotification } from "@/lib/notifications";
@@ -51,7 +51,7 @@ function serializeScheduledTransfer(record: {
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const auth = await resolveRequestAuth(request);
+    const auth = await resolveMemberWriteAuth(request);
     if (!auth.ok) {
       return auth.response;
     }

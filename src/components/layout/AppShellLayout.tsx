@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { AccountReadOnlyBanner } from "@/components/layout/AccountReadOnlyBanner";
 import { InactivityLogoutGuard } from "@/components/auth/InactivityLogoutGuard";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -41,7 +42,10 @@ export function AppShellLayout({
           hideSearch={hideHeaderSearch}
           compactMobile={compactMobileHeader}
         />
-        <main className="px-4 pb-28 pt-2 sm:px-6 lg:px-8 lg:pb-10 lg:pt-3">{children}</main>
+        <main className="px-4 pb-28 pt-2 sm:px-6 lg:px-8 lg:pb-10 lg:pt-3">
+          <AccountReadOnlyBanner />
+          {children}
+        </main>
       </div>
     </div>
   );

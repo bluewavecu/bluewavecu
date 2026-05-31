@@ -1,17 +1,16 @@
 import type { UserStatus } from "@/types/banking";
 
-const BLOCKED_LOGIN_STATUSES: UserStatus[] = ["SUSPENDED", "ON_HOLD", "DISABLED"];
+const LOGIN_BLOCKED_STATUSES: UserStatus[] = ["ON_HOLD", "DISABLED"];
+const SESSION_REVOKE_STATUSES: UserStatus[] = ["ON_HOLD", "DISABLED"];
 
-export function getLoginBlockMessage(params: {
+type UserAccessParams = {
   status: UserStatus;
   deletedAt: Date | null;
-}) {
+};
+
+export function getLoginBlockMessage(params: UserAccessParams) {
   if (params.deletedAt) {
     return "This account has been closed. Contact member services to request reinstatement.";
-  }
-
-  if (params.status === "SUSPENDED") {
-    return "This account is suspended. Contact member services for assistance.";
   }
 
   if (params.status === "ON_HOLD") {
@@ -25,14 +24,11 @@ export function getLoginBlockMessage(params: {
   return null;
 }
 
-export function isLoginBlocked(params: { status: UserStatus; deletedAt: Date | null }) {
+export function isLoginBlocked(params: UserAccessParams) {
   return Boolean(getLoginBlockMessage(params));
 }
 
-export function getTransactionBlockMessage(params: {
-  status: UserStatus;
-  deletedAt: Date | null;
-}) {
+export function getTransactionBlockMessage(params: UserAccessParams) {
   if (params.deletedAt) {
     return "Your account is closed and cannot initiate transactions.";
   }
@@ -60,12 +56,44 @@ export function getTransactionBlockMessage(params: {
   return null;
 }
 
-export function canUserTransact(params: { status: UserStatus; deletedAt: Date | null }) {
+export function canUserTransact(params: UserAccessParams) {
   return !getTransactionBlockMessage(params);
 }
 
+export function getAccountModificationBlockMessage(params: UserAccessParams) {
+  if (params.deletedAt) {
+    return "Your account is closed and cannot be updated.";
+  }
+
+  if (params.status === "SUSPENDED") {
+    return "Your account is suspended. You can view balances and activity, but transfers and account changes are unavailable. Contact member services for assistance.";
+  }
+
+  if (params.status === "ON_HOLD") {
+    return "Your account is on hold and cannot be updated.";
+  }
+
+  if (params.status === "DISABLED") {
+    return "Your account is disabled and cannot be updated.";
+  }
+
+  return null;
+}
+
+export function canUserModifyAccount(params: UserAccessParams) {
+  return !getAccountModificationBlockMessage(params);
+}
+
+export function isAccountReadOnly(params: UserAccessParams) {
+  return !canUserModifyAccount(params);
+}
+
 export function shouldRevokeSessionsOnStatusChange(nextStatus: UserStatus) {
-  return BLOCKED_LOGIN_STATUSES.includes(nextStatus);
+  return SESSION_REVOKE_STATUSES.includes(nextStatus);
+}
+
+export function isLoginBlockedStatus(status: UserStatus) {
+  return LOGIN_BLOCKED_STATUSES.includes(status);
 }
 
 export function isUserDeleted(deletedAt: Date | null) {

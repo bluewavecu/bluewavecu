@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { resolveRequestAuth } from "@/lib/requestAuth";
+import { resolveMemberWriteAuth } from "@/lib/requestAuth";
 
 import { sendAdminAlertEmail } from "@/lib/email";
 import { writeEventLog } from "@/lib/eventLog";
@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await resolveRequestAuth(request);
+    const auth = await resolveMemberWriteAuth(request);
     if (!auth.ok) {
       return auth.response;
     }

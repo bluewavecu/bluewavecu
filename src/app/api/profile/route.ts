@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { resolveRequestAuth } from "@/lib/requestAuth";
+import { resolveRequestAuth, resolveMemberWriteAuth } from "@/lib/requestAuth";
 
 import {
   getOrCreateCustomerProfile,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await resolveRequestAuth(request);
+    const auth = await resolveMemberWriteAuth(request);
     if (!auth.ok) {
       return auth.response;
     }
@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await resolveRequestAuth(request);
+    const auth = await resolveMemberWriteAuth(request);
     if (!auth.ok) {
       return auth.response;
     }

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { resolveRequestAuth } from "@/lib/requestAuth";
+import { resolveMemberWriteAuth } from "@/lib/requestAuth";
 
 import { writeEventLog } from "@/lib/eventLog";
 import { createSupportNotification } from "@/lib/notifications";
@@ -21,7 +21,7 @@ const actionLabels: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await resolveRequestAuth(request);
+    const auth = await resolveMemberWriteAuth(request);
     if (!auth.ok) {
       return auth.response;
     }
