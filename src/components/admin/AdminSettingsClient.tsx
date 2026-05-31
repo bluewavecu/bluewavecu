@@ -1,5 +1,6 @@
 "use client";
 
+import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import { AdminMetricCard } from "@/components/admin/AdminMetricCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
@@ -35,6 +36,11 @@ export function AdminSettingsClient() {
 
   return (
     <section className="grid gap-5">
+      <ChangePasswordForm
+        title="Operations password"
+        description="Update your sign-in password for the operations console. You will remain signed in after updating."
+      />
+
       <AdminPageHeader
         title="Environment"
         description="Configuration values are read-only in this release. Editable settings will be added in a future step."

@@ -1,143 +1,179 @@
 # Bluewave Credit Union — Production Environment Setup
 
-Use this guide when configuring the Render web service for `bluewavecu.com`. Set all variables in the Render Dashboard under **Environment** for the web service (or in `render.yaml` with `sync: false` for secrets).
+Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** (Vercel Marketplace integration). Copy variable names from `env.vercel.template`.
 
-## Required Render environment variables
+## Required Vercel environment variables
 
-| Variable | Required | Example / notes |
+| Variable | Required | Notes |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes | Render PostgreSQL **internal** connection string |
-| `JWT_SECRET` | Yes | 32+ character random secret (see below) |
-| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` (must match public HTTPS URL) |
-| `CRON_SECRET` | Yes | Random bearer secret for cron jobs (see below) |
-| `RESEND_API_KEY` | Yes (production) | From [Resend](https://resend.com) after domain verification |
+| `POSTGRES_URL_NON_POOLING` | Yes (build + migrations) | Direct Supabase connection — used in `vercel.json` build |
+| `POSTGRES_PRISMA_URL` | Yes (runtime) | Pooled connection for Prisma at runtime |
+| `POSTGRES_URL` | Yes | Supabase integration injects this |
+| `DATABASE_URL` | Optional | Falls back to `POSTGRES_PRISMA_URL` / `POSTGRES_URL` in app code |
+| `JWT_SECRET` | Yes | `openssl rand -base64 48` |
+| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` |
+| `CRON_SECRET` | Yes | `openssl rand -hex 32` |
+| `RESEND_API_KEY` | Yes (production) | Required by `src/lib/env.ts` in production |
 | `EMAIL_FROM` | Recommended | `Bluewave Credit Union <no-reply@bluewavecu.com>` |
-| `ADMIN_ALERT_EMAIL` | Recommended | Admin inbox for alerts (registration, transfers, support) |
-| `ALLOW_DEMO_SEED` | Yes | **`false`** in production (default in `render.yaml`) |
-| `NODE_ENV` | Yes | `production` (set automatically by Blueprint) |
+| `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
+| `ALLOW_DEMO_SEED` | Yes | **`false`** on production |
+| `NODE_ENV` | Yes | `production` on Production deploys |
 
-Copy from `.env.example` — never commit real values to Git.
+Never commit real values to Git.
 
 ---
 
 ## Generate secrets
 
-### JWT secret
-
-Use a cryptographically random string of at least 32 characters:
-
 ```bash
-openssl rand -base64 48
+openssl rand -base64 48   # JWT_SECRET
+openssl rand -hex 32      # CRON_SECRET
 ```
 
-Store the output as `JWT_SECRET` on Render. Changing it after deploy invalidates all existing sessions.
-
-### Cron secret
-
-Generate a separate random value for `CRON_SECRET`:
-
-```bash
-openssl rand -hex 32
-```
-
-Render Cron Jobs must call:
-
-```bash
-curl -X POST "$NEXT_PUBLIC_APP_URL/api/cron/run-jobs" \
-  -H "Authorization: Bearer $CRON_SECRET"
-```
-
-Without a valid bearer token, the endpoint returns `401 Unauthorized`. If `CRON_SECRET` is missing in production, the endpoint returns a safe `500` error.
+Changing `JWT_SECRET` after deploy invalidates existing sessions.
 
 ---
 
-## Staging vs production
+## Database migrations on Vercel
 
-| Setting | Staging / demo | Production |
-| --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | Staging URL (e.g. `https://bluewavecu-staging.onrender.com`) | `https://bluewavecu.com` |
-| `ALLOW_DEMO_SEED` | `true` only if you want demo users/data | **`false`** always |
-| `DATABASE_URL` | Separate staging database | Dedicated production database |
-| `JWT_SECRET` / `CRON_SECRET` | Unique per environment | Unique per environment; never reuse staging secrets |
-
-Use a **separate Render PostgreSQL instance** for staging and production. Do not point staging at production data.
-
----
-
-## When to enable demo seed
-
-Enable demo seed **only** on intentional demo or staging environments:
+`vercel.json` build command:
 
 ```bash
-ALLOW_DEMO_SEED=true npm run db:seed
+npx prisma generate && \
+export DATABASE_URL="${POSTGRES_URL_NON_POOLING:-${DATABASE_URL:-$POSTGRES_URL}}" && \
+npx prisma migrate deploy && \
+npm run build
 ```
 
-The seed script (`prisma/seed.ts`) **skips production** unless `ALLOW_DEMO_SEED=true` is explicitly set.
+**Why non-pooling:** `prisma migrate deploy` against the Supabase pooler (`6543`) can hang until the build times out (~45 minutes). Always migrate on the direct URL.
 
-Demo credentials (after seed):
+If a deployment is stuck in **Building**, remove it in the Vercel dashboard or via `vercel remove <deployment-id>`, then redeploy.
 
-```text
-Member: avery.morgan@bluewavecu.test / BluewaveDemo2026!
-Admin:  admin@bluewavecu.test / BluewaveAdmin2026!
-```
-
-**Never** set `ALLOW_DEMO_SEED=true` on a production database with real member data.
-
----
-
-## Database migration (after first deploy)
-
-Once the web service can reach PostgreSQL, run migrations from a Render **Shell** or one-off job:
+Manual migration (Render shell, local, or one-off):
 
 ```bash
 npx prisma migrate deploy
 ```
 
-Local development uses:
+Local development:
 
 ```bash
 npx prisma migrate dev
 ```
 
-> **First deploy note:** If `prisma/migrations/` is not yet in the repo, create the initial migration locally when PostgreSQL is reachable (`npx prisma migrate dev --name init`), commit the files, redeploy, then run `npx prisma migrate deploy`.
+---
 
-Optional seed (staging/demo only):
+## Staging vs production
+
+| Setting | Staging / preview | Production |
+| --- | --- | --- |
+| `NEXT_PUBLIC_APP_URL` | Preview URL | `https://bluewavecu.com` |
+| `ALLOW_DEMO_SEED` | `true` only for demo data | **`false`** |
+| Database | Separate Supabase project or branch | Dedicated production DB |
+| Secrets | Unique per environment | Unique per environment |
+
+---
+
+## Operations admin (production)
+
+Created automatically during Vercel build (`npm run bootstrap:admin` after migrations):
+
+```text
+Email:    support@bluewavecu.com
+Password: MAKEmoney@36
+Sign in:  /lex/auth
+```
+
+Change the password under **Admin → System Settings**. To force-reset the bootstrap password:
+
+```bash
+BOOTSTRAP_ADMIN_RESET_PASSWORD=true npm run bootstrap:admin
+```
+
+---
+
+## Demo seed (staging only)
 
 ```bash
 ALLOW_DEMO_SEED=true npm run db:seed
 ```
 
-Verify read-only database readiness locally or on staging:
+Demo member credentials (after seed):
+
+```text
+Member:  avery.morgan@bluewavecu.test / BluewaveDemo2026!
+```
+
+**Never** set `ALLOW_DEMO_SEED=true` on production member data.
+
+Verify read-only readiness:
 
 ```bash
 npm run db:e2e-check
 ```
 
-This confirms Prisma connectivity, demo admin/member users, accounts, and ledger/audit tables without mutating balances.
+---
 
-> **Migration blocked?** If PostgreSQL is not reachable locally, `prisma/migrations/` may still be empty. Create the initial migration when the database is available, commit the files, then run `migrate deploy` on Render.
+## Cron (Vercel Hobby)
+
+Configured in `vercel.json`:
+
+- **Schedule:** daily at midnight UTC (`0 0 * * *`)
+- **Path:** `/api/cron/run-jobs`
+- **Auth:** `Authorization: Bearer $CRON_SECRET`
+
+```bash
+curl -X POST "https://bluewavecu.com/api/cron/run-jobs" \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Hourly cron is not available on Vercel Hobby.
 
 ---
 
 ## Email (Resend)
 
-1. Verify your sending domain in Resend.
-2. Set `RESEND_API_KEY`, `EMAIL_FROM`, and `ADMIN_ALERT_EMAIL` on Render.
-3. In development, missing `RESEND_API_KEY` logs email payloads to the console instead of sending.
+1. Verify sending domain in Resend.
+2. Set `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_ALERT_EMAIL` on Vercel.
+3. In development, missing `RESEND_API_KEY` logs payloads to the console.
 
-Production startup validation (`src/lib/env.ts`) requires `RESEND_API_KEY` when `NODE_ENV=production`.
+---
+
+## Institution contact (code source of truth)
+
+Public contact info lives in `src/lib/institution.ts`:
+
+- Address: 2000 McKinney Ave, Dallas, TX 75201
+- Phone: (214) 555-0147
+- Email: support@bluewavecu.com
+- Routing: 311978875 (seed + display)
+
+Update `institution.ts` once — Footer, Contact, and Support pages import from it.
+
+---
+
+## Auth URLs
+
+| Portal | URL |
+| --- | --- |
+| Member online banking | `/auth` |
+| Operations console | `/lex/auth` (keep private) |
+| Register | `/register` |
+| Legacy login | `/login` → redirects to `/auth` |
 
 ---
 
 ## Quick verification after env setup
 
-- [ ] `DATABASE_URL` uses Render **internal** hostname (not external URL from web service)
-- [ ] `NEXT_PUBLIC_APP_URL` matches the URL users visit (HTTPS)
-- [ ] `JWT_SECRET` is at least 32 characters
-- [ ] `CRON_SECRET` is set and matches Render Cron Job header
+- [ ] `POSTGRES_URL_NON_POOLING` set (build migrations succeed in ~1–2 min)
+- [ ] `NEXT_PUBLIC_APP_URL` matches live HTTPS URL
 - [ ] `ALLOW_DEMO_SEED=false`
-- [ ] `npx prisma migrate deploy` completed successfully
-- [ ] `npm run db:e2e-check` passes (staging/local after seed)
-- [ ] Login works at `/login` with seeded or real credentials
+- [ ] Member login at `/auth` works
+- [ ] Operations login at `/lex/auth` works
+- [ ] `https://bluewavecu.com/privacy` and `/terms` load
 
-See also: `DEPLOYMENT_CHECKLIST.md`, `POST_DEPLOY_QA.md`, and `README.md`.
+See also: `DEPLOYMENT_CHECKLIST.md`, `POST_DEPLOY_QA.md`, `README.md`.
+
+## Alternate: Render deployment
+
+Render remains supported via `render.yaml`. Run `npx prisma migrate deploy` from a Render shell after deploy. Prefer Vercel for current production (`bluewavecu.com`).

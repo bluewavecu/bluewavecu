@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MarketingCtaBand } from "@/components/marketing/MarketingCtaBand";
 import { MarketingHero } from "@/components/marketing/MarketingHero";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
@@ -38,8 +39,18 @@ export function NewsroomPage() {
                   · {article.readMinutes} min read
                 </span>
               </div>
-              <h2 className="mt-5 text-xl font-semibold text-primary-navy">{article.title}</h2>
+              <h2 className="mt-5 text-xl font-semibold text-primary-navy">
+                <Link href={`/newsroom/${article.id}`} className="hover:text-royal-blue">
+                  {article.title}
+                </Link>
+              </h2>
               <p className="mt-3 text-sm leading-6 text-bluewave-gray">{article.summary}</p>
+              <Link
+                href={`/newsroom/${article.id}`}
+                className="mt-4 inline-flex text-sm font-semibold text-royal-blue hover:text-ocean-blue"
+              >
+                Read article
+              </Link>
             </MotionReveal>
           ))}
         </div>

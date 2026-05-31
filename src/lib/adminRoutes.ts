@@ -53,6 +53,7 @@ export const adminNavSections: AdminNavSection[] = [
       { label: "Jobs / Worker Queue", href: "/admin/jobs", icon: "Cog" },
       { label: "Finance Reports", href: "/admin/finance-reports", icon: "FileBarChart" },
       { label: "System Settings", href: "/admin/settings", icon: "Settings" },
+      { label: "Change password", href: "/admin/settings", icon: "Shield" },
     ],
   },
 ];

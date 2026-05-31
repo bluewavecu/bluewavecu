@@ -1,12 +1,5 @@
 import { z } from "zod";
-
-function resolveDatabaseUrl() {
-  return (
-    process.env.DATABASE_URL ??
-    process.env.POSTGRES_PRISMA_URL ??
-    process.env.POSTGRES_URL
-  );
-}
+import { readEnv, resolveDatabaseUrl } from "@/lib/databaseEnv";
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -31,30 +24,42 @@ function formatEnvErrors(error: z.ZodError) {
     .join("\n");
 }
 
+function readNodeEnv() {
+  const value = readEnv("NODE_ENV");
+
+  if (value === "development" || value === "production" || value === "test") {
+    return value;
+  }
+
+  return "development";
+}
+
 export function getServerEnv(): ServerEnv {
   if (cachedEnv) {
     return cachedEnv;
   }
 
+  const databaseUrl = resolveDatabaseUrl();
+
+  if (!databaseUrl) {
+    throw new Error(
+      "Environment validation failed:\n- DATABASE_URL: required (set POSTGRES_URL_NON_POOLING, POSTGRES_PRISMA_URL, DATABASE_URL, or POSTGRES_URL)",
+    );
+  }
+
   const result = envSchema.safeParse({
-    DATABASE_URL: resolveDatabaseUrl(),
-    JWT_SECRET: process.env.JWT_SECRET,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NODE_ENV: process.env.NODE_ENV,
-    RESEND_API_KEY: process.env.RESEND_API_KEY?.trim() || undefined,
-    EMAIL_FROM: process.env.EMAIL_FROM?.trim() || undefined,
-    ADMIN_ALERT_EMAIL: process.env.ADMIN_ALERT_EMAIL?.trim() || undefined,
-    CRON_SECRET: process.env.CRON_SECRET?.trim() || undefined,
+    DATABASE_URL: databaseUrl,
+    JWT_SECRET: readEnv("JWT_SECRET"),
+    NEXT_PUBLIC_APP_URL: readEnv("NEXT_PUBLIC_APP_URL"),
+    NODE_ENV: readNodeEnv(),
+    RESEND_API_KEY: readEnv("RESEND_API_KEY"),
+    EMAIL_FROM: readEnv("EMAIL_FROM"),
+    ADMIN_ALERT_EMAIL: readEnv("ADMIN_ALERT_EMAIL"),
+    CRON_SECRET: readEnv("CRON_SECRET"),
   });
 
   if (!result.success) {
     throw new Error(`Environment validation failed:\n${formatEnvErrors(result.error)}`);
-  }
-
-  if (result.data.NODE_ENV === "production" && !result.data.RESEND_API_KEY) {
-    throw new Error(
-      "Environment validation failed:\n- RESEND_API_KEY: required in production",
-    );
   }
 
   cachedEnv = result.data;

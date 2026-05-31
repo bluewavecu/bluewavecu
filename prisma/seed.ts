@@ -1,12 +1,18 @@
-import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const DEMO_USER_EMAIL = "avery.morgan@bluewavecu.test";
-const DEMO_PENDING_USER_EMAIL = "casey.reed@bluewavecu.test";
-const DEMO_ADMIN_EMAIL = "admin@bluewavecu.test";
-const DEMO_MEMBER_PASSWORD = "BluewaveDemo2026!";
-const DEMO_ADMIN_PASSWORD = "BluewaveAdmin2026!";
+import {
+  BOOTSTRAP_ADMIN_EMAIL,
+  BOOTSTRAP_ADMIN_PASSWORD,
+  BOOTSTRAP_ADMIN_NAME,
+  DEMO_MEMBER_PASSWORD,
+  DEMO_PENDING_USER_EMAIL,
+  DEMO_USER_EMAIL,
+} from "../src/lib/bootstrapAccounts";
+import { assertDatabaseUrl, createPrismaPgAdapter } from "../src/lib/databaseUrl";
+
+const DEMO_ADMIN_EMAIL = BOOTSTRAP_ADMIN_EMAIL;
+const DEMO_ADMIN_PASSWORD = BOOTSTRAP_ADMIN_PASSWORD;
 
 const DEMO_ACCOUNTS = [
   {
@@ -99,13 +105,9 @@ const DEMO_TRANSACTIONS = [
 ];
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = assertDatabaseUrl("seed");
 
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is required to seed development banking data.");
-  }
-
-  const adapter = new PrismaPg({ connectionString });
+  const adapter = createPrismaPgAdapter(connectionString);
   return new PrismaClient({ adapter });
 }
 
@@ -171,14 +173,14 @@ async function main() {
     const adminUser = await prisma.user.upsert({
       where: { email: DEMO_ADMIN_EMAIL },
       update: {
-        fullName: "Jordan Parker",
+        fullName: BOOTSTRAP_ADMIN_NAME,
         phone: "(555) 019-4402",
         passwordHash: adminPasswordHash,
         role: "ADMIN",
         status: "ACTIVE",
       },
       create: {
-        fullName: "Jordan Parker",
+        fullName: BOOTSTRAP_ADMIN_NAME,
         email: DEMO_ADMIN_EMAIL,
         phone: "(555) 019-4402",
         passwordHash: adminPasswordHash,

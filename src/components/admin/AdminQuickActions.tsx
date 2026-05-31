@@ -24,7 +24,7 @@ export function AdminQuickActions() {
     <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
       <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Quick actions</h2>
       <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-        Common banking operations review workflows.
+        Common money-movement and compliance review tasks.
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {actions.map((action) => {

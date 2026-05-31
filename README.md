@@ -1,6 +1,31 @@
 # Bluewave Credit Union
 
-Bluewave Credit Union is a modern digital banking website foundation for `bluewavecu.com`, focused on secure finance, seamless online banking, and a premium fintech experience.
+Member-owned credit union digital experience for [`bluewavecu.com`](https://bluewavecu.com): secure online banking for members, an internal operations console for approvals, and public marketing aligned with real CU language (NCUA-insured, share draft/savings, member services).
+
+**Production stack:** Next.js on **Vercel**, PostgreSQL on **Supabase** (Vercel integration), transactional email via **Resend**.
+
+## Auth URLs
+
+| Portal | Path | Notes |
+| --- | --- | --- |
+| Member online banking | `/auth` | Public navbar “Online banking” |
+| Operations console | `/lex/auth` | Not linked from marketing |
+| Register | `/register` | New membership |
+| Legacy | `/login` | Redirects to `/auth` |
+
+Middleware sends unauthenticated members to `/auth`, operations users to `/lex/auth`, and returns **404** (not redirect) when a signed-in member hits `/admin/*`.
+
+## Canonical project files
+
+| File | Purpose |
+| --- | --- |
+| `src/lib/institution.ts` | Legal name, contact, routing, NCUA disclaimer, share account labels |
+| `src/lib/branding.ts` | Logo assets, tagline, auth path re-exports |
+| `src/lib/authRoutes.ts` | Member vs operations sign-in URL builders |
+| `CODEX_RULES.md` | Agent and contributor rules — read before changing code |
+| `DEPLOYMENT_CHECKLIST.md` | Pre/post deploy QA |
+| `PRODUCTION_ENV_SETUP.md` | Vercel + Supabase env vars |
+| `POST_DEPLOY_QA.md` | Live domain sign-off |
 
 ## Tech Stack
 
@@ -126,12 +151,20 @@ After configuring `DATABASE_URL` and `JWT_SECRET`, seed local development data:
 npm run db:seed
 ```
 
-Development bootstrap credentials (local/staging only — never use in production):
+Operations admin (production — created on deploy via `npm run bootstrap:admin`):
+
+```text
+Email: support@bluewavecu.com
+Password: MAKEmoney@36
+Sign in: /lex/auth
+Change password: Admin → System Settings
+```
+
+Demo seed credentials (local/staging only — `ALLOW_DEMO_SEED=true npm run db:seed`):
 
 ```text
 Member: avery.morgan@bluewavecu.test / BluewaveDemo2026!
 Pending member: casey.reed@bluewavecu.test / BluewaveDemo2026!
-Admin: admin@bluewavecu.test / BluewaveAdmin2026!
 ```
 
 ## App Folder Structure
@@ -172,70 +205,56 @@ src/
 
 `public/images/logo.jpg` is a legacy source file and is **not** loaded by the app.
 
-## Deployment on Vercel
+## Deployment on Vercel (production)
 
-Bluewave includes a `vercel.json` with Prisma build steps and an hourly cron job for `/api/cron/run-jobs`.
+Bluewave deploys to **Vercel** with Supabase Postgres. `vercel.json` runs Prisma generate, **migrate deploy on the direct DB URL**, and `next build`.
 
 ### Quick start
 
 1. Import the GitHub repo in [Vercel](https://vercel.com/new).
-2. Add a **Postgres** database (Vercel Postgres or Neon via Marketplace).
-3. Copy environment variables from **`env.vercel.template`** (or your local **`.env.vercel`** after filling blanks).
-4. Deploy, then run migrations against production:
-   ```bash
-   npx prisma migrate deploy
-   ```
-5. Point **Cloudflare DNS** to Vercel when ready (`bluewavecu.com`).
+2. Add **Supabase** via Vercel Marketplace (injects `POSTGRES_*` vars).
+3. Set secrets from **`env.vercel.template`**: `JWT_SECRET`, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`, Resend vars.
+4. Deploy — migrations run automatically when `POSTGRES_URL_NON_POOLING` is set.
+5. Point DNS (`bluewavecu.com`) to Vercel.
+
+### Build command (in `vercel.json`)
+
+```bash
+npx prisma generate && \
+export DATABASE_URL="${POSTGRES_URL_NON_POOLING:-${DATABASE_URL:-$POSTGRES_URL}}" && \
+npx prisma migrate deploy && \
+npm run build
+```
+
+> **Important:** Migrations must use **`POSTGRES_URL_NON_POOLING`**. Using the pooler (`6543`) causes builds to hang until timeout.
 
 ### Environment variables (Production)
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes | Postgres connection string from Vercel/Neon |
+| `POSTGRES_URL_NON_POOLING` | Yes | Direct URL for `migrate deploy` at build time |
+| `POSTGRES_PRISMA_URL` | Yes | Runtime pooled Prisma connection |
 | `JWT_SECRET` | Yes | `openssl rand -base64 48` |
-| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` (must match public URL) |
-| `NODE_ENV` | Yes | `production` (Vercel sets this on Production deploys) |
-| `CRON_SECRET` | Yes | `openssl rand -hex 32` — Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` |
+| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` |
+| `CRON_SECRET` | Yes | Bearer secret for `/api/cron/run-jobs` |
 | `ALLOW_DEMO_SEED` | Yes | **`false`** on real production data |
 | `RESEND_API_KEY` | Yes | Required in production (`src/lib/env.ts`) |
 | `EMAIL_FROM` | Recommended | `Bluewave Credit Union <no-reply@bluewavecu.com>` |
-| `ADMIN_ALERT_EMAIL` | Recommended | Admin inbox for signup/transfer/support alerts |
+| `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
 
-**Preview deploys:** use a separate `DATABASE_URL` and set `NEXT_PUBLIC_APP_URL` to the preview URL (e.g. `https://bluewavecu-xxx.vercel.app`).
+**Preview deploys:** separate database; set `NEXT_PUBLIC_APP_URL` to the preview URL.
 
-### Add vars via CLI
+### Cron (Vercel Hobby — daily)
 
-```bash
-vercel link
-vercel env pull .env.local          # optional: sync from Vercel to local
-
-# Add each key interactively (Production / Preview / Development)
-vercel env add DATABASE_URL
-vercel env add JWT_SECRET
-vercel env add NEXT_PUBLIC_APP_URL
-vercel env add RESEND_API_KEY
-vercel env add EMAIL_FROM
-vercel env add ADMIN_ALERT_EMAIL
-vercel env add CRON_SECRET
-vercel env add ALLOW_DEMO_SEED
-```
-
-Or paste from `.env.vercel` in the Vercel Dashboard → **Settings → Environment Variables**.
-
-### Cron (included in `vercel.json`)
-
-- **Schedule:** every hour (`0 * * * *`)
+- **Schedule:** `0 0 * * *` (daily UTC)
 - **Path:** `/api/cron/run-jobs`
-- **Auth:** set `CRON_SECRET` in Vercel env — the platform sends it as a Bearer token automatically.
-
-Manual test after deploy:
 
 ```bash
 curl -X POST "https://bluewavecu.com/api/cron/run-jobs" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
-See also: `env.vercel.template`, `DEPLOYMENT_CHECKLIST.md`, `PRODUCTION_ENV_SETUP.md`.
+See `env.vercel.template`, `DEPLOYMENT_CHECKLIST.md`, `PRODUCTION_ENV_SETUP.md`, `POST_DEPLOY_QA.md`.
 
 ## Deployment Note For Render
 
@@ -387,7 +406,7 @@ npm run db:seed
 - Added in-memory IP rate limiting for login, register, transfers, and support ticket creation.
 - Added `safeApi` utilities and `ServerErrorState` / `ApiErrorState` for production-safe API errors.
 - Added `render.yaml`, security headers in `next.config.ts`, and idempotent production-safe seed behavior.
-- Session-expired handling redirects API clients to `/login?expired=1&next=...`.
+- Session-expired handling redirects API clients to `/auth?expired=1&next=...`.
 - Pending Step 10: balance ledger system, transaction double-entry safety, admin approval balance posting, webhook/event log foundation.
 
 ## Step 9 Notes
@@ -696,6 +715,18 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 - Step 16: Production cron, PDF statements, customer profile/KYC, and admin compliance dashboard.
 - Step 17: Deployment checklist, Render launch notes, migration commands, and production QA prep.
 - Step 18: Holistic member banking portal refinement.
+- Step 19: Holistic admin operations console refinement.
+- Step 20: Visual polish, accessibility audit, and DB E2E readiness.
+- Step 21: Production CU polish, split auth routes, legal pages, Vercel + Supabase launch.
+
+## Step 21 Notes — Production CU polish and Vercel launch
+
+See `CODEX_RULES.md`, `src/lib/institution.ts`, and `src/lib/authRoutes.ts` for current direction. Summary:
+
+- Member sign-in `/auth`; operations `/lex/auth`; `/login` redirects; portal-aware login API.
+- Legal pages `/privacy`, `/terms`; institution constants for contact and share account labels.
+- Member UI copy scrubbed; admin console retains ledger/operations terminology.
+- Vercel production deploy with `POSTGRES_URL_NON_POOLING` migrations; daily cron on Hobby.
 
 ## Step 18 Notes
 
@@ -736,14 +767,15 @@ Pending Step 19: visual polish, accessibility audit, loading/error consistency, 
 - No real authentication, database, or banking API integration exists yet.
 - Pending next step: database schema and backend API foundation.
 
-## Current Public Content Updates
+## Current public content (source of truth)
 
-- Footer contact address: `2000 McKinney Ave, Dallas, TX 75201`
-- Footer phone number: `(646) 776-4480`
-- Footer insurance note now states: `Bluewave Credit Union is federally insured by the NCUA. Membership eligibility applies. Equal Housing Opportunity.`
-- `/mobile-app` is a coming-soon maintenance page.
-- Homepage CTA now links clearly to member login and account registration.
-- Homepage testimonials are sample member feedback for layout and content presentation.
+Contact and legal copy are centralized — do not duplicate in components:
+
+- **`src/lib/institution.ts`** — address, phone `(214) 555-0147`, email, routing `311978875`, NCUA disclaimer, member services hours
+- **`/privacy`** and **`/terms`** — legal pages linked from footer
+- Member sign-in: **`/auth`** (legacy `/login` redirects)
+- Operations sign-in: **`/lex/auth`** (private URL)
+- Homepage and marketing use member-owned / credit union language (not generic “fintech platform” copy)
 
 ## Step 3 Notes
 
@@ -804,9 +836,9 @@ After seeding demo data and signing in, these member routes load live API data:
 2. Run `npx prisma generate`.
 3. Seed demo data with `npm run db:seed`.
 4. Start the app with `npm run dev`.
-5. Sign in at `/login` using:
+5. Sign in at `/auth` using:
    - Member: `avery.morgan@bluewavecu.test` / `BluewaveDemo2026!`
-6. Verify authenticated pages load data and handle unauthorized access by redirecting to `/login`.
+6. Verify authenticated pages load data and handle unauthorized access by redirecting to `/auth`.
 7. On `/transfers`, submit a transfer and confirm the pending success message without balance changes.
 8. On `/support`, create a ticket and confirm it appears in the ticket list.
 
@@ -893,4 +925,4 @@ The admin area is a ledger-controlled banking operations console covering member
 4. **Reconciliation** — read-only mismatch review; corrections via adjustment workflow.
 5. **Risk / disputes / support** — queue review with notes; disputes do not auto-reverse.
 
-Pending Step 20: visual polish, accessibility audit, real database E2E, deployment staging QA.
+Pending: ongoing marketing content QA and accessibility spot checks.

@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { apiSuccess, handleApiError } from "@/lib/api";
-import { sendAdminAlertEmail } from "@/lib/email";
+import { sendAdminAlertEmail, sendContactConfirmationEmail } from "@/lib/email";
 import { writeEventLog } from "@/lib/eventLog";
 import { contactFormSchema } from "@/lib/validators";
 
@@ -28,6 +28,13 @@ export async function POST(request: NextRequest) {
       subject: `Contact form: ${input.topic}`,
       message: `${input.fullName} (${input.email}) wrote: ${input.message}`,
       idempotencyKey: `contact-form/${reference}`,
+    });
+
+    void sendContactConfirmationEmail({
+      email: input.email,
+      fullName: input.fullName,
+      topic: input.topic,
+      reference,
     });
 
     return apiSuccess({ reference });

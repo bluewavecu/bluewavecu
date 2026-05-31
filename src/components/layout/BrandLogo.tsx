@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BRAND_LOGO, BRAND_LOGO_HEIGHT } from "@/lib/branding";
+import { BRAND_LEGAL_NAME, BRAND_LOGO, BRAND_LOGO_HEIGHT } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 export { BRAND_LOGO, BRAND_LOGO_HEIGHT };
@@ -69,7 +69,7 @@ export function BrandLogo({
   return (
     <Link
       href={href}
-      aria-label="Bluewave Credit Union home"
+      aria-label={`${BRAND_LEGAL_NAME} home`}
       className={cn("inline-flex shrink-0", className)}
       onClick={onClick}
     >

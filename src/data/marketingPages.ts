@@ -453,6 +453,11 @@ export const newsArticles: NewsArticle[] = [
     category: "Product",
     title: "Bluewave launches PDF statements and profile verification workflow",
     summary: "Members can now export PDF statements and submit KYC profiles for faster reviews.",
+    body: [
+      "Bluewave members can download monthly statements in CSV or PDF format from the dashboard or Accounts page.",
+      "Profile verification helps us review high-value transfers and bill payments faster while keeping accounts secure.",
+      "Sign in to online banking to update your profile and submit verification documents when prompted.",
+    ],
     date: "2026-05-30",
     readMinutes: 3,
   },
@@ -461,6 +466,11 @@ export const newsArticles: NewsArticle[] = [
     category: "Security",
     title: "Expanded session controls and MFA options roll out to all members",
     summary: "New security settings make it easier to review devices and protect sensitive actions.",
+    body: [
+      "Review active sessions and revoke unfamiliar devices from the Security center.",
+      "Optional email verification alerts add another layer of protection for sensitive sign-ins.",
+      "Contact member services immediately if you notice activity you do not recognize.",
+    ],
     date: "2026-05-12",
     readMinutes: 4,
   },
@@ -469,6 +479,11 @@ export const newsArticles: NewsArticle[] = [
     category: "Community",
     title: "Bluewave sponsors financial wellness workshops across North Texas",
     summary: "Free community sessions cover budgeting, savings habits, and fraud awareness.",
+    body: [
+      "Bluewave is partnering with local nonprofits to host free financial wellness workshops this quarter.",
+      "Sessions cover budgeting basics, building emergency savings, and spotting common fraud schemes.",
+      "Members and future members can RSVP through the Contact page using the Community topic.",
+    ],
     date: "2026-04-18",
     readMinutes: 2,
   },
@@ -477,6 +492,11 @@ export const newsArticles: NewsArticle[] = [
     category: "Rates",
     title: "High Tide Savings APY increased to 4.25%",
     summary: "Members benefit from a stronger savings rate with the same digital account experience.",
+    body: [
+      "High Tide Share Savings now earns 4.25% APY on qualifying balances.",
+      "Rates are subject to change; see the Rates page for current terms and membership eligibility.",
+      "Existing share savings accounts receive the updated rate automatically—no action required.",
+    ],
     date: "2026-03-30",
     readMinutes: 2,
   },
@@ -486,7 +506,7 @@ export const supportFaqs: FaqItem[] = [
   {
     question: "How do I reset my password or unlock my account?",
     answer:
-      "Use the login page to sign in with your registered email. If you are locked out, contact support with your member email and we will verify your identity before restoring access.",
+      "Signed-in members can change their password under Settings. If you are locked out, contact member services at support@bluewavecu.com with your registered email and we will verify your identity before restoring access.",
   },
   {
     question: "Where can I view pending transfers or bill payments?",

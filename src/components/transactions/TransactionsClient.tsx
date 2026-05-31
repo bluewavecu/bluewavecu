@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowDownLeft, ArrowUpRight, Download, ReceiptText, Repeat2 } from "lucide-react";
 import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { Amount } from "@/components/ui/Amount";
@@ -112,12 +113,15 @@ function getStatusBadgeClass(status: TransactionStatus) {
 }
 
 export function TransactionsClient() {
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q")?.trim() ?? "";
   const { data: accountsData } = useAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState<PageTransaction | null>(null);
+  const activeSearchQuery = searchQuery || urlQuery;
 
   const filters = useMemo(
     () => ({
@@ -133,7 +137,7 @@ export function TransactionsClient() {
 
   const transactions = useMemo(() => {
     const rows = data?.transactions ?? [];
-    const query = searchQuery.trim().toLowerCase();
+    const query = activeSearchQuery.toLowerCase();
 
     if (!query) {
       return rows;
@@ -145,7 +149,7 @@ export function TransactionsClient() {
         (transaction.merchant?.toLowerCase().includes(query) ?? false) ||
         transaction.reference.toLowerCase().includes(query),
     );
-  }, [data?.transactions, searchQuery]);
+  }, [data?.transactions, activeSearchQuery]);
 
   if (isLoading) {
     return (
@@ -175,7 +179,7 @@ export function TransactionsClient() {
         <label className="mt-5 block">
           <span className="text-sm font-semibold text-primary-navy dark:text-white">Search</span>
           <input
-            value={searchQuery}
+            value={searchQuery || urlQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Merchant, description, reference"
             className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"

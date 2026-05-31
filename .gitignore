@@ -35,5 +35,8 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 
+# generated email preview artifacts
+/email-previews
+
 /src/generated/prisma
 *.vercel.pulled

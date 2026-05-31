@@ -57,6 +57,7 @@ export type NewsArticle = {
   category: string;
   title: string;
   summary: string;
+  body: string[];
   date: string;
   readMinutes: number;
 };

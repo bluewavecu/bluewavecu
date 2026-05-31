@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import { InfoPanel } from "@/components/ui/InfoPanel";
+import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 
 const preferenceSections = [
   {
@@ -21,8 +24,9 @@ const preferenceSections = [
   },
   {
     title: "Privacy & security",
-    description: "Session timeout and security alerts are managed under Security in the sidebar.",
+    description: "Session timeout, MFA, and device controls are available in Security.",
     status: "View Security",
+    href: MEMBER_SECURITY_PATH,
   },
   {
     title: "Account nicknames",
@@ -35,9 +39,11 @@ export function SettingsClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="Member settings">
-        Manage notification and communication preferences with Bluewave member services. Security
-        controls such as sessions and multi-factor authentication are available under Security.
+        Update your sign-in password, then manage other preferences with Bluewave member services.
+        Security controls such as sessions and multi-factor authentication are under Security.
       </InfoPanel>
+
+      <ChangePasswordForm />
 
       {preferenceSections.map((section) => (
         <article
@@ -53,9 +59,18 @@ export function SettingsClient() {
                 {section.description}
               </p>
             </div>
-            <span className="w-fit rounded-full bg-primary-navy/[0.06] px-3 py-1 text-xs font-semibold text-primary-navy dark:bg-white/[0.08] dark:text-white">
-              {section.status}
-            </span>
+            {"href" in section && section.href ? (
+              <Link
+                href={section.href}
+                className="w-fit rounded-full bg-primary-navy/[0.06] px-3 py-1 text-xs font-semibold text-primary-navy transition hover:bg-ocean-blue/[0.12] dark:bg-white/[0.08] dark:text-white"
+              >
+                {section.status}
+              </Link>
+            ) : (
+              <span className="w-fit rounded-full bg-primary-navy/[0.06] px-3 py-1 text-xs font-semibold text-primary-navy dark:bg-white/[0.08] dark:text-white">
+                {section.status}
+              </span>
+            )}
           </div>
         </article>
       ))}

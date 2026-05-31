@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AUTH_LOGO, AUTH_LOGO_HEIGHT } from "@/lib/branding";
+import { AUTH_LOGO, AUTH_LOGO_HEIGHT, BRAND_LEGAL_NAME } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 type AuthLogoProps = {
@@ -42,7 +42,7 @@ export function AuthLogo({
   return (
     <Link
       href={href}
-      aria-label="Bluewave Credit Union home"
+      aria-label={`${BRAND_LEGAL_NAME} home`}
       className={cn("inline-flex shrink-0", className)}
     >
       {logo}

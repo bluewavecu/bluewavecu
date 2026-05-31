@@ -964,6 +964,45 @@ Status: Completed
 - Render deployment
 - Live domain QA (`POST_DEPLOY_QA.md`)
 
+## Step 21: Production CU Polish, Split Auth, Vercel Launch
+
+Status: Completed
+
+### Files Created Or Updated
+
+- `src/lib/institution.ts` — contact, routing, NCUA disclaimer, share account labels
+- `src/lib/authRoutes.ts` — member `/auth`, operations `/lex/auth`, URL builders
+- `src/app/auth/page.tsx`, `src/app/lex/auth/page.tsx`
+- `src/app/privacy/page.tsx`, `src/app/terms/page.tsx`
+- `src/components/marketing/LegalDocumentPage.tsx`
+- `src/middleware.ts` — portal redirects, admin 404 for non-admins
+- `src/components/auth/LoginForm.tsx`, `src/app/api/auth/login/route.ts` — portal enforcement
+- Member/admin/marketing copy pass across clients and notifications
+- `prisma/seed.ts` — routing number `311978875`
+- `vercel.json` — `POSTGRES_URL_NON_POOLING` migrate deploy; daily cron
+- `CODEX_RULES.md`, `README.md`, `DEPLOYMENT_CHECKLIST.md`, `PRODUCTION_ENV_SETUP.md`, `POST_DEPLOY_QA.md`
+- `src/lib/branding.ts`, layout/admin component copy alignment
+
+### Features Added
+
+- Production credit union voice on public and member surfaces
+- Centralized institution contact (Dallas address, `(214) 555-0147`)
+- Privacy Policy and Terms of Use with footer links
+- Split auth: members at `/auth`, operations at `/lex/auth`
+- Vercel + Supabase production deploy; fixed migration pooler hang
+- Removed mock/demo fallbacks from dashboard widgets
+
+### Safety Preserved
+
+- Ledger-controlled approvals unchanged
+- Non-admin `/admin` access returns 404
+- `ALLOW_DEMO_SEED=false` default on production
+
+### Pending
+
+- Optional marketing stats/testimonials refresh
+- Continued copy QA on long-tail marketing pages
+
 ## Step 18 (Deployment Prep — prior)
 
 Status: Completed (commit `6a00c68`)

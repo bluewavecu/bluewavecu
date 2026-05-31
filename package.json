@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint .",
     "db:seed": "prisma db seed",
+    "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
+    "email:previews": "tsx scripts/generate-email-previews.ts",
     "db:e2e-check": "node --import tsx scripts/e2e-db-check.mjs"
   },
   "prisma": {
@@ -25,6 +27,7 @@
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.17.0",
     "next": "^16.2.6",
+    "pg": "^8.21.0",
     "prisma": "^7.8.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

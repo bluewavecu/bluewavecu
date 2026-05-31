@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ReceiptText } from "lucide-react";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -43,13 +44,13 @@ export function TransactionsClient() {
         </h2>
         <div className="mt-5 grid gap-3">
           {transactionFilters.map((item) => (
-            <button
+            <Link
               key={item}
-              type="button"
+              href="/transactions"
               className="rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] px-4 py-3 text-left text-sm font-semibold text-primary-navy transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white"
             >
               {item}
-            </button>
+            </Link>
           ))}
         </div>
         <p className="mt-5 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">

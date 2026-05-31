@@ -4,6 +4,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sanitizeUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { createAccountNotification } from "@/lib/notifications";
+import { sendAccountStatusEmail } from "@/lib/email";
 import { writeAdminEvent } from "@/lib/eventLog";
 import { adminUpdateUserStatusSchema } from "@/lib/validators";
 import type { AdminUserSummaryWithKyc, UserRole, UserStatus, KycStatus } from "@/types/banking";
@@ -134,6 +135,15 @@ export async function PATCH(request: NextRequest) {
       message: `User status changed from ${existing.status} to ${updated.status}.`,
       metadata: { previousStatus: existing.status, nextStatus: updated.status },
     });
+
+    if (existing.status !== updated.status && updated.role === "USER") {
+      void sendAccountStatusEmail({
+        email: updated.email,
+        fullName: updated.fullName,
+        userId: updated.id,
+        status: updated.status,
+      });
+    }
 
     return apiSuccess({ user: sanitizeUser(updated) });
   } catch (error) {

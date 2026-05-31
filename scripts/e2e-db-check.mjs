@@ -12,11 +12,18 @@ import { fileURLToPath } from "node:url";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.ts";
 
+const RUNTIME_DATABASE_URL_KEYS = [
+  "POSTGRES_URL_NON_POOLING",
+  "POSTGRES_PRISMA_URL",
+  "DATABASE_URL",
+  "POSTGRES_URL",
+];
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
 const DEMO_MEMBER_EMAIL = "avery.morgan@bluewavecu.test";
-const DEMO_ADMIN_EMAIL = "admin@bluewavecu.test";
+const DEMO_ADMIN_EMAIL = "support@bluewavecu.com";
 
 /** Core ledger / audit tables that must exist after migration */
 const PROTECTED_TABLES = [
@@ -80,7 +87,24 @@ function fail(label, detail) {
 
 loadDotEnv();
 
-const connectionString = process.env.DATABASE_URL;
+function readEnv(name) {
+  const value = process.env[name]?.trim();
+  return value ? value : undefined;
+}
+
+function resolveDatabaseUrl() {
+  for (const key of RUNTIME_DATABASE_URL_KEYS) {
+    const value = readEnv(key);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+const connectionString = resolveDatabaseUrl();
 
 if (!connectionString) {
   fail("DATABASE_URL is not set");

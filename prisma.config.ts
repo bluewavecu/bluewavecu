@@ -2,14 +2,7 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
-
-function resolveDatabaseUrl() {
-  return (
-    process.env["DATABASE_URL"] ??
-    process.env["POSTGRES_PRISMA_URL"] ??
-    process.env["POSTGRES_URL"]
-  );
-}
+import { resolveMigrationDatabaseUrl } from "./src/lib/databaseEnv";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -18,6 +11,6 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: resolveDatabaseUrl(),
+    url: resolveMigrationDatabaseUrl(),
   },
 });
