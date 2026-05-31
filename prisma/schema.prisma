@@ -16,15 +16,21 @@ enum UserStatus {
   PENDING
   ACTIVE
   SUSPENDED
+  ON_HOLD
+  DISABLED
 }
 
 enum AccountType {
   CHECKING
   SAVINGS
+  BUSINESS
+  MONEY_MARKET
+  CERTIFICATE
   CREDIT
 }
 
 enum AccountStatus {
+  PENDING_APPROVAL
   ACTIVE
   FROZEN
   CLOSED
@@ -57,6 +63,26 @@ enum CardStatus {
   LOCKED
   CANCELLED
   EXPIRED
+}
+
+enum CardApplicationStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum IdDocumentType {
+  DRIVERS_LICENSE
+  PASSPORT
+  STATE_ID
+  NATIONAL_ID
+}
+
+enum IdVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DECLINED
 }
 
 enum LoanStatus {
@@ -149,6 +175,7 @@ enum JobStatus {
 enum AdjustmentStatus {
   PENDING
   APPROVED
+  SCHEDULED
   REJECTED
   POSTED
 }
@@ -176,16 +203,30 @@ enum KycStatus {
   REJECTED
 }
 
+enum TransferOtpStepKey {
+  IDENTITY_CHECK
+  AMOUNT_CONFIRMATION
+  BENEFICIARY_VERIFICATION
+  SECURITY_CLEARANCE
+  FINAL_RELEASE
+}
+
 model User {
-  id             String          @id @default(cuid())
-  fullName       String
-  email          String          @unique
-  phone          String
-  passwordHash   String
-  role           UserRole        @default(USER)
-  status         UserStatus      @default(PENDING)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id                       String          @id @default(cuid())
+  fullName                 String
+  username                 String          @unique
+  email                    String          @unique
+  phone                    String
+  passwordHash             String
+  role                     UserRole        @default(USER)
+  status                   UserStatus      @default(PENDING)
+  transactionsUnrestricted Boolean         @default(false)
+  transactionPinHash       String?
+  statusNote               String?
+  deletedAt                DateTime?
+  emailVerifiedAt          DateTime?
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
 
   accounts            Account[]
   transactions        Transaction[]
@@ -205,17 +246,26 @@ model User {
   adminAdjustments    AdjustmentRequest[] @relation("AdminAdjustments")
   disputes            Dispute[]
   customerProfile     CustomerProfile?
+  transactionOtps     TransactionOtp[]
+  loginOtps           LoginOtp[]
+  emailVerificationOtps EmailVerificationOtp[]
+  trustedDevices      TrustedDevice[]
+  cardApplications    CardApplication[]
+  passwordResets      PasswordReset[]
+  idVerificationSubmissions IdVerificationSubmission[]
+  transferOtpSteps      MemberTransferOtpStep[]
 
   @@index([email])
   @@index([role])
   @@index([status])
+  @@index([deletedAt])
 }
 
 model Account {
   id               String        @id @default(cuid())
   userId           String
   accountType      AccountType
-  accountNumber    String        @unique
+  accountNumber    String?       @unique
   routingNumber    String
   balance          Decimal       @default(0) @db.Decimal(14, 2)
   availableBalance Decimal       @default(0) @db.Decimal(14, 2)
@@ -231,6 +281,7 @@ model Account {
   scheduledTransfers ScheduledTransfer[]
   billPayments     BillPayment[]
   adjustmentRequests AdjustmentRequest[]
+  cardApplications   CardApplication[]
 
   @@index([userId])
   @@index([accountType])
@@ -252,10 +303,13 @@ model Transaction {
   reviewedAt               DateTime?
   reviewedBy               String?
   reviewNote               String?
+  delayedAt                DateTime?
+  cardId                   String?
   createdAt                DateTime          @default(now())
 
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   account        Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  card           Card?         @relation(fields: [cardId], references: [id], onDelete: SetNull)
   ledgerEntries  LedgerEntry[]
   billPayments   BillPayment[]
   disputes       Dispute[]
@@ -263,6 +317,7 @@ model Transaction {
 
   @@index([userId])
   @@index([accountId])
+  @@index([cardId])
   @@index([type])
   @@index([status])
   @@index([createdAt])
@@ -275,6 +330,10 @@ model Card {
   accountId      String
   cardType       CardType
   last4          String
+  panPrefix      String     @default("552901")
+  network        String     @default("MASTERCARD")
+  expiryMonth    Int?
+  expiryYear     Int?
   cardholderName String
   status         CardStatus @default(ACTIVE)
   spendingLimit  Decimal    @default(0) @db.Decimal(14, 2)
@@ -283,11 +342,45 @@ model Card {
 
   user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   account        Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  application    CardApplication?
+  transactions   Transaction[]
 
   @@index([userId])
   @@index([accountId])
   @@index([cardType])
   @@index([status])
+}
+
+model CardApplication {
+  id             String                @id @default(cuid())
+  userId         String
+  accountId      String
+  cardType       CardType
+  cardholderName String
+  email          String
+  phone          String
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  state          String
+  postalCode     String
+  country        String                @default("US")
+  status         CardApplicationStatus @default(PENDING)
+  reviewNote     String?
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  cardId         String?               @unique
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  card    Card?   @relation(fields: [cardId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Loan {
@@ -553,6 +646,7 @@ model AdjustmentRequest {
   reviewedAt    DateTime?
   postedAt      DateTime?
   reviewNote    String?
+  effectiveAt   DateTime          @default(now())
   transactionId String?           @unique
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
@@ -567,6 +661,7 @@ model AdjustmentRequest {
   @@index([adminId])
   @@index([status])
   @@index([createdAt])
+  @@index([effectiveAt])
 }
 
 model Dispute {
@@ -608,6 +703,27 @@ model EventLog {
   @@index([createdAt])
 }
 
+model IdVerificationSubmission {
+  id            String               @id @default(cuid())
+  userId        String
+  documentType  IdDocumentType
+  frontPhotoUrl String
+  backPhotoUrl  String?
+  status        IdVerificationStatus @default(PENDING)
+  reviewNote    String?
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  submittedAt   DateTime             @default(now())
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([submittedAt])
+}
+
 model CustomerProfile {
   id               String    @id @default(cuid())
   userId           String    @unique
@@ -625,6 +741,7 @@ model CustomerProfile {
   kycReviewedAt    DateTime?
   kycReviewedBy    String?
   kycReviewNote    String?
+  profilePhotoUrl  String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -632,4 +749,108 @@ model CustomerProfile {
 
   @@index([kycStatus])
   @@index([createdAt])
+}
+
+model TransactionOtp {
+  id         String    @id @default(cuid())
+  userId     String
+  codeHash   String
+  payload    Json
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model MemberTransferOtpStep {
+  id        String             @id @default(cuid())
+  userId    String
+  stepKey   TransferOtpStepKey
+  enabled   Boolean            @default(false)
+  code      String?
+  updatedAt DateTime           @updatedAt
+  updatedBy String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stepKey])
+  @@index([userId])
+  @@index([enabled])
+}
+
+model LoginOtp {
+  id          String    @id @default(cuid())
+  userId      String
+  codeHash    String
+  deviceToken String
+  deviceName  String
+  userAgent   String
+  ipAddress   String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailVerificationOtp {
+  id         String    @id @default(cuid())
+  userId     String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model TrustedDevice {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String
+  deviceName String
+  userAgent  String
+  ipAddress  String
+  lastUsedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tokenHash])
+  @@index([userId])
+  @@index([lastUsedAt])
+}
+
+model BankingPolicy {
+  id                    String   @id @default("default")
+  requireTransactionOtp Boolean  @default(true)
+  requireTransferReview   Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+}
+
+model PasswordReset {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

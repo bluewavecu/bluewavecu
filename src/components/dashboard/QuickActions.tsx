@@ -11,18 +11,18 @@ import { ActionCard } from "@/components/ui/ActionCard";
 import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
 
 const quickActions = [
-  { label: "Transfer", href: "/transfers", icon: Send, description: "Move money between accounts" },
-  { label: "Pay Bill", href: "/bill-pay", icon: Receipt, description: "Submit bill payment for review" },
-  { label: "Add Payee", href: "/payees", icon: UserPlus, description: "Manage recipients" },
+  { label: "Transfer", href: "/auth/transfers", icon: Send, description: "Move money between accounts" },
+  { label: "Pay Bill", href: "/auth/bill-pay", icon: Receipt, description: "Submit bill payment for review" },
+  { label: "Add Payee", href: "/auth/payees", icon: UserPlus, description: "Manage recipients" },
   {
     label: "Download Statement",
-    href: "/statements",
+    href: "/auth/statements",
     icon: Download,
     description: "CSV or PDF export",
   },
-  { label: "Dispute Transaction", href: "/disputes", icon: Scale, description: "Report an issue" },
+  { label: "Dispute Transaction", href: "/auth/disputes", icon: Scale, description: "Report an issue" },
   { label: "Contact Support", href: MEMBER_SUPPORT_PATH, icon: CircleHelp, description: "Open a ticket" },
-  { label: "Move Money", href: "/transfers", icon: ArrowLeftRight, description: "Immediate or scheduled" },
+  { label: "Move Money", href: "/auth/transfers", icon: ArrowLeftRight, description: "Immediate or scheduled" },
 ];
 
 export function QuickActions() {

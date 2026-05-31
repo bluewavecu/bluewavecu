@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
-import { patchJson } from "@/lib/clientApi";
+import { patchJson, postJson } from "@/lib/clientApi";
 import type {
   AdminTransactionFilters,
   AdminTransactionRecord,
@@ -24,6 +24,7 @@ type AdminTransactionsState = {
     status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
     reviewNote?: string,
   ) => Promise<boolean>;
+  markTransactionDelayed: (transactionId: string, reviewNote?: string) => Promise<boolean>;
 };
 
 function buildTransactionsUrl(filters?: AdminTransactionFilters) {
@@ -144,6 +145,26 @@ export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTr
     [],
   );
 
+  const markTransactionDelayed = useCallback(async (transactionId: string, reviewNote?: string) => {
+    setIsUpdating(true);
+    setUpdateError(null);
+
+    const result = await postJson<{ transactionId: string; delayedAt: string | null }>(
+      "/api/admin/transactions/delay",
+      { transactionId, ...(reviewNote ? { reviewNote } : {}) },
+    );
+
+    if (!result.success) {
+      setUpdateError(result.error);
+      setIsUpdating(false);
+      return false;
+    }
+
+    await fetchTransactions();
+    setIsUpdating(false);
+    return true;
+  }, [fetchTransactions]);
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -167,5 +188,6 @@ export function useAdminTransactions(filters?: AdminTransactionFilters): AdminTr
     updateError,
     refetch,
     updateTransactionStatus,
+    markTransactionDelayed,
   };
 }

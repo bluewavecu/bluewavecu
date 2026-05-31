@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { IdVerificationUpload } from "@/components/profile/IdVerificationUpload";
+import { ProfilePhotoUpload } from "@/components/profile/ProfilePhotoUpload";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useIdVerification } from "@/hooks/useIdVerification";
 import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import type { CustomerProfileRecord, KycStatus } from "@/types/banking";
@@ -51,12 +54,30 @@ function kycBadgeClass(status: KycStatus) {
 }
 
 export function ProfileClient() {
-  const { profile, error, isLoading, isSaving, isSubmittingKyc, updateProfile, submitKyc } =
-    useProfile();
+  const {
+    profile,
+    error,
+    isLoading,
+    isSaving,
+    isSubmittingKyc,
+    isUploadingPhoto,
+    isRemovingPhoto,
+    updateProfile,
+    submitKyc,
+    uploadPhoto,
+    removePhoto,
+  } = useProfile();
+  const {
+    data: idVerificationData,
+    error: idVerificationError,
+    isLoading: isIdVerificationLoading,
+    isSubmitting: isSubmittingId,
+    submitIdVerification,
+  } = useIdVerification();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [draft, setDraft] = useState<ProfileFormState | null>(null);
 
-  if (isLoading) {
+  if (isLoading || isIdVerificationLoading) {
     return <LoadingState title="Loading profile" message="Retrieving your profile and KYC status." />;
   }
 
@@ -122,6 +143,28 @@ export function ProfileClient() {
 
   return (
     <section className="grid gap-5">
+      <ProfilePhotoUpload
+        fullName={profile.userName ?? "Member"}
+        profilePhotoUrl={profile.profilePhotoUrl}
+        onUpload={uploadPhoto}
+        onRemove={removePhoto}
+        isUploading={isUploadingPhoto}
+        isRemoving={isRemovingPhoto}
+      />
+
+      {idVerificationData ? (
+        <IdVerificationUpload
+          submissions={idVerificationData.submissions}
+          canSubmit={idVerificationData.canSubmit}
+          isSubmitting={isSubmittingId}
+          onSubmit={submitIdVerification}
+        />
+      ) : null}
+
+      {idVerificationError ? (
+        <p className="text-sm text-red-700 dark:text-red-300">{idVerificationError}</p>
+      ) : null}
+
       <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

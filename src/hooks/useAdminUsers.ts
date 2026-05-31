@@ -2,14 +2,24 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
-import { patchJson } from "@/lib/clientApi";
+import { patchJson, postJson } from "@/lib/clientApi";
 import type {
+  AdminCreateMemberResponse,
   AdminUserFilters,
   AdminUserSummary,
   AdminUsersData,
   ApiResponse,
   UserStatus,
 } from "@/types/banking";
+import type { AdminCreateMemberInput } from "@/lib/validators";
+
+type AdminManageUserInput = {
+  userId: string;
+  status?: UserStatus;
+  statusNote?: string;
+  transactionsUnrestricted?: boolean;
+  action?: "REINSTATE" | "DELETE" | "GENERATE_TRANSACTION_PIN" | "CLEAR_TRANSACTION_PIN";
+};
 
 type AdminUsersState = {
   data: AdminUsersData | null;
@@ -17,9 +27,14 @@ type AdminUsersState = {
   isLoading: boolean;
   isForbidden: boolean;
   isUpdating: boolean;
+  isCreating: boolean;
   updateError: string | null;
+  createError: string | null;
+  createSuccess: string | null;
   refetch: () => Promise<void>;
   updateUserStatus: (userId: string, status: UserStatus) => Promise<boolean>;
+  manageUser: (input: AdminManageUserInput) => Promise<boolean>;
+  createUser: (input: AdminCreateMemberInput) => Promise<boolean>;
 };
 
 function buildUsersUrl(filters?: AdminUserFilters) {
@@ -52,7 +67,10 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
   const [isLoading, setIsLoading] = useState(true);
   const [isForbidden, setIsForbidden] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
   const requestUrl = useMemo(() => buildUsersUrl(filters), [filters]);
 
   const fetchUsers = useCallback(
@@ -111,35 +129,56 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
     await fetchUsers();
   }, [fetchUsers]);
 
-  const updateUserStatus = useCallback(
-    async (userId: string, status: UserStatus) => {
-      setIsUpdating(true);
-      setUpdateError(null);
+  const manageUser = useCallback(async (input: AdminManageUserInput) => {
+    setIsUpdating(true);
+    setUpdateError(null);
 
-      const result = await patchJson<{ user: AdminUserSummary }>("/api/admin/users", {
-        userId,
-        status,
-      });
+    const result = await patchJson<{ user: AdminUserSummary }>("/api/admin/users", input);
+
+    if (!result.success) {
+      setUpdateError(result.error);
+      setIsUpdating(false);
+      return false;
+    }
+
+    setData((current) =>
+      current
+        ? {
+            users: current.users.map((user) =>
+              user.id === input.userId ? { ...user, ...result.data.user } : user,
+            ),
+          }
+        : current,
+    );
+    setIsUpdating(false);
+    return true;
+  }, []);
+
+  const updateUserStatus = useCallback(
+    async (userId: string, status: UserStatus) => manageUser({ userId, status }),
+    [manageUser],
+  );
+
+  const createUser = useCallback(
+    async (input: AdminCreateMemberInput) => {
+      setIsCreating(true);
+      setCreateError(null);
+      setCreateSuccess(null);
+
+      const result = await postJson<AdminCreateMemberResponse>("/api/admin/users", input);
 
       if (!result.success) {
-        setUpdateError(result.error);
-        setIsUpdating(false);
+        setCreateError(result.error);
+        setIsCreating(false);
         return false;
       }
 
-      setData((current) =>
-        current
-          ? {
-              users: current.users.map((user) =>
-                user.id === userId ? result.data.user : user,
-              ),
-            }
-          : current,
-      );
-      setIsUpdating(false);
+      setCreateSuccess(result.data.message);
+      await fetchUsers();
+      setIsCreating(false);
       return true;
     },
-    [],
+    [fetchUsers],
   );
 
   useEffect(() => {
@@ -162,8 +201,13 @@ export function useAdminUsers(filters?: AdminUserFilters): AdminUsersState {
     isLoading,
     isForbidden,
     isUpdating,
+    isCreating,
     updateError,
+    createError,
+    createSuccess,
     refetch,
     updateUserStatus,
+    manageUser,
+    createUser,
   };
 }

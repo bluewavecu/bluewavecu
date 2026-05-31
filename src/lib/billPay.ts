@@ -89,7 +89,7 @@ export function serializeBillPayment(record: {
   reviewNote: string | null;
   createdAt: Date;
   updatedAt: Date;
-  fromAccount: { accountNumber: string };
+  fromAccount: { accountNumber: string | null };
   payee: { id: string; name: string; nickname: string | null; category: string | null };
 }): BillPaymentRecord {
   const masked = maskAccountNumber(record.fromAccount.accountNumber);

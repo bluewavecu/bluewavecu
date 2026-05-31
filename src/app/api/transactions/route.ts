@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { getPrisma } from "@/lib/prisma";
 import type { PageTransaction, TransactionStatus, TransactionType } from "@/types/banking";
@@ -40,17 +41,17 @@ function parseLimit(value: string | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get("accountId") ?? undefined;
     const statusParam = searchParams.get("status");
     const typeParam = searchParams.get("type");
+    const cardId = searchParams.get("cardId") ?? undefined;
     const limit = parseLimit(searchParams.get("limit"));
 
     const status =
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
         ...(accountId ? { accountId } : {}),
         ...(status ? { status } : {}),
         ...(type ? { type } : {}),
+        ...(cardId ? { cardId } : {}),
       },
       include: {
         account: {
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
       take: limit,
     });
 

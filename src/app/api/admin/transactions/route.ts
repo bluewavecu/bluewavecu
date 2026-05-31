@@ -46,9 +46,10 @@ function serializeTransaction(transaction: {
   reviewedAt: Date | null;
   reviewedBy: string | null;
   reviewNote: string | null;
+  delayedAt: Date | null;
   destinationAccountNumber: string | null;
   user: { id: string; fullName: string; email: string };
-  account: { id: string; accountType: AdminTransactionRecord["account"]["accountType"]; accountNumber: string };
+  account: { id: string; accountType: AdminTransactionRecord["account"]["accountType"]; accountNumber: string | null };
   _count?: { ledgerEntries: number };
 }): AdminTransactionRecord {
   const masked = maskAccountNumber(transaction.account.accountNumber);
@@ -66,6 +67,7 @@ function serializeTransaction(transaction: {
     reviewedAt: transaction.reviewedAt?.toISOString() ?? null,
     reviewedBy: transaction.reviewedBy,
     reviewNote: transaction.reviewNote,
+    delayedAt: transaction.delayedAt?.toISOString() ?? null,
     destinationAccountNumber: transaction.destinationAccountNumber,
     ledgerEntryCount: transaction._count?.ledgerEntries,
     user: transaction.user,
@@ -226,6 +228,7 @@ export async function PATCH(request: NextRequest) {
       reference: ledgerResult.reference,
       description: ledgerResult.description,
       status: ledgerResult.status as "COMPLETED" | "FAILED" | "REVERSED",
+      reviewNote: input.reviewNote ?? null,
     });
 
     if (input.status === "COMPLETED" || input.status === "FAILED") {
@@ -246,7 +249,7 @@ export async function PATCH(request: NextRequest) {
             : "reversed",
       reference: ledgerResult.reference,
       amount: ledgerResult.amount,
-      metadata: { href: "/transactions" },
+      metadata: { href: "/auth/transactions" },
     });
 
     if (input.status === "FAILED" || input.status === "REVERSED") {

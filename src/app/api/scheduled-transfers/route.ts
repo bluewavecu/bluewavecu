@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { sendAdminAlertEmail } from "@/lib/email";
 import { enqueueJob } from "@/lib/jobQueue";
@@ -27,7 +28,7 @@ function serializeScheduledTransfer(record: {
   status: ScheduledTransferRecord["status"];
   createdAt: Date;
   updatedAt: Date;
-  fromAccount: { accountNumber: string };
+  fromAccount: { accountNumber: string | null };
 }): ScheduledTransferRecord {
   const masked = maskAccountNumber(record.fromAccount.accountNumber);
 
@@ -50,12 +51,11 @@ function serializeScheduledTransfer(record: {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const records = await getPrisma().scheduledTransfer.findMany({
       where: { userId: payload.userId },
@@ -79,12 +79,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const rateLimit = enforceRateLimit(request, "scheduled-transfers", rateLimitPresets.transfer);
 
@@ -165,7 +164,7 @@ export async function POST(request: NextRequest) {
       type: "TRANSFER",
       title: "Scheduled transfer created",
       message: `Your ${input.frequency.toLowerCase().replace("_", " ")} transfer for $${input.amount.toFixed(2)} was scheduled.`,
-      metadata: { href: "/transfers", scheduledTransferId: scheduledTransfer.id },
+      metadata: { href: "/auth/transfers", scheduledTransferId: scheduledTransfer.id },
     });
 
     if (input.amount >= 5000 || assessment.severity === "HIGH") {

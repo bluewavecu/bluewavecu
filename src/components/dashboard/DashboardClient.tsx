@@ -4,13 +4,13 @@ import { CircleHelp, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { AccountActivityTimeline } from "@/components/accounts/AccountActivityTimeline";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
-import { AttentionPanel } from "@/components/dashboard/AttentionPanel";
 import { AccountOverview } from "@/components/dashboard/AccountOverview";
 import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { SecuritySessionCard } from "@/components/dashboard/SecuritySessionCard";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
+import { MemberAvatar } from "@/components/shared/MemberAvatar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -81,18 +81,33 @@ export function DashboardClient() {
   return (
     <div className="space-y-5">
       <section className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-ocean-blue/[0.10] px-3 py-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
-              <ShieldCheck size={14} aria-hidden="true" />
-              Secure member dashboard
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-primary-navy dark:text-white">
-              Welcome back, {data.user.firstName}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-bluewave-gray dark:text-white/[0.62]">
-              Total available across your accounts: {formatCurrency(totalAvailable)}
-            </p>
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <MemberAvatar
+              fullName={data.user.fullName}
+              profilePhotoUrl={data.user.profilePhotoUrl}
+              size="xl"
+              ring
+            />
+            <div>
+              <h2 className="text-2xl font-bold text-primary-navy dark:text-white">
+                Welcome back, {data.user.firstName}
+              </h2>
+              <p className="mt-4 text-base font-bold text-primary-navy dark:text-white">
+                Available Balance:{" "}
+                <span className="text-4xl font-extrabold tracking-tight text-royal-blue dark:text-light-blue">
+                  {formatCurrency(totalAvailable)}
+                </span>
+              </p>
+              {!data.user.profilePhotoUrl ? (
+                <Link
+                  href="/auth/profile"
+                  className="mt-3 inline-flex text-sm font-semibold text-royal-blue hover:text-ocean-blue dark:text-light-blue"
+                >
+                  Add your profile photo
+                </Link>
+              ) : null}
+            </div>
           </div>
           <button
             type="button"
@@ -104,8 +119,6 @@ export function DashboardClient() {
           </button>
         </div>
       </section>
-
-      <AttentionPanel />
 
       {data.accounts.length > 0 ? (
         <BalanceCards accounts={data.accounts} />
@@ -134,7 +147,7 @@ export function DashboardClient() {
               </div>
             </div>
             <Link
-              href="/profile"
+              href="/auth/profile"
               className="inline-flex h-11 items-center justify-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy"
             >
               Go to profile

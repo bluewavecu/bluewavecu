@@ -94,6 +94,10 @@ export async function getReconciliationSummary(): Promise<ReconciliationSummary>
   const records: ReconciliationAccountRecord[] = [];
 
   for (const account of accounts) {
+    if (!account.accountNumber) {
+      continue;
+    }
+
     const ledger = await calculateAccountLedgerBalance(account.id);
     const accountBalance = account.balance.toNumber();
     const delta = Number((accountBalance - ledger.ledgerBalance).toFixed(2));

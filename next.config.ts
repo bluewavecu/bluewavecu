@@ -10,6 +10,25 @@ const securityHeaders = [
   },
 ];
 
+const legacyMemberRedirects = [
+  "dashboard",
+  "accounts",
+  "transactions",
+  "transfers",
+  "bill-pay",
+  "statements",
+  "payees",
+  "disputes",
+  "cards",
+  "notifications",
+  "profile",
+  "settings",
+].map((segment) => ({
+  source: `/${segment}`,
+  destination: `/auth/${segment}`,
+  permanent: true,
+}));
+
 const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
@@ -24,7 +43,15 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    return [{ source: "/login", destination: "/auth", permanent: true }];
+    return [
+      { source: "/login", destination: "/auth/login", permanent: true },
+      { source: "/register", destination: "/auth/register", permanent: true },
+      { source: "/auth", destination: "/auth/login", permanent: false },
+      { source: "/member/loans", destination: "/auth/loans", permanent: true },
+      { source: "/member/support", destination: "/auth/support", permanent: true },
+      { source: "/member/security", destination: "/auth/security", permanent: true },
+      ...legacyMemberRedirects,
+    ];
   },
   async headers() {
     return [

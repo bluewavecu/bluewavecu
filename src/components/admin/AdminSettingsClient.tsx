@@ -10,7 +10,8 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 export function AdminSettingsClient() {
-  const { data, error, isLoading, isForbidden, refetch } = useAdminSettings();
+  const { data, error, isLoading, isForbidden, refetch, updateBankingPolicy, isSavingPolicy, policyError } =
+    useAdminSettings();
 
   if (isLoading) {
     return <LoadingState title="Loading settings" message="Retrieving system configuration." />;
@@ -43,7 +44,7 @@ export function AdminSettingsClient() {
 
       <AdminPageHeader
         title="Environment"
-        description="Configuration values are read-only in this release. Editable settings will be added in a future step."
+        description="Review environment configuration and banking controls for transfers, verification, and review workflows."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,6 +71,43 @@ export function AdminSettingsClient() {
           tone={data.demoSeedProtected ? "default" : "warning"}
         />
       </div>
+
+      <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
+        <h3 className="font-semibold text-primary-navy dark:text-white">Banking controls</h3>
+        <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+          Global transfer verification and review settings. Individual members can still be marked
+          friction-free under Users.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="flex items-center justify-between rounded-lg border border-primary-navy/[0.08] px-4 py-3 dark:border-white/[0.08]">
+            <span className="text-sm font-medium text-primary-navy dark:text-white">
+              Require email OTP before transfers
+            </span>
+            <input
+              type="checkbox"
+              checked={data.bankingPolicy.requireTransactionOtp}
+              disabled={isSavingPolicy}
+              onChange={(event) =>
+                void updateBankingPolicy({ requireTransactionOtp: event.target.checked })
+              }
+            />
+          </label>
+          <label className="flex items-center justify-between rounded-lg border border-primary-navy/[0.08] px-4 py-3 dark:border-white/[0.08]">
+            <span className="text-sm font-medium text-primary-navy dark:text-white">
+              Require admin review for transfers
+            </span>
+            <input
+              type="checkbox"
+              checked={data.bankingPolicy.requireTransferReview}
+              disabled={isSavingPolicy}
+              onChange={(event) =>
+                void updateBankingPolicy({ requireTransferReview: event.target.checked })
+              }
+            />
+          </label>
+        </div>
+        {policyError ? <p className="mt-3 text-sm text-red-700">{policyError}</p> : null}
+      </article>
 
       <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">
         <h3 className="font-semibold text-primary-navy dark:text-white">Feature flags</h3>

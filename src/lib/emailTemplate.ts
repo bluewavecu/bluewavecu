@@ -1,4 +1,7 @@
-import { AUTH_LOGO } from "@/lib/branding";
+import {
+  EMAIL_LOGO,
+  getEmailLogoDisplayDimensions,
+} from "@/lib/branding";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import { INSTITUTION, formatInstitutionAddress } from "@/lib/institution";
@@ -33,7 +36,7 @@ export function getEmailAppUrl() {
 }
 
 export function getEmailLogoUrl(appUrl = getEmailAppUrl()) {
-  return `${appUrl.replace(/\/$/, "")}${AUTH_LOGO.src}`;
+  return `${appUrl.replace(/\/$/, "")}${EMAIL_LOGO.src}`;
 }
 
 function buildPrimaryActionButton(action: EmailLayoutOptions["primaryAction"], appUrl: string) {
@@ -82,7 +85,7 @@ export function buildEmailPlainTextFooter(appUrl = getEmailAppUrl()) {
     "",
     INSTITUTION.ncuaDisclaimer,
     "",
-    "This is an automated message. Please do not reply to this email.",
+    "Questions about this message? Reply to this email or contact member services — we're here to help.",
     `Privacy: ${appUrl}/privacy | Terms: ${appUrl}/terms | Support: ${appUrl}/support`,
     `© ${new Date().getFullYear()} ${INSTITUTION.legalName}. All rights reserved.`,
   ];
@@ -93,6 +96,7 @@ export function buildEmailPlainTextFooter(appUrl = getEmailAppUrl()) {
 export function buildEmailLayout(options: EmailLayoutOptions) {
   const appUrl = (options.appUrl ?? getEmailAppUrl()).replace(/\/$/, "");
   const logoUrl = getEmailLogoUrl(appUrl);
+  const { width: logoWidth, height: logoHeight } = getEmailLogoDisplayDimensions();
   const preheader = options.preheader ?? options.title;
   const address = formatInstitutionAddress();
   const year = new Date().getFullYear();
@@ -122,7 +126,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
             <tr>
               <td style="padding: 28px 32px 22px; background-color: #FFFFFF; border: 1px solid #D7E2EE; border-bottom: none; border-radius: 16px 16px 0 0; text-align: center;">
                 <a href="${escapeHtml(appUrl)}" style="text-decoration: none;">
-                  <img src="${escapeHtml(logoUrl)}" width="220" height="60" alt="${escapeHtml(INSTITUTION.legalName)}" style="display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none; max-width: 220px; height: auto;" />
+                  <img src="${escapeHtml(logoUrl)}" width="${logoWidth}" height="${logoHeight}" alt="${escapeHtml(INSTITUTION.legalName)}" style="display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none; max-width: ${logoWidth}px; height: auto;" />
                 </a>
               </td>
             </tr>
@@ -164,7 +168,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
                   Fraud prevention: ${escapeHtml(INSTITUTION.shortName)} will never ask for your password, one-time codes, or full card numbers by email. If you did not initiate this activity, contact member services immediately.
                 </p>
                 <p style="margin: 0 0 16px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.68);">
-                  This is an automated message. Please do not reply to this email.
+                  Questions about this message? Reply to this email or contact member services — we're here to help.
                 </p>
                 <p style="margin: 0; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.72);">
                   <a href="${escapeHtml(appUrl)}/privacy" style="color: #8FD6FF; text-decoration: none;">Privacy</a>
@@ -184,6 +188,36 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
     </table>
   </body>
 </html>`;
+}
+
+export type EmailDetailRow = {
+  label: string;
+  value: string;
+};
+
+export function buildEmailDetailsBlock(rows: EmailDetailRow[]) {
+  const rowsHtml = rows
+    .map(
+      (row, index) => `
+      <tr>
+        <td style="padding: 10px 16px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #5A7394; background-color: #F7FBFF; border-bottom: 1px solid #E4EDF7; width: 140px; vertical-align: top;${index === rows.length - 1 ? " border-bottom: none;" : ""}">
+          ${escapeHtml(row.label)}
+        </td>
+        <td style="padding: 10px 16px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; color: #0A2A5E; border-bottom: 1px solid #E4EDF7; white-space: pre-wrap;${index === rows.length - 1 ? " border-bottom: none;" : ""}">
+          ${escapeHtml(row.value)}
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; border: 1px solid #C7DCF5; border-radius: 12px; overflow: hidden; border-collapse: separate;">
+      ${rowsHtml}
+    </table>`;
+}
+
+export function buildEmailDetailsPlainText(rows: EmailDetailRow[]) {
+  return rows.map((row) => `${row.label}: ${row.value}`).join("\n");
 }
 
 export function buildEmailText(title: string, body: string, appUrl = getEmailAppUrl()) {

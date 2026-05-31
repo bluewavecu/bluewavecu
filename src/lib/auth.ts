@@ -7,7 +7,20 @@ import type { AuthTokenPayload, SafeUser } from "@/types/banking";
 export const AUTH_COOKIE_NAME = "bluewave_auth";
 export const AUTH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
-type UserWithPassword = SafeUser & {
+type UserWithPassword = {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string;
+  phone: string;
+  role: SafeUser["role"];
+  status: SafeUser["status"];
+  transactionsUnrestricted?: boolean;
+  transactionPinHash?: string | null;
+  statusNote?: string | null;
+  deletedAt?: Date | string | null;
+  createdAt: Date;
+  updatedAt: Date;
   passwordHash: string;
 };
 
@@ -128,10 +141,15 @@ export function sanitizeUser(user: UserWithPassword): SafeUser {
   return {
     id: user.id,
     fullName: user.fullName,
+    username: user.username,
     email: user.email,
     phone: user.phone,
     role: user.role,
     status: user.status,
+    transactionsUnrestricted: user.transactionsUnrestricted ?? false,
+    hasTransactionPin: Boolean(user.transactionPinHash),
+    statusNote: user.statusNote ?? null,
+    deletedAt: user.deletedAt ? new Date(user.deletedAt).toISOString() : null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

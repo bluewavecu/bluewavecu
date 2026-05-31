@@ -1,11 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import {
-  getAuthTokenFromRequest,
-  hashPassword,
-  verifyAuthToken,
-  verifyPassword,
-} from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+import { hashPassword, verifyPassword } from "@/lib/auth";
 import { writeEventLog } from "@/lib/eventLog";
 import { sendPasswordChangedEmail } from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
@@ -15,12 +11,11 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const input = changePasswordSchema.parse(await request.json());
     const prisma = getPrisma();

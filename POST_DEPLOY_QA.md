@@ -30,7 +30,7 @@ Read-only check for Prisma connectivity, users, accounts, and ledger tables.
 | Privacy `/privacy` | [ ] |
 | Terms `/terms` | [ ] |
 | Footer links: Privacy, Terms, Online banking | [ ] |
-| Contact phone `(214) 555-0147` (from `institution.ts`) | [ ] |
+| Contact phone `(646) 776-4480` (from `institution.ts`) | [ ] |
 | Mobile app `/mobile-app` | [ ] |
 
 ---

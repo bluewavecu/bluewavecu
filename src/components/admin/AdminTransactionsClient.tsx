@@ -89,6 +89,7 @@ function TransactionReviewCard({
   transaction,
   isUpdating,
   onReview,
+  onDelay,
 }: {
   transaction: AdminTransactionRecord;
   isUpdating: boolean;
@@ -97,6 +98,7 @@ function TransactionReviewCard({
     status: Extract<TransactionStatus, "COMPLETED" | "FAILED" | "REVERSED">,
     confirmMessage: string,
   ) => void;
+  onDelay: (transactionId: string) => void;
 }) {
   const canReview =
     transaction.status === "PENDING" &&
@@ -131,6 +133,11 @@ function TransactionReviewCard({
               Review note: {transaction.reviewNote}
             </p>
           ) : null}
+          {transaction.delayedAt ? (
+            <p className="mt-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+              Marked delayed {formatReviewDate(transaction.delayedAt)}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col items-start gap-2 lg:items-end">
           <p className="text-lg font-semibold text-primary-navy dark:text-white">
@@ -160,6 +167,14 @@ function TransactionReviewCard({
               {action.label}
             </button>
           ))}
+          <button
+            type="button"
+            disabled={isUpdating || Boolean(transaction.delayedAt)}
+            onClick={() => onDelay(transaction.id)}
+            className="rounded-full border border-amber-500/[0.20] px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-amber-300"
+          >
+            Mark delayed
+          </button>
         </div>
       ) : (
         <p className="mt-4 text-xs font-medium text-bluewave-gray dark:text-white/[0.48]">
@@ -198,7 +213,17 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
     updateError,
     refetch,
     updateTransactionStatus,
+    markTransactionDelayed,
   } = useAdminTransactions(filters);
+
+  async function handleDelay(transactionId: string) {
+    const reviewNote = window.prompt("Optional delay note for the member (leave blank to skip):")?.trim();
+    const success = await markTransactionDelayed(transactionId, reviewNote || undefined);
+
+    if (success) {
+      setSuccessMessage("Transfer marked delayed and member notified.");
+    }
+  }
 
   async function handleReview(
     transactionId: string,
@@ -328,6 +353,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
                 onReview={(transactionId, status, confirmMessage) =>
                   void handleReview(transactionId, status, confirmMessage)
                 }
+                onDelay={(transactionId) => void handleDelay(transactionId)}
               />
             ))
           ) : (
@@ -357,6 +383,7 @@ export function AdminTransactionsClient({ reviewOnly = false }: { reviewOnly?: b
                 onReview={(transactionId, status, confirmMessage) =>
                   void handleReview(transactionId, status, confirmMessage)
                 }
+                onDelay={(transactionId) => void handleDelay(transactionId)}
               />
             ))
           ) : (

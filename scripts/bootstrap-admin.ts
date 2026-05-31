@@ -6,7 +6,9 @@ import {
   BOOTSTRAP_ADMIN_EMAIL,
   BOOTSTRAP_ADMIN_NAME,
   BOOTSTRAP_ADMIN_PASSWORD,
+  DEMO_ADMIN_USERNAME,
 } from "../src/lib/bootstrapAccounts";
+import { INSTITUTION } from "../src/lib/institution";
 import { assertDatabaseUrl, createPrismaPgAdapter } from "../src/lib/databaseUrl";
 
 function loadDotEnv() {
@@ -69,17 +71,21 @@ async function main() {
       where: { email: BOOTSTRAP_ADMIN_EMAIL },
       update: {
         fullName: BOOTSTRAP_ADMIN_NAME,
+        username: DEMO_ADMIN_USERNAME,
         role: "ADMIN",
         status: "ACTIVE",
+        emailVerifiedAt: new Date(),
         ...(resetPassword ? { passwordHash } : {}),
       },
       create: {
         fullName: BOOTSTRAP_ADMIN_NAME,
+        username: DEMO_ADMIN_USERNAME,
         email: BOOTSTRAP_ADMIN_EMAIL,
-        phone: "(214) 555-0147",
+        phone: INSTITUTION.phone.display,
         passwordHash,
         role: "ADMIN",
         status: "ACTIVE",
+        emailVerifiedAt: new Date(),
       },
     });
 

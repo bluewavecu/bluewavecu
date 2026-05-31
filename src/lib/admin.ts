@@ -2,7 +2,9 @@ import type { NextRequest } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { apiError } from "@/lib/api";
 import { getAuthTokenFromRequest, sanitizeUser, verifyAuthToken } from "@/lib/auth";
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/sessionPolicy";
 import { getPrisma } from "@/lib/prisma";
+import { validateAndTouchSession } from "@/lib/sessions";
 import type { SafeUser } from "@/types/banking";
 
 export type AdminAuthResult =
@@ -15,6 +17,16 @@ export async function requireAdmin(request: NextRequest): Promise<AdminAuthResul
 
   if (!payload) {
     return { ok: false, response: apiError("Unauthorized", 401) };
+  }
+
+  if (!payload.sessionId) {
+    return { ok: false, response: apiError(SESSION_EXPIRED_MESSAGE, 401) };
+  }
+
+  const session = await validateAndTouchSession(payload.sessionId);
+
+  if (!session.ok) {
+    return { ok: false, response: apiError(SESSION_EXPIRED_MESSAGE, 401) };
   }
 
   if (payload.role !== "ADMIN") {

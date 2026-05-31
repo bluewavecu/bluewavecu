@@ -17,20 +17,30 @@ export const runtime = "nodejs";
 function serializeUser(user: {
   id: string;
   fullName: string;
+  username: string;
   email: string;
   phone: string;
   role: AdminUserSummary["role"];
   status: AdminUserSummary["status"];
+  transactionsUnrestricted: boolean;
+  transactionPinHash: string | null;
+  statusNote: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): AdminUserSummary {
   return {
     id: user.id,
     fullName: user.fullName,
+    username: user.username,
     email: user.email,
     phone: user.phone,
     role: user.role,
     status: user.status,
+    transactionsUnrestricted: user.transactionsUnrestricted,
+    hasTransactionPin: Boolean(user.transactionPinHash),
+    statusNote: user.statusNote,
+    deletedAt: user.deletedAt?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   };

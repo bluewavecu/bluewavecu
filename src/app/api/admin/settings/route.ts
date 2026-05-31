@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { apiSuccess, handleApiError } from "@/lib/api";
+import { getBankingPolicy } from "@/lib/bankingPolicy";
 import { getEmailConfig } from "@/lib/email";
 import { getServerEnv } from "@/lib/env";
 import type { AdminSettingsData } from "@/types/banking";
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { NODE_ENV } = getServerEnv();
     const emailConfig = getEmailConfig();
+    const bankingPolicy = await getBankingPolicy();
 
     const data: AdminSettingsData = {
       environment: NODE_ENV,
@@ -28,11 +30,13 @@ export async function GET(request: NextRequest) {
       systemMode: NODE_ENV === "production" ? "Production" : "Development",
       featureFlags: {
         billPayReview: true,
-        transferReview: true,
+        transferReview: bankingPolicy.requireTransferReview,
+        transactionOtp: bankingPolicy.requireTransactionOtp,
         kycReview: true,
         scheduledJobs: true,
         financeReports: true,
       },
+      bankingPolicy,
     };
 
     return apiSuccess(data);

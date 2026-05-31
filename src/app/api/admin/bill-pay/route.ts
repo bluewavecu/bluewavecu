@@ -29,7 +29,7 @@ function serializeAdminBillPayment(record: {
   reviewNote: string | null;
   createdAt: Date;
   updatedAt: Date;
-  fromAccount: { accountNumber: string };
+  fromAccount: { accountNumber: string | null };
   payee: { id: string; name: string; nickname: string | null; category: string | null };
   user: { id: string; fullName: string; email: string };
 }): AdminBillPaymentRecord {

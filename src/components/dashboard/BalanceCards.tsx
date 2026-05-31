@@ -30,6 +30,18 @@ const accountMeta: Record<AccountType, { accent: string; trend: string }> = {
     accent: "from-royal-blue to-ocean-blue",
     trend: "Growing",
   },
+  BUSINESS: {
+    accent: "from-primary-navy to-royal-blue",
+    trend: "Business",
+  },
+  MONEY_MARKET: {
+    accent: "from-royal-blue to-light-blue",
+    trend: "Earning",
+  },
+  CERTIFICATE: {
+    accent: "from-ocean-blue to-primary-navy",
+    trend: "Fixed term",
+  },
   CREDIT: {
     accent: "from-primary-navy to-royal-blue",
     trend: "In use",

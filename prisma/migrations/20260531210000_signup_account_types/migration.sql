@@ -1,0 +1,10 @@
+-- AlterEnum
+ALTER TYPE "AccountType" ADD VALUE 'BUSINESS';
+ALTER TYPE "AccountType" ADD VALUE 'MONEY_MARKET';
+ALTER TYPE "AccountType" ADD VALUE 'CERTIFICATE';
+
+-- AlterEnum
+ALTER TYPE "AccountStatus" ADD VALUE 'PENDING_APPROVAL';
+
+-- AlterTable
+ALTER TABLE "Account" ALTER COLUMN "accountNumber" DROP NOT NULL;

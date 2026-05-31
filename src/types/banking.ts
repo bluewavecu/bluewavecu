@@ -9,9 +9,15 @@ export type ApiResponse<T> =
     };
 
 export type UserRole = "USER" | "ADMIN";
-export type UserStatus = "PENDING" | "ACTIVE" | "SUSPENDED";
-export type AccountType = "CHECKING" | "SAVINGS" | "CREDIT";
-export type AccountStatus = "ACTIVE" | "FROZEN" | "CLOSED";
+export type UserStatus = "PENDING" | "ACTIVE" | "SUSPENDED" | "ON_HOLD" | "DISABLED";
+export type AccountType =
+  | "CHECKING"
+  | "SAVINGS"
+  | "BUSINESS"
+  | "MONEY_MARKET"
+  | "CERTIFICATE"
+  | "CREDIT";
+export type AccountStatus = "PENDING_APPROVAL" | "ACTIVE" | "FROZEN" | "CLOSED";
 export type TransactionType =
   | "DEPOSIT"
   | "WITHDRAWAL"
@@ -20,9 +26,21 @@ export type TransactionType =
   | "CARD"
   | "FEE"
   | "REFUND";
+
+export type TransferOtpStepKey =
+  | "IDENTITY_CHECK"
+  | "AMOUNT_CONFIRMATION"
+  | "BENEFICIARY_VERIFICATION"
+  | "SECURITY_CLEARANCE"
+  | "FINAL_RELEASE";
 export type TransactionStatus = "PENDING" | "COMPLETED" | "FAILED" | "REVERSED";
 export type CardType = "DEBIT" | "CREDIT";
 export type CardStatus = "ACTIVE" | "LOCKED" | "CANCELLED" | "EXPIRED";
+export type CardApplicationStatus = "PENDING" | "APPROVED" | "DECLINED";
+
+export type IdDocumentType = "DRIVERS_LICENSE" | "PASSPORT" | "STATE_ID" | "NATIONAL_ID";
+
+export type IdVerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "DECLINED";
 export type LoanStatus = "PENDING" | "ACTIVE" | "PAID_OFF" | "DEFAULTED" | "DENIED";
 export type SupportTicketStatus = "OPEN" | "PENDING" | "RESOLVED" | "CLOSED";
 export type SupportTicketPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT";
@@ -37,10 +55,15 @@ export type NotificationType =
 export type SafeUser = {
   id: string;
   fullName: string;
+  username: string;
   email: string;
   phone: string;
   role: UserRole;
   status: UserStatus;
+  transactionsUnrestricted: boolean;
+  hasTransactionPin: boolean;
+  statusNote?: string | null;
+  deletedAt?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -51,9 +74,42 @@ export type AuthTokenPayload = {
   sessionId?: string;
 };
 
-export type AuthResponse = {
-  user: SafeUser;
-  token: string;
+export type AuthResponse =
+  | {
+      user: SafeUser;
+      token: string;
+      requiresOtp?: false;
+    }
+  | {
+      requiresOtp: true;
+      loginChallengeId: string;
+      maskedEmail: string;
+      message: string;
+    };
+
+export type RegisterResponse =
+  | {
+      user: SafeUser;
+      token: string;
+    }
+  | {
+      requiresEmailVerification: true;
+      verificationChallengeId: string;
+      username: string;
+      maskedEmail: string;
+      message: string;
+    };
+
+export type VerifyEmailResponse = {
+  username: string;
+  message: string;
+};
+
+export type ResendEmailVerificationResponse = {
+  verificationChallengeId: string;
+  username: string;
+  maskedEmail: string;
+  message: string;
 };
 
 export type SerializedAccount = {
@@ -91,6 +147,7 @@ export type DashboardUserProfile = {
   phone: string;
   role: UserRole;
   status: UserStatus;
+  profilePhotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -234,6 +291,12 @@ export type PageCard = {
   accountId: string;
   cardType: CardType;
   last4: string;
+  panPrefix: string;
+  network: string;
+  maskedPan: string;
+  expiryMonth: number | null;
+  expiryYear: number | null;
+  expiryLabel: string | null;
   cardholderName: string;
   status: CardStatus;
   spendingLimit: number;
@@ -242,8 +305,113 @@ export type PageCard = {
   updatedAt: string;
 };
 
+export type CardApplicationRecord = {
+  id: string;
+  accountId: string;
+  cardType: CardType;
+  cardholderName: string;
+  email: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  formattedAddress: string;
+  status: CardApplicationStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  cardId: string | null;
+  linkedAccount?: {
+    displayName: string;
+    maskedAccountNumber: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IdVerificationRecord = {
+  id: string;
+  userId: string;
+  documentType: IdDocumentType;
+  documentTypeLabel: string;
+  frontPhotoUrl: string;
+  backPhotoUrl: string | null;
+  status: IdVerificationStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
+};
+
+export type IdVerificationData = {
+  submissions: IdVerificationRecord[];
+  canSubmit: boolean;
+  pendingCount: number;
+  latestStatus: IdVerificationStatus | null;
+};
+
+export type AdminIdVerificationRecord = IdVerificationRecord & {
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+};
+
+export type AdminIdVerificationsData = {
+  submissions: AdminIdVerificationRecord[];
+  summary: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    declined: number;
+    total: number;
+  };
+};
+
+export type CardTransactionSummary = {
+  id: string;
+  amount: number;
+  description: string;
+  merchant: string | null;
+  reference: string;
+  status: TransactionStatus;
+  createdAt: string;
+  postedAt: string | null;
+};
+
 export type CardsData = {
   cards: PageCard[];
+  applications: CardApplicationRecord[];
+  accounts: LinkedAccountSummary[];
+};
+
+export type CardApplyResult = {
+  application: CardApplicationRecord;
+  message: string;
+};
+
+export type AdminCardApplicationRecord = CardApplicationRecord & {
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+};
+
+export type AdminCardApplicationsData = {
+  applications: AdminCardApplicationRecord[];
+  summary: {
+    pending: number;
+    total: number;
+  };
 };
 
 export type PageLoan = DashboardLoan;
@@ -282,6 +450,29 @@ export type TransferRequestInput = {
   recipientName?: string;
   amount: number;
   memo?: string;
+  otpCode?: string;
+  transactionPin?: string;
+  stepOtpCodes?: Partial<Record<TransferOtpStepKey, string>>;
+};
+
+export type TransferOtpStepRequirement = {
+  stepKey: TransferOtpStepKey;
+  label: string;
+  order: number;
+};
+
+export type TransferOtpRequestInput = Omit<
+  TransferRequestInput,
+  "otpCode" | "transactionPin" | "stepOtpCodes"
+>;
+
+export type TransferOtpData = {
+  message: string;
+  expiresAt: string;
+  requiresTransactionPin: boolean;
+  otpRequired: boolean;
+  adminSteps: TransferOtpStepRequirement[];
+  adminStepsRequired: boolean;
 };
 
 export type TransferData = {
@@ -299,10 +490,15 @@ export type TransactionFilters = {
 export type AdminUserSummary = {
   id: string;
   fullName: string;
+  username: string;
   email: string;
   phone: string;
   role: UserRole;
   status: UserStatus;
+  transactionsUnrestricted: boolean;
+  hasTransactionPin: boolean;
+  statusNote?: string | null;
+  deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -320,6 +516,7 @@ export type AdminTransactionRecord = {
   reviewedAt?: string | null;
   reviewedBy?: string | null;
   reviewNote?: string | null;
+  delayedAt?: string | null;
   destinationAccountNumber?: string | null;
   ledgerEntryCount?: number;
   user: {
@@ -372,6 +569,11 @@ export type AdminUserSummaryWithKyc = AdminUserSummary & {
 
 export type AdminUsersData = {
   users: AdminUserSummaryWithKyc[];
+};
+
+export type AdminCreateMemberResponse = {
+  user: AdminUserSummaryWithKyc;
+  message: string;
 };
 
 export type AdminUserFilters = {
@@ -727,7 +929,7 @@ export type FinanceReportsData = {
 };
 
 export type LedgerDirection = "DEBIT" | "CREDIT";
-export type AdjustmentStatus = "PENDING" | "APPROVED" | "REJECTED" | "POSTED";
+export type AdjustmentStatus = "PENDING" | "APPROVED" | "SCHEDULED" | "REJECTED" | "POSTED";
 export type DisputeStatus = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "REJECTED" | "CLOSED";
 export type EventSeverity = "INFO" | "WARNING" | "ERROR" | "CRITICAL";
 
@@ -742,6 +944,7 @@ export type AdjustmentRecord = {
   status: AdjustmentStatus;
   reviewedAt: string | null;
   postedAt: string | null;
+  effectiveAt: string;
   reviewNote: string | null;
   transactionId: string | null;
   createdAt: string;
@@ -759,6 +962,22 @@ export type AdjustmentsData = {
     approved: number;
     total: number;
   };
+};
+
+export type MemberTransferOtpStepRecord = {
+  stepKey: TransferOtpStepKey;
+  label: string;
+  description: string;
+  order: number;
+  enabled: boolean;
+  code: string | null;
+  updatedAt: string | null;
+};
+
+export type MemberTransferOtpStepsData = {
+  userId: string;
+  userName: string;
+  steps: MemberTransferOtpStepRecord[];
 };
 
 export type DisputeRecord = {
@@ -839,6 +1058,7 @@ export type CustomerProfileRecord = {
   kycReviewedAt: string | null;
   kycReviewedBy: string | null;
   kycReviewNote: string | null;
+  profilePhotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
   userName?: string;
@@ -876,6 +1096,8 @@ export type MemberSummary = {
   openSupportTicketCount: number;
   kycStatus: KycStatus;
   needsProfileCompletion: boolean;
+  needsIdVerification: boolean;
+  pendingIdVerificationCount: number;
   activeSessionCount: number;
 };
 
@@ -949,6 +1171,14 @@ export type AdminSettingsData = {
   demoSeedProtected: boolean;
   systemMode: string;
   featureFlags: Record<string, boolean>;
+  bankingPolicy: BankingPolicyData;
+};
+
+export type BankingPolicyData = {
+  requireTransactionOtp: boolean;
+  requireTransferReview: boolean;
+  updatedAt: string;
+  updatedBy: string | null;
 };
 
 export type AdminMemberDetailData = {

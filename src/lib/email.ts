@@ -2,15 +2,18 @@ import { Resend } from "resend";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import {
+  buildEmailDetailsBlock,
+  buildEmailDetailsPlainText,
   buildEmailLayout,
   buildEmailText,
   escapeHtml,
   formatEmailCurrency,
   getEmailAppUrl,
+  type EmailDetailRow,
 } from "@/lib/emailTemplate";
 import { INSTITUTION } from "@/lib/institution";
 
-const DEFAULT_EMAIL_FROM = "Bluewave Credit Union <no-reply@bluewavecu.com>";
+const DEFAULT_EMAIL_FROM = `${INSTITUTION.legalName} <${INSTITUTION.email}>`;
 
 export type EmailPayload = {
   to: string | string[];
@@ -18,6 +21,7 @@ export type EmailPayload = {
   html: string;
   text?: string;
   idempotencyKey?: string;
+  replyTo?: string | string[];
 };
 
 export type EmailConfig = {
@@ -103,6 +107,7 @@ export async function sendEmail(payload: EmailPayload) {
       subject: payload.subject,
       html: payload.html,
       text: payload.text,
+      ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
     },
     requestOptions,
   );
@@ -139,7 +144,7 @@ export async function sendWelcomeEmail(params: {
       <p>Thank you for choosing Bluewave Credit Union. Your membership request has been received and is pending review by our member services team.</p>
       <p>We will notify you when your account is ready for full online banking access.</p>`,
     textBody: `Hi ${params.fullName},\n\nThank you for registering with Bluewave Credit Union. Your membership request has been received and is pending review.`,
-    primaryAction: { label: "View membership status", href: "/dashboard" },
+    primaryAction: { label: "Sign in to online banking", href: "/auth/login" },
   });
 
   return safeSendEmail(
@@ -154,36 +159,81 @@ export async function sendWelcomeEmail(params: {
   );
 }
 
+export async function sendEmailVerificationOtpEmail(params: {
+  email: string;
+  fullName: string;
+  code: string;
+  expiresMinutes?: number;
+}) {
+  const expiresMinutes = params.expiresMinutes ?? 15;
+  const content = buildTransactionalEmail({
+    title: "Verify your email",
+    preheader: "Use this one-time code to verify your Bluewave membership email.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>Enter the verification code below to confirm your email address and finish setting up your membership.</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.code)}</p>
+      <p>This code expires in ${expiresMinutes} minutes. After verification, sign in with your username and password.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour email verification code is ${params.code}. It expires in ${expiresMinutes} minutes.`,
+    primaryAction: { label: "Verify your email", href: "/auth/verify-email" },
+    securityNotice: "Never share this code with anyone, including Bluewave staff.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Verify your Bluewave email address",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `email-verification-otp/${params.email}/${params.code}`,
+    },
+    "sendEmailVerificationOtpEmail",
+  );
+}
+
 export async function sendAccountStatusEmail(params: {
   email: string;
   fullName: string;
   userId: string;
-  status: "PENDING" | "ACTIVE" | "SUSPENDED";
+  status: "PENDING" | "ACTIVE" | "SUSPENDED" | "ON_HOLD" | "DISABLED";
+  statusNote?: string | null;
 }) {
   const statusLabel =
     params.status === "ACTIVE"
       ? "Active"
       : params.status === "SUSPENDED"
         ? "Suspended"
-        : "Pending review";
+        : params.status === "ON_HOLD"
+          ? "On hold"
+          : params.status === "DISABLED"
+            ? "Disabled"
+            : "Pending review";
 
   const message =
     params.status === "ACTIVE"
       ? "You can sign in to manage accounts, move money, pay bills, and review statements."
       : params.status === "SUSPENDED"
         ? "Online banking access is temporarily unavailable. Contact member services if you believe this is an error."
-        : "Your membership request remains under review. We will notify you when access is ready.";
+        : params.status === "ON_HOLD"
+          ? "Your account is on hold while we complete a review. Contact member services if you need assistance."
+          : params.status === "DISABLED"
+            ? "Online banking access has been disabled. Contact member services for assistance."
+            : "Your membership request remains under review. We will notify you when access is ready.";
+
+  const noteBlock = params.statusNote
+    ? `<p><strong>Note from member services:</strong> ${escapeHtml(params.statusNote)}</p>`
+    : "";
 
   const content = buildTransactionalEmail({
     title: "Membership status updated",
     preheader: `Your Bluewave membership status is now ${statusLabel}.`,
     bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
       <p>Your Bluewave membership status is now <strong>${escapeHtml(statusLabel)}</strong>.</p>
-      <p>${escapeHtml(message)}</p>`,
-    textBody: `Hi ${params.fullName},\n\nYour Bluewave membership status is now ${statusLabel}.\n\n${message}`,
+      <p>${escapeHtml(message)}</p>
+      ${noteBlock}`,
+    textBody: `Hi ${params.fullName},\n\nYour Bluewave membership status is now ${statusLabel}.\n\n${message}${params.statusNote ? `\n\nNote: ${params.statusNote}` : ""}`,
     primaryAction:
       params.status === "ACTIVE"
-        ? { label: "Sign in to online banking", href: "/auth" }
+        ? { label: "Sign in to online banking", href: "/auth/login" }
         : { label: "Contact member services", href: "/support" },
   });
 
@@ -219,7 +269,7 @@ export async function sendLoginAlertEmail(params: {
       <p>A new sign-in to your Bluewave account was detected on <strong>${escapeHtml(formattedTime)} CT</strong>.</p>
       <p>If this was you, no action is needed. If you do not recognize this activity, contact member services immediately.</p>`,
     textBody: `Hi ${params.fullName},\n\nA new sign-in to your Bluewave account was detected at ${formattedTime} CT.`,
-    primaryAction: { label: "Review security settings", href: "/member/security" },
+    primaryAction: { label: "Review security settings", href: "/auth/security" },
     securityNotice:
       "Bluewave will never ask you to share your password, verification codes, or full card numbers by email or phone.",
   });
@@ -265,7 +315,160 @@ export async function sendPasswordChangedEmail(params: {
   );
 }
 
-export async function sendTransferCreatedEmail(params: {
+export async function sendPasswordResetEmail(params: {
+  email: string;
+  fullName: string;
+  resetUrl: string;
+  code: string;
+  expiresMinutes?: number;
+}) {
+  const expiresMinutes = params.expiresMinutes ?? 30;
+  const content = buildTransactionalEmail({
+    title: "Reset your password",
+    preheader: "Use the link or verification code below to choose a new password.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>We received a request to reset the password for your Bluewave online banking account.</p>
+      <p>Choose a new password using the button below, or enter this verification code on the reset page:</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.code)}</p>
+      <p>This link and code expire in ${expiresMinutes} minutes. If you did not request a password reset, you can ignore this email — your password will stay the same.</p>`,
+    textBody: `Hi ${params.fullName},\n\nWe received a request to reset your Bluewave password.\n\nReset link: ${params.resetUrl}\n\nVerification code: ${params.code}\n\nThis link and code expire in ${expiresMinutes} minutes. If you did not request this, ignore this email.`,
+    primaryAction: { label: "Choose a new password", href: params.resetUrl },
+    securityNotice:
+      "Never share your password or verification code with anyone, including Bluewave staff.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Reset your Bluewave password",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `password-reset/${params.email}/${params.code}`,
+    },
+    "sendPasswordResetEmail",
+  );
+}
+
+export async function sendLoginOtpEmail(params: {
+  email: string;
+  fullName: string;
+  code: string;
+  deviceName: string;
+  expiresMinutes?: number;
+}) {
+  const expiresMinutes = params.expiresMinutes ?? 10;
+  const content = buildTransactionalEmail({
+    title: "Verify your sign-in",
+    preheader: "Use this one-time code to sign in from a new device.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>We noticed a sign-in attempt from <strong>${escapeHtml(params.deviceName)}</strong>. Enter the verification code below to continue.</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.code)}</p>
+      <p>This code expires in ${expiresMinutes} minutes. If this wasn't you, reset your password and contact member services.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour sign-in verification code is ${params.code}. It expires in ${expiresMinutes} minutes.`,
+    primaryAction: { label: "Sign in to online banking", href: "/auth/login" },
+    securityNotice: "Never share this code with anyone, including Bluewave staff.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your Bluewave sign-in verification code",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `login-otp/${params.email}/${params.code}`,
+    },
+    "sendLoginOtpEmail",
+  );
+}
+
+export async function sendTransactionOtpEmail(params: {
+  email: string;
+  fullName: string;
+  code: string;
+  amount: number;
+  expiresMinutes?: number;
+}) {
+  const expiresMinutes = params.expiresMinutes ?? 10;
+  const content = buildTransactionalEmail({
+    title: "Confirm your transfer",
+    preheader: "Use this one-time code to confirm your transfer request.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>Use the verification code below to confirm your transfer request for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong>.</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.code)}</p>
+      <p>This code expires in ${expiresMinutes} minutes. If you did not initiate this transfer, contact member services immediately.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour transfer verification code is ${params.code}. It expires in ${expiresMinutes} minutes.`,
+    primaryAction: { label: "Review transfers", href: "/auth/transfers" },
+    securityNotice: "Never share this code with anyone, including Bluewave staff.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your transfer verification code",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-otp/${params.email}/${params.code}`,
+    },
+    "sendTransactionOtpEmail",
+  );
+}
+
+export async function sendTransactionPinEmail(params: {
+  email: string;
+  fullName: string;
+  pin: string;
+}) {
+  const content = buildTransactionalEmail({
+    title: "Your transaction PIN",
+    preheader: "A six-digit transaction PIN was assigned to your Bluewave account.",
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>Member services assigned a six-digit transaction PIN to your Bluewave account. Enter this PIN when submitting transfers in online banking.</p>
+      <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">${escapeHtml(params.pin)}</p>
+      <p>Do not share this PIN with anyone. Contact member services immediately if you did not request this change.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour Bluewave transaction PIN is ${params.pin}.`,
+    primaryAction: { label: "Open transfers", href: "/auth/transfers" },
+    securityNotice: "Bluewave will never ask for your transaction PIN by phone or email.",
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your Bluewave transaction PIN",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-pin/${params.email}/${params.pin}`,
+    },
+    "sendTransactionPinEmail",
+  );
+}
+
+function buildAdjustmentPostedMessage(direction: "DEBIT" | "CREDIT", amount: number) {
+  const formatted = formatEmailCurrency(amount);
+
+  if (direction === "CREDIT") {
+    return `You have been credited ${formatted}, which has been posted to your account.`;
+  }
+
+  return `${formatted} has been withdrawn from your account.`;
+}
+
+function buildTransactionEmailBody(params: {
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+  headline: string;
+  detail: string;
+}) {
+  return `<p>Hi ${escapeHtml(params.fullName)},</p>
+    <p>${escapeHtml(params.headline)}</p>
+    <p><strong>Amount:</strong> ${escapeHtml(formatEmailCurrency(params.amount))}</p>
+    <p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>
+    <p><strong>Details:</strong> ${escapeHtml(params.description)}</p>
+    <p>${escapeHtml(params.detail)}</p>`;
+}
+
+export async function sendTransactionPendingEmail(params: {
   email: string;
   fullName: string;
   amount: number;
@@ -273,27 +476,171 @@ export async function sendTransferCreatedEmail(params: {
   description: string;
 }) {
   const content = buildTransactionalEmail({
-    title: "Transfer request submitted",
-    preheader: "Your transfer request is pending review.",
-    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
-      <p>Your transfer request for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong> has been submitted and is pending review.</p>
-      <p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>
-      <p><strong>Details:</strong> ${escapeHtml(params.description)}</p>
-      <p>Account balances remain unchanged until the request is reviewed.</p>`,
-    textBody: `Hi ${params.fullName},\n\nYour transfer request for ${formatEmailCurrency(params.amount)} (${params.reference}) is pending review.`,
-    primaryAction: { label: "View transfers", href: "/transfers" },
+    title: "We're reviewing your transfer",
+    preheader: "We received your transfer and are reviewing it now.",
+    bodyHtml: buildTransactionEmailBody({
+      ...params,
+      headline: "We received your transfer and are reviewing it now.",
+      detail: "Your balance won't change until we finish our review.",
+    }),
+    textBody: `Hi ${params.fullName},\n\nWe received your transfer of ${formatEmailCurrency(params.amount)} (${params.reference}). We're reviewing it now and will email you when it's complete.`,
+    primaryAction: { label: "View transfers", href: "/auth/transfers" },
   });
 
   return safeSendEmail(
     {
       to: params.email,
-      subject: "Transfer request submitted for review",
+      subject: "We received your transfer",
       text: content.text,
       html: content.html,
-      idempotencyKey: `transfer-created/${params.reference}`,
+      idempotencyKey: `transaction-pending/${params.reference}`,
     },
-    "sendTransferCreatedEmail",
+    "sendTransactionPendingEmail",
   );
+}
+
+export async function sendTransactionApprovedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+}) {
+  const content = buildTransactionalEmail({
+    title: "Your transfer was approved",
+    preheader: "Your transfer was approved and the money has been sent.",
+    bodyHtml: buildTransactionEmailBody({
+      ...params,
+      headline: "Good news — your transfer was approved.",
+      detail: "The money has been sent and your balance is updated.",
+    }),
+    textBody: `Hi ${params.fullName},\n\nYour transfer of ${formatEmailCurrency(params.amount)} (${params.reference}) was approved. The money has been sent and your balance is updated.`,
+    primaryAction: { label: "View activity", href: "/auth/transactions" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your transfer was approved",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-approved/${params.reference}`,
+    },
+    "sendTransactionApprovedEmail",
+  );
+}
+
+export async function sendTransactionSuccessfulEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+}) {
+  const content = buildTransactionalEmail({
+    title: "Your transfer is complete",
+    preheader: "Your transfer went through successfully.",
+    bodyHtml: buildTransactionEmailBody({
+      ...params,
+      headline: "Your transfer is complete.",
+      detail: "The money has been sent and your balance is updated.",
+    }),
+    textBody: `Hi ${params.fullName},\n\nYour transfer of ${formatEmailCurrency(params.amount)} (${params.reference}) is complete. The money has been sent and your balance is updated.`,
+    primaryAction: { label: "View activity", href: "/auth/transactions" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Your transfer is complete",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-success/${params.reference}`,
+    },
+    "sendTransactionSuccessfulEmail",
+  );
+}
+
+export async function sendTransactionRejectedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+  reviewNote?: string | null;
+}) {
+  const noteBlock = params.reviewNote
+    ? `<p><strong>Note from our team:</strong> ${escapeHtml(params.reviewNote)}</p>`
+    : "";
+
+  const content = buildTransactionalEmail({
+    title: "We couldn't approve your transfer",
+    preheader: "Your transfer was not approved.",
+    bodyHtml: `${buildTransactionEmailBody({
+      ...params,
+      headline: "We weren't able to approve this transfer.",
+      detail: "No money was moved from your account.",
+    })}${noteBlock}`,
+    textBody: `Hi ${params.fullName},\n\nWe weren't able to approve your transfer ${params.reference}. No money was moved from your account.${params.reviewNote ? `\n\nNote from our team: ${params.reviewNote}` : ""}`,
+    primaryAction: { label: "View transfers", href: "/auth/transfers" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Update on your transfer",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-rejected/${params.reference}`,
+    },
+    "sendTransactionRejectedEmail",
+  );
+}
+
+export async function sendTransactionDelayedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+  reviewNote?: string | null;
+}) {
+  const noteBlock = params.reviewNote
+    ? `<p><strong>Note from our team:</strong> ${escapeHtml(params.reviewNote)}</p>`
+    : "";
+
+  const content = buildTransactionalEmail({
+    title: "Your transfer needs a little more time",
+    preheader: "We need a little more time to review your transfer.",
+    bodyHtml: `${buildTransactionEmailBody({
+      ...params,
+      headline: "We need a little more time to review your transfer.",
+      detail: "Your balance won't change while we finish reviewing. We'll email you as soon as we have an update.",
+    })}${noteBlock}`,
+    textBody: `Hi ${params.fullName},\n\nWe need a little more time to review your transfer ${params.reference}. Your balance won't change while we finish reviewing.${params.reviewNote ? `\n\nNote from our team: ${params.reviewNote}` : ""}`,
+    primaryAction: { label: "View transfers", href: "/auth/transfers" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: "Update on your transfer review",
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `transaction-delayed/${params.reference}`,
+    },
+    "sendTransactionDelayedEmail",
+  );
+}
+
+export async function sendTransferCreatedEmail(params: {
+  email: string;
+  fullName: string;
+  amount: number;
+  reference: string;
+  description: string;
+}) {
+  return sendTransactionPendingEmail(params);
 }
 
 export async function sendTransferStatusEmail(params: {
@@ -303,34 +650,33 @@ export async function sendTransferStatusEmail(params: {
   reference: string;
   description: string;
   status: "COMPLETED" | "FAILED" | "REVERSED";
+  reviewNote?: string | null;
 }) {
-  const statusLabel =
-    params.status === "COMPLETED"
-      ? "approved"
-      : params.status === "FAILED"
-        ? "declined"
-        : "reversed";
+  if (params.status === "COMPLETED") {
+    return sendTransactionApprovedEmail(params);
+  }
 
-  const balanceMessage =
-    params.status === "COMPLETED"
-      ? "Balances have been updated after ledger posting."
-      : "Account balances were not changed.";
+  if (params.status === "FAILED") {
+    return sendTransactionRejectedEmail(params);
+  }
+
+  const balanceMessage = "No money was moved from your account.";
 
   const content = buildTransactionalEmail({
-    title: `Transfer request ${statusLabel}`,
-    preheader: `Your transfer ${params.reference} was ${statusLabel}.`,
+    title: "Your transfer was reversed",
+    preheader: `Your transfer ${params.reference} was reversed.`,
     bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
-      <p>Your transfer request <strong>${escapeHtml(params.reference)}</strong> for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong> has been <strong>${escapeHtml(statusLabel)}</strong>.</p>
+      <p>Your transfer <strong>${escapeHtml(params.reference)}</strong> for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong> was reversed.</p>
       <p><strong>Details:</strong> ${escapeHtml(params.description)}</p>
       <p>${escapeHtml(balanceMessage)}</p>`,
-    textBody: `Hi ${params.fullName},\n\nYour transfer ${params.reference} was ${statusLabel}. ${balanceMessage}`,
-    primaryAction: { label: "View activity", href: "/transactions" },
+    textBody: `Hi ${params.fullName},\n\nYour transfer ${params.reference} was reversed. ${balanceMessage}`,
+    primaryAction: { label: "View activity", href: "/auth/transactions" },
   });
 
   return safeSendEmail(
     {
       to: params.email,
-      subject: `Transfer request ${statusLabel}`,
+      subject: "Your transfer was reversed",
       text: content.text,
       html: content.html,
       idempotencyKey: `transfer-status/${params.reference}/${params.status}`,
@@ -353,7 +699,7 @@ export async function sendSupportTicketCreatedEmail(params: {
       <p><strong>Subject:</strong> ${escapeHtml(params.subject)}</p>
       <p><strong>Ticket ID:</strong> ${escapeHtml(params.ticketId)}</p>`,
     textBody: `Hi ${params.fullName},\n\nWe received your support ticket: ${params.subject}\nTicket ID: ${params.ticketId}`,
-    primaryAction: { label: "View support tickets", href: "/member/support" },
+    primaryAction: { label: "View support tickets", href: "/auth/support" },
   });
 
   return safeSendEmail(
@@ -389,7 +735,7 @@ export async function sendSupportTicketUpdatedEmail(params: {
       <p><strong>Status:</strong> ${escapeHtml(statusLabel)}</p>
       <p><strong>Ticket ID:</strong> ${escapeHtml(params.ticketId)}</p>`,
     textBody: `Hi ${params.fullName},\n\nYour support ticket "${params.subject}" is now ${statusLabel}.`,
-    primaryAction: { label: "Open support", href: "/member/support" },
+    primaryAction: { label: "Open support", href: "/auth/support" },
   });
 
   return safeSendEmail(
@@ -404,32 +750,204 @@ export async function sendSupportTicketUpdatedEmail(params: {
   );
 }
 
-export async function sendContactConfirmationEmail(params: {
-  email: string;
+export type ContactFormEmailInput = {
   fullName: string;
+  email: string;
+  phone?: string;
   topic: string;
+  message: string;
   reference: string;
-}) {
+  submittedAt?: string;
+};
+
+function buildContactFormMemberDetailRows(params: ContactFormEmailInput): EmailDetailRow[] {
+  return [
+    { label: "Reference", value: params.reference },
+    { label: "Topic", value: params.topic },
+    { label: "Message", value: params.message },
+    { label: "Name", value: params.fullName },
+    { label: "Email", value: params.email },
+    { label: "Phone", value: params.phone?.trim() || "Not provided" },
+    ...(params.submittedAt ? [{ label: "Submitted", value: params.submittedAt }] : []),
+  ];
+}
+
+function buildContactFormAdminDetailRows(params: ContactFormEmailInput): EmailDetailRow[] {
+  return [
+    { label: "Topic", value: params.topic },
+    { label: "Reference", value: params.reference },
+    ...(params.submittedAt ? [{ label: "Submitted", value: params.submittedAt }] : []),
+    { label: "From", value: params.fullName },
+    { label: "Email", value: params.email },
+    { label: "Phone", value: params.phone?.trim() || "Not provided" },
+    { label: "Message", value: params.message },
+  ];
+}
+
+export async function sendContactConfirmationEmail(params: ContactFormEmailInput) {
+  const detailRows = buildContactFormMemberDetailRows(params);
+  const detailsHtml = buildEmailDetailsBlock(detailRows);
+  const detailsText = buildEmailDetailsPlainText(detailRows);
+
   const content = buildTransactionalEmail({
-    title: "Message received",
-    preheader: "We received your message to Bluewave Credit Union.",
+    title: "We received your message",
+    preheader: `We received your ${params.topic.toLowerCase()} message — reference ${params.reference}.`,
     bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
-      <p>Thank you for contacting Bluewave Credit Union. We received your message regarding <strong>${escapeHtml(params.topic)}</strong>.</p>
-      <p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>
-      <p>A member services representative will respond using the email address you provided.</p>`,
-    textBody: `Hi ${params.fullName},\n\nWe received your contact form message regarding ${params.topic}. Reference: ${params.reference}`,
-    primaryAction: { label: "Visit Bluewave", href: "/" },
+      <p>Thank you for contacting Bluewave Credit Union about <strong>${escapeHtml(params.topic)}</strong>. We received your message and a member services representative will reply using the email address you provided.</p>
+      <p>Keep the details below for your records:</p>
+      ${detailsHtml}
+      <p>Typical response time is one business day during ${escapeHtml(INSTITUTION.memberServicesHoursShort)}.</p>`,
+    textBody: `Hi ${params.fullName},\n\nThank you for contacting Bluewave Credit Union about ${params.topic}. We received your message and will reply using the email address you provided.\n\n${detailsText}\n\nTypical response time is one business day during ${INSTITUTION.memberServicesHoursShort}.`,
+    primaryAction: { label: "Visit member support", href: "/support" },
   });
 
   return safeSendEmail(
     {
       to: params.email,
-      subject: "We received your message",
+      subject: `We received your message — ${params.topic}`,
       text: content.text,
       html: content.html,
       idempotencyKey: `contact-confirmation/${params.reference}`,
     },
     "sendContactConfirmationEmail",
+  );
+}
+
+export async function sendContactFormAdminEmail(params: ContactFormEmailInput) {
+  const config = getEmailConfig();
+  const detailRows = buildContactFormAdminDetailRows(params);
+  const detailsHtml = buildEmailDetailsBlock(detailRows);
+  const detailsText = buildEmailDetailsPlainText(detailRows);
+
+  if (!config.adminAlertEmail) {
+    logEmailPayload(
+      {
+        to: "admin-alert-disabled",
+        subject: `Contact form: ${params.topic}`,
+        html: detailsText,
+        text: detailsText,
+        idempotencyKey: `contact-form-admin/${params.reference}`,
+      },
+      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
+    );
+    return { ok: true as const, mode: "logged" as const };
+  }
+
+  const content = buildTransactionalEmail({
+    title: "New contact form message",
+    preheader: `${params.topic} message from ${params.fullName} — reply to ${params.email}.`,
+    bodyHtml: `<p><strong>${escapeHtml(params.fullName)}</strong> sent a new contact form message about <strong>${escapeHtml(params.topic)}</strong>.</p>
+      <p>Review the message below, then reply directly to <a href="mailto:${escapeHtml(params.email)}" style="color: #0D47A1; text-decoration: none; font-weight: 700;">${escapeHtml(params.email)}</a>.</p>
+      ${detailsHtml}`,
+    textBody: `New contact form message\n\n${params.fullName} sent a message about ${params.topic}.\n\n${detailsText}\n\nReply to: ${params.email}`,
+    primaryAction: { label: "Open operations console", href: "/lex/auth" },
+  });
+
+  return safeSendEmail(
+    {
+      to: config.adminAlertEmail,
+      subject: `[Bluewave Admin] Contact form: ${params.topic} — ${params.fullName}`,
+      text: content.text,
+      html: content.html,
+      replyTo: params.email,
+      idempotencyKey: `contact-form-admin/${params.reference}`,
+    },
+    "sendContactFormAdminEmail",
+  );
+}
+
+export type MembershipApplicationAdminEmailInput = {
+  fullName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  occupation: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  userId: string;
+  requestedAccountTypes: string;
+};
+
+function formatMembershipApplicationAddress(params: Omit<
+  MembershipApplicationAdminEmailInput,
+  "fullName" | "email" | "phone" | "dateOfBirth" | "occupation" | "userId"
+>) {
+  return [
+    params.addressLine1,
+    params.addressLine2,
+    `${params.city}, ${params.state} ${params.postalCode}`,
+    params.country,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildMembershipApplicationDetailRows(
+  params: MembershipApplicationAdminEmailInput,
+): EmailDetailRow[] {
+  return [
+    { label: "Status", value: "Pending review" },
+    { label: "Applicant", value: params.fullName },
+    { label: "Email", value: params.email },
+    { label: "Phone", value: params.phone },
+    { label: "Date of birth", value: params.dateOfBirth },
+    { label: "Occupation", value: params.occupation },
+    {
+      label: "Address",
+      value: formatMembershipApplicationAddress(params),
+    },
+    {
+      label: "Requested accounts",
+      value: params.requestedAccountTypes,
+    },
+  ];
+}
+
+export async function sendMembershipApplicationAdminEmail(
+  params: MembershipApplicationAdminEmailInput,
+) {
+  const config = getEmailConfig();
+  const detailRows = buildMembershipApplicationDetailRows(params);
+  const detailsHtml = buildEmailDetailsBlock(detailRows);
+  const detailsText = buildEmailDetailsPlainText(detailRows);
+
+  if (!config.adminAlertEmail) {
+    logEmailPayload(
+      {
+        to: "admin-alert-disabled",
+        subject: "New membership application",
+        html: detailsText,
+        text: detailsText,
+        idempotencyKey: `membership-application-admin/${params.userId}`,
+      },
+      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
+    );
+    return { ok: true as const, mode: "logged" as const };
+  }
+
+  const content = buildTransactionalEmail({
+    title: "New membership application",
+    preheader: `${params.fullName} submitted a membership application — pending review.`,
+    bodyHtml: `<p><strong>${escapeHtml(params.fullName)}</strong> submitted a new membership application.</p>
+      <p>Review the applicant details below, then sign in to the operations console to approve or follow up.</p>
+      ${detailsHtml}`,
+    textBody: `New membership application\n\n${params.fullName} submitted a new membership application.\n\n${detailsText}\n\nSign in to the operations console to review this application.`,
+    primaryAction: { label: "Open operations console", href: "/lex/auth" },
+  });
+
+  return safeSendEmail(
+    {
+      to: config.adminAlertEmail,
+      subject: `[Bluewave Admin] New membership application — ${params.fullName}`,
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `membership-application-admin/${params.userId}`,
+    },
+    "sendMembershipApplicationAdminEmail",
   );
 }
 
@@ -486,7 +1004,7 @@ export async function sendPayeeAddedEmail(params: {
       <p><strong>${escapeHtml(params.payeeName)}</strong> was added to your Bluewave payee list.</p>
       <p>If you did not add this payee, contact member services immediately.</p>`,
     textBody: `Hi ${params.fullName},\n\n${params.payeeName} was added to your Bluewave payee list.`,
-    primaryAction: { label: "Manage payees", href: "/payees" },
+    primaryAction: { label: "Manage payees", href: "/auth/payees" },
   });
 
   return safeSendEmail(
@@ -512,10 +1030,10 @@ export async function sendBillPaymentCreatedEmail(params: {
     title: "Bill payment saved",
     preheader: "Your bill payment was saved for review.",
     bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
-      <p>Your bill payment to <strong>${escapeHtml(params.payeeName)}</strong> for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong> was saved.</p>
-      <p>Status: <strong>${escapeHtml(params.status)}</strong>. Bill payments are submitted for review before posting.</p>`,
+      <p>We've saved your bill payment to <strong>${escapeHtml(params.payeeName)}</strong> for <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong>.</p>
+      <p>We're reviewing it now and will email you when it's complete.</p>`,
     textBody: `Hi ${params.fullName},\n\nYour bill payment to ${params.payeeName} for ${formatEmailCurrency(params.amount)} was saved (${params.status}).`,
-    primaryAction: { label: "View bill pay", href: "/bill-pay" },
+    primaryAction: { label: "View bill pay", href: "/auth/bill-pay" },
   });
 
   return safeSendEmail(
@@ -540,8 +1058,8 @@ export async function sendBillPaymentReviewedEmail(params: {
 }) {
   const balanceMessage =
     params.status === "POSTED"
-      ? "Balances were updated after operations approval and ledger posting."
-      : "Account balances were not changed.";
+      ? "The payment has been sent and your balance is updated."
+      : "No money was moved from your account.";
 
   const content = buildTransactionalEmail({
     title: `Bill payment ${params.status.toLowerCase()}`,
@@ -551,7 +1069,7 @@ export async function sendBillPaymentReviewedEmail(params: {
       ${params.reference ? `<p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>` : ""}
       <p>${escapeHtml(balanceMessage)}</p>`,
     textBody: `Hi ${params.fullName},\n\nYour bill payment to ${params.payeeName} was ${params.status.toLowerCase()}. ${balanceMessage}`,
-    primaryAction: { label: "View bill pay history", href: "/bill-pay" },
+    primaryAction: { label: "View bill pay history", href: "/auth/bill-pay" },
   });
 
   return safeSendEmail(
@@ -573,20 +1091,22 @@ export async function sendAdjustmentPostedEmail(params: {
   direction: "DEBIT" | "CREDIT";
   reference: string;
 }) {
+  const adjustmentMessage = buildAdjustmentPostedMessage(params.direction, params.amount);
+
   const content = buildTransactionalEmail({
-    title: "Balance adjustment posted",
-    preheader: "A balance adjustment was posted to your account.",
+    title: "Your account was updated",
+    preheader: adjustmentMessage,
     bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
-      <p>A controlled <strong>${escapeHtml(params.direction.toLowerCase())}</strong> adjustment of <strong>${escapeHtml(formatEmailCurrency(params.amount))}</strong> was posted to your account.</p>
+      <p>${escapeHtml(adjustmentMessage)}</p>
       <p><strong>Reference:</strong> ${escapeHtml(params.reference)}</p>`,
-    textBody: `Hi ${params.fullName},\n\nA ${params.direction.toLowerCase()} adjustment of ${formatEmailCurrency(params.amount)} was posted (${params.reference}).`,
-    primaryAction: { label: "View accounts", href: "/accounts" },
+    textBody: `Hi ${params.fullName},\n\n${adjustmentMessage}\n\nReference: ${params.reference}`,
+    primaryAction: { label: "View accounts", href: "/auth/accounts" },
   });
 
   return safeSendEmail(
     {
       to: params.email,
-      subject: "Balance adjustment posted",
+      subject: "Your account was updated",
       text: content.text,
       html: content.html,
       idempotencyKey: `adjustment-posted/${params.reference}`,
@@ -609,7 +1129,7 @@ export async function sendDisputeCreatedEmail(params: {
       <p><strong>Reason:</strong> ${escapeHtml(params.reason)}</p>
       <p>Submitting a dispute does not automatically reverse a transaction.</p>`,
     textBody: `Hi ${params.fullName},\n\nWe received your dispute for ${params.reference}. Reason: ${params.reason}`,
-    primaryAction: { label: "View disputes", href: "/disputes" },
+    primaryAction: { label: "View disputes", href: "/auth/disputes" },
   });
 
   return safeSendEmail(
@@ -641,7 +1161,7 @@ export async function sendDisputeUpdatedEmail(params: {
       ${params.resolutionNote ? `<p>${escapeHtml(params.resolutionNote)}</p>` : ""}
       <p>Disputes do not automatically reverse transactions.</p>`,
     textBody: `Hi ${params.fullName},\n\nYour dispute for ${params.reference} is now ${statusLabel}. ${params.resolutionNote ?? ""}`,
-    primaryAction: { label: "View disputes", href: "/disputes" },
+    primaryAction: { label: "View disputes", href: "/auth/disputes" },
   });
 
   return safeSendEmail(
@@ -672,7 +1192,7 @@ export async function sendKycStatusEmail(params: {
       ${params.reviewNote ? `<p>${escapeHtml(params.reviewNote)}</p>` : ""}
       <p>Visit your profile page to review details or resubmit if needed.</p>`,
     textBody: `Hi ${params.fullName},\n\nYour identity verification status is now ${statusLabel}. ${params.reviewNote ?? ""}`,
-    primaryAction: { label: "View profile", href: "/profile" },
+    primaryAction: { label: "View profile", href: "/auth/profile" },
   });
 
   return safeSendEmail(
@@ -684,5 +1204,41 @@ export async function sendKycStatusEmail(params: {
       idempotencyKey: `kyc-status/${params.email}/${params.status}`,
     },
     "sendKycStatusEmail",
+  );
+}
+
+export async function sendIdVerificationReviewEmail(params: {
+  email: string;
+  fullName: string;
+  status: "APPROVED" | "REJECTED" | "DECLINED";
+  reviewNote?: string;
+}) {
+  const statusLabel =
+    params.status === "APPROVED"
+      ? "approved"
+      : params.status === "REJECTED"
+        ? "rejected"
+        : "declined";
+
+  const content = buildTransactionalEmail({
+    title: "ID verification update",
+    preheader: `Your ID verification was ${statusLabel}.`,
+    bodyHtml: `<p>Hi ${escapeHtml(params.fullName)},</p>
+      <p>Your ID verification was <strong>${escapeHtml(statusLabel)}</strong>.</p>
+      ${params.reviewNote ? `<p>${escapeHtml(params.reviewNote)}</p>` : ""}
+      <p>Visit your profile page to review the decision or submit updated ID photos if needed.</p>`,
+    textBody: `Hi ${params.fullName},\n\nYour ID verification was ${statusLabel}. ${params.reviewNote ?? ""}`,
+    primaryAction: { label: "View profile", href: "/auth/profile" },
+  });
+
+  return safeSendEmail(
+    {
+      to: params.email,
+      subject: `ID verification ${statusLabel}`,
+      text: content.text,
+      html: content.html,
+      idempotencyKey: `id-verification/${params.email}/${params.status}/${params.reviewNote ?? "none"}`,
+    },
+    "sendIdVerificationReviewEmail",
   );
 }

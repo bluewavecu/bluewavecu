@@ -97,63 +97,63 @@ export const testimonials: HomeTestimonial[] = [
   {
     id: "testimonial-1",
     name: "Olivia Carter",
-    location: "Austin, TX",
+    location: "Plano, TX",
     quote:
       "The dashboard feels calm, polished, and easy to scan when I want a quick view of my accounts.",
   },
   {
     id: "testimonial-2",
     name: "Marcus Bennett",
-    location: "Charlotte, NC",
+    location: "Irving, TX",
     quote:
       "Transfers and product details are presented clearly, which makes everyday banking feel less complicated.",
   },
   {
     id: "testimonial-3",
     name: "Emily Rodriguez",
-    location: "Phoenix, AZ",
+    location: "Arlington, TX",
     quote:
       "I like how the Bluewave experience puts mobile banking and account visibility front and center.",
   },
   {
     id: "testimonial-4",
     name: "Daniel Brooks",
-    location: "Denver, CO",
+    location: "Frisco, TX",
     quote:
       "The layout has the premium feel I expect from a modern credit union without making things feel crowded.",
   },
   {
     id: "testimonial-5",
     name: "Sophia Mitchell",
-    location: "Tampa, FL",
+    location: "Richardson, TX",
     quote:
       "Account summaries, quick actions, and recent activity are grouped in a way that feels practical.",
   },
   {
     id: "testimonial-6",
     name: "Ethan Parker",
-    location: "Seattle, WA",
+    location: "Garland, TX",
     quote:
       "The interface makes it simple to understand where to go for cards, transfers, loans, and support.",
   },
   {
     id: "testimonial-7",
     name: "Grace Thompson",
-    location: "Nashville, TN",
+    location: "McKinney, TX",
     quote:
       "Bluewave's visual style feels trustworthy and current, especially on a phone screen.",
   },
   {
     id: "testimonial-8",
     name: "Noah Sullivan",
-    location: "Columbus, OH",
+    location: "Addison, TX",
     quote:
       "The member dashboard gives me the kind of clean snapshot I want before making money decisions.",
   },
   {
     id: "testimonial-9",
     name: "Ava Coleman",
-    location: "San Diego, CA",
+    location: "Coppell, TX",
     quote:
       "The banking pages feel organized, with enough detail to be useful and not so much that it slows me down.",
   },
@@ -167,126 +167,126 @@ export const testimonials: HomeTestimonial[] = [
   {
     id: "testimonial-11",
     name: "Mia Henderson",
-    location: "Portland, OR",
+    location: "Flower Mound, TX",
     quote:
       "The design makes checking balances and looking through recent activity feel straightforward.",
   },
   {
     id: "testimonial-12",
     name: "Lucas Reed",
-    location: "Raleigh, NC",
+    location: "Southlake, TX",
     quote:
       "The navigation is predictable, which matters when I am moving between accounts and payments.",
   },
   {
     id: "testimonial-13",
     name: "Chloe Ramirez",
-    location: "San Antonio, TX",
+    location: "Euless, TX",
     quote:
       "The mobile layout feels built for real daily use, not just a smaller version of a desktop page.",
   },
   {
     id: "testimonial-14",
     name: "Isaac Morgan",
-    location: "Minneapolis, MN",
+    location: "The Colony, TX",
     quote:
       "The product cards make it easy to compare banking options without hunting through the page.",
   },
   {
     id: "testimonial-15",
     name: "Lily Anderson",
-    location: "Salt Lake City, UT",
+    location: "Allen, TX",
     quote:
       "I like the balance of polished visuals and practical account information throughout the experience.",
   },
   {
     id: "testimonial-16",
     name: "Benjamin Cox",
-    location: "Chicago, IL",
+    location: "Grapevine, TX",
     quote:
       "The dashboard gives a strong first impression for a credit union that wants to feel digital-first.",
   },
   {
     id: "testimonial-17",
     name: "Harper Collins",
-    location: "Richmond, VA",
+    location: "Bedford, TX",
     quote:
       "The pages have enough structure to support serious banking tools as new features are added.",
   },
   {
     id: "testimonial-18",
     name: "Owen Russell",
-    location: "Boise, ID",
+    location: "Mansfield, TX",
     quote:
       "Quick actions and recent transactions are exactly where I expect them to be.",
   },
   {
     id: "testimonial-19",
     name: "Natalie Howard",
-    location: "Orlando, FL",
+    location: "Celina, TX",
     quote:
       "The lending team helped us refinance with a clear rate and straightforward online application.",
   },
   {
     id: "testimonial-20",
     name: "Jack Peterson",
-    location: "Kansas City, MO",
+    location: "Rockwall, TX",
     quote:
       "It feels easy to move from public product information into the member banking area.",
   },
   {
     id: "testimonial-21",
     name: "Ella Simmons",
-    location: "Madison, WI",
+    location: "Wylie, TX",
     quote:
       "The clean spacing and blue palette make the experience feel focused and professional.",
   },
   {
     id: "testimonial-22",
     name: "Henry Price",
-    location: "Atlanta, GA",
+    location: "Rowlett, TX",
     quote:
       "Support, accounts, transfers, and statements are easy to find in online banking.",
   },
   {
     id: "testimonial-23",
     name: "Zoe Richardson",
-    location: "Las Vegas, NV",
+    location: "Prosper, TX",
     quote:
       "The homepage communicates modern banking quickly, then gives clear ways to continue.",
   },
   {
     id: "testimonial-24",
     name: "Mason Griffin",
-    location: "Pittsburgh, PA",
+    location: "Hurst, TX",
     quote:
       "The interface feels reliable because the navigation and account sections are consistent.",
   },
   {
     id: "testimonial-25",
     name: "Victoria Hughes",
-    location: "Scottsdale, AZ",
+    location: "Keller, TX",
     quote:
       "The card controls and security messaging make the digital banking experience feel thoughtful.",
   },
   {
     id: "testimonial-26",
     name: "Logan Bryant",
-    location: "Omaha, NE",
+    location: "DeSoto, TX",
     quote:
       "The layout makes routine banking tasks feel faster because the important actions are easy to find.",
   },
   {
     id: "testimonial-27",
     name: "Abigail Flores",
-    location: "Sacramento, CA",
+    location: "Lancaster, TX",
     quote:
       "The testimonials, CTA, and product sections work together without making the page feel busy.",
   },
   {
     id: "testimonial-28",
     name: "Samuel Murphy",
-    location: "Louisville, KY",
+    location: "Duncanville, TX",
     quote:
       "Online banking gives us one secure place to manage accounts, cards, and member services.",
   },
@@ -300,7 +300,7 @@ export const testimonials: HomeTestimonial[] = [
   {
     id: "testimonial-30",
     name: "Carter Evans",
-    location: "Boston, MA",
+    location: "Waxahachie, TX",
     quote:
       "Bluewave's digital experience feels modern while still keeping important banking information readable.",
   },

@@ -3,20 +3,25 @@ import {
   ArrowLeftRight,
   BadgeCheck,
   Cog,
+  CreditCard,
   FileBarChart,
   Receipt,
   Scale,
+  Users,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const actions = [
-  { label: "Review Transfers", href: "/admin/transfer-reviews", icon: ArrowLeftRight },
-  { label: "Review Bill Pay", href: "/admin/bill-pay", icon: Receipt },
-  { label: "Review KYC", href: "/admin/compliance", icon: BadgeCheck },
-  { label: "View Reconciliation", href: "/admin/reconciliation", icon: Scale },
-  { label: "Run Due Jobs", href: "/admin/jobs", icon: Cog },
-  { label: "Finance Reports", href: "/admin/finance-reports", icon: FileBarChart },
+  { label: "Review memberships", href: "/lex/auth/users", icon: Users },
+  { label: "Review Transfers", href: "/lex/auth/transfer-reviews", icon: ArrowLeftRight },
+  { label: "Review Bill Pay", href: "/lex/auth/bill-pay", icon: Receipt },
+  { label: "Review KYC", href: "/lex/auth/compliance", icon: BadgeCheck },
+  { label: "Review ID photos", href: "/lex/auth/id-verifications", icon: BadgeCheck },
+  { label: "Card applications", href: "/lex/auth/card-applications", icon: CreditCard },
+  { label: "View Reconciliation", href: "/lex/auth/reconciliation", icon: Scale },
+  { label: "Run Due Jobs", href: "/lex/auth/jobs", icon: Cog },
+  { label: "Finance Reports", href: "/lex/auth/finance-reports", icon: FileBarChart },
 ];
 
 export function AdminQuickActions() {

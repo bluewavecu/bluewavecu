@@ -1,26 +1,21 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PROFILE_PHOTO_UPDATED_EVENT } from "@/components/profile/ProfilePhotoUpload";
+import { MemberAvatar } from "@/components/shared/MemberAvatar";
 import { buildAdminAuthUrl, buildMemberAuthUrl } from "@/lib/authRoutes";
 import { getJson, postJson } from "@/lib/clientApi";
+import { cn } from "@/lib/utils";
 import type { SafeUser } from "@/types/banking";
 
 type HeaderUser = Pick<SafeUser, "fullName" | "email" | "role">;
 
 type MeResponse = {
   user: HeaderUser;
+  profilePhotoUrl: string | null;
 };
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
 
 type AppUserBadgeProps = {
   showLogout?: boolean;
@@ -28,7 +23,10 @@ type AppUserBadgeProps = {
 
 export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
   const [user, setUser] = useState<HeaderUser | null>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
@@ -39,15 +37,40 @@ export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
 
       if (!cancelled && result.success) {
         setUser(result.data.user);
+        setProfilePhotoUrl(result.data.profilePhotoUrl);
       }
     }
 
     void loadCurrentUser();
 
+    function handlePhotoUpdated(event: Event) {
+      const detail = (event as CustomEvent<{ profilePhotoUrl: string | null }>).detail;
+      setProfilePhotoUrl(detail.profilePhotoUrl);
+    }
+
+    window.addEventListener(PROFILE_PHOTO_UPDATED_EVENT, handlePhotoUpdated);
+
     return () => {
       cancelled = true;
+      window.removeEventListener(PROFILE_PHOTO_UPDATED_EVENT, handlePhotoUpdated);
     };
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   async function handleLogout() {
     setIsSigningOut(true);
@@ -56,38 +79,65 @@ export function AppUserBadge({ showLogout = true }: AppUserBadgeProps) {
 
     await postJson("/api/auth/logout", {});
     setUser(null);
+    setOpen(false);
     router.push(role === "ADMIN" ? buildAdminAuthUrl() : buildMemberAuthUrl());
     router.refresh();
   }
 
-  const displayName = user?.fullName ?? "Member session";
-  const displayMeta = user?.email ?? "Sign in required";
-  const initials = getInitials(displayName);
+  const displayName = user?.fullName ?? "Member";
+  const displayMeta = user?.email ?? "Signed in";
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-3 rounded-full border border-primary-navy/[0.08] bg-white py-1 pl-1 pr-4 shadow-[0_12px_34px_rgba(10,42,94,0.07)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-navy text-sm font-semibold text-white">
-          {initials || "BW"}
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((current) => !current)}
+        className={cn(
+          "inline-flex h-10 max-w-[12rem] items-center gap-2 rounded-full border border-primary-navy/[0.08] bg-white py-1 pl-1 pr-2.5 shadow-[0_12px_34px_rgba(10,42,94,0.07)] transition hover:border-ocean-blue/[0.35] dark:border-white/[0.08] dark:bg-white/[0.06]",
+          open && "border-ocean-blue/[0.35]",
+        )}
+      >
+        <MemberAvatar fullName={displayName} profilePhotoUrl={profilePhotoUrl} size="sm" />
+        <span className="hidden truncate text-sm font-semibold text-primary-navy dark:text-white md:inline">
+          {displayName.split(" ")[0]}
         </span>
-        <div className="hidden sm:block">
-          <p className="text-sm font-semibold text-primary-navy dark:text-white">{displayName}</p>
-          <p className="max-w-44 truncate text-xs text-bluewave-gray dark:text-white/[0.52]">
-            {displayMeta}
-          </p>
-        </div>
-      </div>
+        <ChevronDown
+          size={15}
+          aria-hidden="true"
+          className={cn(
+            "shrink-0 text-bluewave-gray transition dark:text-white/[0.52]",
+            open && "rotate-180",
+          )}
+        />
+      </button>
 
-      {showLogout && user ? (
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          disabled={isSigningOut}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.08] bg-white px-3 text-xs font-semibold text-primary-navy transition hover:border-ocean-blue hover:text-ocean-blue disabled:opacity-60 dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-white"
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-primary-navy/[0.08] bg-white p-2 shadow-[0_24px_70px_rgba(10,42,94,0.16)] dark:border-white/[0.08] dark:bg-[#071526]"
         >
-          <LogOut size={15} aria-hidden="true" />
-          {isSigningOut ? "Signing out..." : "Sign out"}
-        </button>
+          <div className="border-b border-primary-navy/[0.06] px-3 py-2.5 dark:border-white/[0.06]">
+            <p className="truncate text-sm font-semibold text-primary-navy dark:text-white">
+              {displayName}
+            </p>
+            <p className="truncate text-xs text-bluewave-gray dark:text-white/[0.52]">{displayMeta}</p>
+          </div>
+
+          {showLogout && user ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => void handleLogout()}
+              disabled={isSigningOut}
+              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-primary-navy transition hover:bg-primary-navy/[0.05] disabled:opacity-60 dark:text-white dark:hover:bg-white/[0.06]"
+            >
+              <LogOut size={16} aria-hidden="true" />
+              {isSigningOut ? "Signing out..." : "Sign out"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

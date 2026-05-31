@@ -29,6 +29,14 @@ pnpm-debug.log*
 !.env.example
 !env.vercel.template
 
+# member-uploaded profile photos
+/public/uploads/profiles/*
+!/public/uploads/profiles/.gitkeep
+
+# member-uploaded ID documents
+/public/uploads/id-documents/*
+!/public/uploads/id-documents/.gitkeep
+
 # vercel
 .vercel
 

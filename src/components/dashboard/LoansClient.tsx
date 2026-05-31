@@ -57,7 +57,7 @@ export function LoansClient() {
           monthly payment of {formatCurrency(loan.monthlyPayment)}.
         </p>
         <Link
-          href="/member/loans"
+          href="/auth/loans"
           className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue"
         >
           View loan details

@@ -18,11 +18,11 @@ import { cn } from "@/lib/utils";
 type ReadFilter = "all" | "unread" | "read";
 
 function notificationLink(type: NotificationType) {
-  if (type === "TRANSFER") return "/transfers";
-  if (type === "SUPPORT") return "/member/support";
-  if (type === "SECURITY") return "/member/security";
-  if (type === "ACCOUNT") return "/accounts";
-  return "/dashboard";
+  if (type === "TRANSFER") return "/auth/transfers";
+  if (type === "SUPPORT") return "/auth/support";
+  if (type === "SECURITY") return "/auth/security";
+  if (type === "ACCOUNT") return "/auth/accounts";
+  return "/auth/dashboard";
 }
 
 export function NotificationsClient() {

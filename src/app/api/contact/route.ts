@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { apiSuccess, handleApiError } from "@/lib/api";
-import { sendAdminAlertEmail, sendContactConfirmationEmail } from "@/lib/email";
+import { sendContactConfirmationEmail, sendContactFormAdminEmail } from "@/lib/email";
 import { writeEventLog } from "@/lib/eventLog";
 import { contactFormSchema } from "@/lib/validators";
 
@@ -24,18 +24,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    void sendAdminAlertEmail({
-      subject: `Contact form: ${input.topic}`,
-      message: `${input.fullName} (${input.email}) wrote: ${input.message}`,
-      idempotencyKey: `contact-form/${reference}`,
+    const submittedAt = new Date().toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      dateStyle: "full",
+      timeStyle: "short",
     });
 
-    void sendContactConfirmationEmail({
-      email: input.email,
+    const emailPayload = {
       fullName: input.fullName,
+      email: input.email,
+      phone: input.phone,
       topic: input.topic,
+      message: input.message,
       reference,
-    });
+      submittedAt,
+    };
+
+    void sendContactFormAdminEmail(emailPayload);
+    void sendContactConfirmationEmail(emailPayload);
 
     return apiSuccess({ reference });
   } catch (error) {

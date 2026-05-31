@@ -5,8 +5,8 @@ export const INSTITUTION = {
   shortName: "Bluewave",
   routingNumber: "311978875",
   phone: {
-    display: "(214) 555-0147",
-    tel: "+12145550147",
+    display: "(646) 776-4480",
+    tel: "+16467764480",
   },
   email: "support@bluewavecu.com",
   address: {
@@ -30,6 +30,12 @@ export function getShareAccountLabel(accountType: AccountType) {
   switch (accountType) {
     case "SAVINGS":
       return "Share Savings";
+    case "BUSINESS":
+      return "Business Share Draft";
+    case "MONEY_MARKET":
+      return "Money Market Share";
+    case "CERTIFICATE":
+      return "Share Certificate";
     case "CREDIT":
       return "Visa Credit";
     case "CHECKING":

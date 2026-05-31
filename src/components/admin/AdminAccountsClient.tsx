@@ -89,6 +89,9 @@ export function AdminAccountsClient() {
             <option value="">All types</option>
             <option value="CHECKING">Checking</option>
             <option value="SAVINGS">Savings</option>
+            <option value="BUSINESS">Business</option>
+            <option value="MONEY_MARKET">Money market</option>
+            <option value="CERTIFICATE">Certificate (CD)</option>
             <option value="CREDIT">Credit</option>
           </select>
         </AdminFilterField>
@@ -177,13 +180,13 @@ export function AdminAccountsClient() {
               directly.
             </p>
             <Link
-              href="/admin/adjustments"
+              href="/lex/auth/adjustments"
               className="inline-block text-xs font-semibold text-royal-blue dark:text-light-blue"
             >
               Create adjustment
             </Link>
             <Link
-              href="/admin/reconciliation"
+              href="/lex/auth/reconciliation"
               className="ml-4 inline-block text-xs font-semibold text-royal-blue dark:text-light-blue"
             >
               View reconciliation

@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/prisma";
+import type { AccountType } from "@/types/banking";
 
 export class LedgerError extends Error {
   code: string;
@@ -41,7 +42,7 @@ function decimal(value: number) {
   return new Prisma.Decimal(value.toFixed(2));
 }
 
-function hasInsufficientFunds(accountType: "CHECKING" | "SAVINGS" | "CREDIT", balance: number, amount: number) {
+function hasInsufficientFunds(accountType: AccountType, balance: number, amount: number) {
   if (accountType === "CREDIT") {
     return false;
   }

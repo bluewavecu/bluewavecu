@@ -25,6 +25,15 @@ const accountMeta: Record<AccountType, { accent: string }> = {
   SAVINGS: {
     accent: "from-royal-blue to-ocean-blue",
   },
+  BUSINESS: {
+    accent: "from-primary-navy to-royal-blue",
+  },
+  MONEY_MARKET: {
+    accent: "from-royal-blue to-light-blue",
+  },
+  CERTIFICATE: {
+    accent: "from-ocean-blue to-primary-navy",
+  },
   CREDIT: {
     accent: "from-primary-navy to-royal-blue",
   },

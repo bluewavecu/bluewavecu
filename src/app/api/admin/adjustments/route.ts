@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       amount: input.amount,
       direction: input.direction,
       reason: input.reason,
+      effectiveAt: input.effectiveAt,
     });
 
     await logAdminAction({

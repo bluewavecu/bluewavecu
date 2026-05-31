@@ -20,10 +20,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrandLogo } from "@/components/layout/BrandLogo";
+import { AuthLogo } from "@/components/layout/AuthLogo";
 import {
   isMemberNavActive,
   memberNavSections,
+  MEMBER_DASHBOARD_PATH,
 } from "@/lib/memberRoutes";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +74,7 @@ export function AppSidebar() {
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-primary-navy/[0.08] bg-white/88 p-5 shadow-[12px_0_60px_rgba(10,42,94,0.08)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#071526]/92 lg:flex lg:flex-col">
-        <BrandLogo href="/dashboard" displayHeight={44} priority tone="dark" className="h-14 items-center" />
+        <AuthLogo href={MEMBER_DASHBOARD_PATH} displayHeight={44} priority className="h-14 items-center" />
 
         <nav aria-label="Banking app navigation" className="mt-8 flex-1 space-y-6 overflow-y-auto pr-1">
           {memberNavSections.map((section) => (
@@ -95,22 +96,13 @@ export function AppSidebar() {
           ))}
         </nav>
 
-        <div className="mt-4 rounded-lg border border-primary-navy/[0.08] bg-[#f4f9ff] p-4 dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <p className="text-xs font-semibold uppercase text-royal-blue dark:text-light-blue">
-            Bluewave Online Banking
-          </p>
-          <p className="mt-2 text-xs leading-5 text-bluewave-gray dark:text-white/[0.58]">
-            Transfers and bill payments are reviewed before posting. Only approved ledger entries
-            affect balances.
-          </p>
-          <Link
-            href="/"
-            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary-navy transition hover:text-ocean-blue dark:text-white"
-          >
-            <LogOut size={16} aria-hidden="true" />
-            Exit to website
-          </Link>
-        </div>
+        <Link
+          href="/"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary-navy/[0.72] transition hover:bg-primary-navy/[0.06] hover:text-primary-navy dark:text-white/[0.70] dark:hover:bg-white/[0.08] dark:hover:text-white"
+        >
+          <LogOut size={16} aria-hidden="true" />
+          Exit to website
+        </Link>
       </aside>
 
       <nav

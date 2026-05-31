@@ -18,7 +18,7 @@ export function SecurityTrustPage() {
         description="Bluewave protects member accounts with layered authentication, session monitoring, and careful review of sensitive financial activity."
         heroImage={marketingImages.securityHero}
         heroImageAlt="Secure online banking on a laptop"
-        primaryCta={{ label: "Sign in to manage security", href: "/auth" }}
+        primaryCta={{ label: "Sign in to manage security", href: "/auth/login" }}
         secondaryCta={{ label: "Report a concern", href: "/contact?topic=security" }}
       />
 
@@ -74,7 +74,7 @@ export function SecurityTrustPage() {
             </p>
           </MotionReveal>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="/auth" variant="light" size="lg">
+            <ButtonLink href="/auth/login" variant="light" size="lg">
               Sign in
             </ButtonLink>
             <ButtonLink href={MEMBER_SECURITY_PATH} variant="secondary" size="lg">

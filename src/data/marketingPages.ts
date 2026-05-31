@@ -17,6 +17,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { INSTITUTION } from "@/lib/institution";
 import type {
   FaqItem,
   JobListing,
@@ -26,25 +27,25 @@ import type {
 } from "@/types/marketing";
 
 export const marketingImages = {
-  personalHero: "/images/marketing/personal-hero.jpg",
-  personalSplit: "/images/marketing/personal-split.jpg",
-  businessHero: "/images/marketing/business-hero.jpg",
-  businessSplit: "/images/marketing/business-split.jpg",
-  savingsHero: "/images/marketing/savings-hero.jpg",
-  savingsSplit: "/images/marketing/savings-split.jpg",
-  loansHero: "/images/marketing/loans-hero.jpg",
-  loansSplit: "/images/marketing/loans-split.jpg",
-  supportHero: "/images/marketing/support-hero.jpg",
-  supportSplit: "/images/marketing/support-split.jpg",
-  securityHero: "/images/marketing/security-hero.jpg",
-  securitySplit: "/images/marketing/security-split.jpg",
-  mobileHero: "/images/marketing/mobile-hero.jpg",
-  ratesHero: "/images/marketing/rates-hero.jpg",
-  aboutHero: "/images/marketing/about-hero.jpg",
-  aboutSplit: "/images/marketing/about-split.jpg",
-  careersHero: "/images/marketing/careers-hero.jpg",
-  newsroomHero: "/images/marketing/newsroom-hero.jpg",
-  contactHero: "/images/marketing/contact-hero.jpg",
+  personalHero: "/images/marketing/personal-hero.webp",
+  personalSplit: "/images/marketing/personal-split.webp",
+  businessHero: "/images/marketing/business-hero.webp",
+  businessSplit: "/images/marketing/business-split.webp",
+  savingsHero: "/images/marketing/savings-hero.webp",
+  savingsSplit: "/images/marketing/savings-split.webp",
+  loansHero: "/images/marketing/loans-hero.webp",
+  loansSplit: "/images/marketing/loans-split.webp",
+  supportHero: "/images/marketing/support-hero.webp",
+  supportSplit: "/images/marketing/support-split.webp",
+  securityHero: "/images/marketing/security-hero.webp",
+  securitySplit: "/images/marketing/security-split.webp",
+  mobileHero: "/images/marketing/mobile-hero.webp",
+  ratesHero: "/images/marketing/rates-hero.webp",
+  aboutHero: "/images/marketing/about-hero.webp",
+  aboutSplit: "/images/marketing/about-split.webp",
+  careersHero: "/images/marketing/careers-hero.webp",
+  newsroomHero: "/images/marketing/newsroom-hero.webp",
+  contactHero: "/images/marketing/contact-hero.webp",
 } as const;
 
 export const marketingPages: Record<string, MarketingPageConfig> = {
@@ -57,8 +58,8 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
       "Checking, savings, digital cards, and member-first tools that keep daily money management clear, secure, and mobile-ready.",
     heroImage: marketingImages.personalHero,
     heroImageAlt: "Member reviewing finances on a laptop at home",
-    primaryCta: { label: "Open an account", href: "/register" },
-    secondaryCta: { label: "Online banking", href: "/auth" },
+    primaryCta: { label: "Open an account", href: "/auth/register" },
+    secondaryCta: { label: "Online banking", href: "/auth/login" },
     stats: [
       { value: "$0", label: "Everyday checking fees" },
       { value: "24/7", label: "Digital access" },
@@ -189,7 +190,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
     heroImage: marketingImages.savingsHero,
     heroImageAlt: "Piggy bank representing steady savings growth",
     primaryCta: { label: "Compare rates", href: "/rates" },
-    secondaryCta: { label: "Open savings", href: "/register" },
+    secondaryCta: { label: "Open savings", href: "/auth/register" },
     stats: [
       { value: "4.25%", label: "High Tide Savings APY*" },
       { value: "No min.", label: "To open online" },
@@ -254,7 +255,7 @@ export const marketingPages: Record<string, MarketingPageConfig> = {
     heroImage: marketingImages.loansHero,
     heroImageAlt: "Keys on a table representing a new home purchase",
     primaryCta: { label: "Check loan options", href: "/contact?topic=loans" },
-    secondaryCta: { label: "Member loan center", href: "/member/loans" },
+    secondaryCta: { label: "Member loan center", href: "/auth/loans" },
     stats: [
       { value: "6.49%", label: "Auto loans from APR*" },
       { value: "Fixed", label: "Rate options" },
@@ -506,7 +507,7 @@ export const supportFaqs: FaqItem[] = [
   {
     question: "How do I reset my password or unlock my account?",
     answer:
-      "Signed-in members can change their password under Settings. If you are locked out, contact member services at support@bluewavecu.com with your registered email and we will verify your identity before restoring access.",
+      `Signed-in members can change their password under Settings. If you are locked out, contact member services at ${INSTITUTION.email} with your registered email and we will verify your identity before restoring access.`,
   },
   {
     question: "Where can I view pending transfers or bill payments?",
@@ -526,7 +527,7 @@ export const supportFaqs: FaqItem[] = [
   {
     question: "How do I reach a person on the support team?",
     answer:
-      "Use the Contact page, call (646) 776-4480, or sign in and submit a ticket from the member Support center.",
+      `Use the Contact page, call ${INSTITUTION.phone.display}, or sign in and submit a ticket from the member Support center.`,
   },
 ];
 

@@ -1,4 +1,14 @@
 import {
+  DEMO_MEMBER_ADDRESS,
+  DEMO_MEMBER_FULL_NAME,
+  DEMO_MEMBER_PHONE,
+  DEMO_USER_EMAIL,
+  formatDemoMemberAddress,
+} from "@/lib/bootstrapAccounts";
+import { INSTITUTION } from "@/lib/institution";
+import {
+  buildEmailDetailsBlock,
+  buildEmailDetailsPlainText,
   buildEmailLayout,
   buildEmailPlainTextFooter,
   buildEmailText,
@@ -6,8 +16,6 @@ import {
   formatEmailCurrency,
   getEmailAppUrl,
 } from "@/lib/emailTemplate";
-
-const APP_URL = "https://bluewavecu.com";
 
 export type EmailPreviewDefinition = {
   id: string;
@@ -19,6 +27,7 @@ export type EmailPreviewDefinition = {
 };
 
 function previewLayout(
+  appUrl: string,
   title: string,
   bodyHtml: string,
   options?: {
@@ -31,15 +40,18 @@ function previewLayout(
     title,
     preheader: options?.preheader,
     bodyHtml,
-    appUrl: APP_URL,
+    appUrl,
     primaryAction: options?.primaryAction,
     securityNotice: options?.securityNotice,
   });
 }
 
 export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
-  const fullName = "Avery Morgan";
-  const email = "avery.morgan@example.com";
+  const appUrl = getEmailAppUrl();
+  const fullName = DEMO_MEMBER_FULL_NAME;
+  const email = DEMO_USER_EMAIL;
+  const memberPhone = DEMO_MEMBER_PHONE;
+  const memberAddress = formatDemoMemberAddress(DEMO_MEMBER_ADDRESS);
 
   return [
     {
@@ -48,19 +60,20 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Welcome to Bluewave Credit Union",
       description: "Sent when a new member completes registration.",
       html: previewLayout(
+        appUrl,
         "Welcome to Bluewave",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>Thank you for choosing Bluewave Credit Union. Your membership request has been received and is pending review by our member services team.</p>
          <p>We will notify you when your account is ready for full online banking access.</p>`,
         {
           preheader: "Your Bluewave membership request was received.",
-          primaryAction: { label: "View membership status", href: "/dashboard" },
+          primaryAction: { label: "Sign in to online banking", href: "/auth/login" },
         },
       ),
       text: buildEmailText(
         "Welcome to Bluewave",
         `Hi ${fullName},\n\nThank you for choosing Bluewave Credit Union. Your membership request has been received and is pending review.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -69,18 +82,19 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Your Bluewave membership is active",
       description: "Sent when operations approves or updates membership status.",
       html: previewLayout(
+        appUrl,
         "Membership status updated",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>Your Bluewave membership status is now <strong>Active</strong>.</p>
          <p>You can sign in to manage accounts, move money, pay bills, and review statements.</p>`,
         {
-          primaryAction: { label: "Sign in to online banking", href: "/auth" },
+          primaryAction: { label: "Sign in to online banking", href: "/auth/login" },
         },
       ),
       text: buildEmailText(
         "Membership status updated",
         `Hi ${fullName},\n\nYour Bluewave membership status is now Active.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -89,6 +103,7 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "New sign-in to your Bluewave account",
       description: "Sent after a successful sign-in to online banking.",
       html: previewLayout(
+        appUrl,
         "Sign-in alert",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>A new sign-in to your Bluewave account was detected on <strong>May 30, 2026 at 2:14 PM CT</strong>.</p>
@@ -96,13 +111,13 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
         {
           securityNotice:
             "Bluewave will never ask you to share your password, verification codes, or full card numbers by email or phone.",
-          primaryAction: { label: "Review security settings", href: "/member/security" },
+          primaryAction: { label: "Review security settings", href: "/auth/security" },
         },
       ),
       text: buildEmailText(
         "Sign-in alert",
         `Hi ${fullName},\n\nA new sign-in to your Bluewave account was detected.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -111,6 +126,7 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Your Bluewave password was updated",
       description: "Sent after a successful password change in Settings.",
       html: previewLayout(
+        appUrl,
         "Password updated",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>The password for your Bluewave online banking profile was changed successfully.</p>
@@ -124,45 +140,76 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       text: buildEmailText(
         "Password updated",
         `Hi ${fullName},\n\nThe password for your Bluewave online banking profile was changed successfully.`,
-        APP_URL,
+        appUrl,
+      ),
+    },
+    {
+      id: "password-reset",
+      name: "Password reset",
+      subject: "Reset your Bluewave password",
+      description: "Sent when a member requests a password reset link and verification code.",
+      html: previewLayout(
+        appUrl,
+        "Reset your password",
+        `<p>Hi ${escapeHtml(fullName)},</p>
+         <p>We received a request to reset the password for your Bluewave online banking account.</p>
+         <p>Choose a new password using the button below, or enter this verification code on the reset page:</p>
+         <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">482913</p>
+         <p>This link and code expire in 30 minutes. If you did not request a password reset, you can ignore this email — your password will stay the same.</p>`,
+        {
+          preheader: "Use the link or verification code below to choose a new password.",
+          primaryAction: {
+            label: "Choose a new password",
+            href: "/auth/reset-password?token=preview-token",
+          },
+          securityNotice:
+            "Never share your password or verification code with anyone, including Bluewave staff.",
+        },
+      ),
+      text: buildEmailText(
+        "Reset your password",
+        `Hi ${fullName},\n\nWe received a request to reset your Bluewave password.\n\nReset link: ${appUrl}/auth/reset-password?token=preview-token\n\nVerification code: 482913\n\nThis link and code expire in 30 minutes.`,
+        appUrl,
       ),
     },
     {
       id: "transfer-created",
       name: "Transfer submitted",
-      subject: "Transfer request submitted for review",
-      description: "Sent when a member submits a transfer for operations review.",
+      subject: "We received your transfer",
+      description: "Sent when a member submits a transfer for review.",
       html: previewLayout(
-        "Transfer request submitted",
+        appUrl,
+        "We're reviewing your transfer",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>Your transfer request for <strong>${formatEmailCurrency(250)}</strong> has been submitted and is pending review.</p>
+         <p>We received your transfer of <strong>${formatEmailCurrency(250)}</strong> and are reviewing it now.</p>
          <p><strong>Reference:</strong> TRX-20260530-001</p>
          <p><strong>Details:</strong> Transfer to Share Savings · Ending 5702</p>
-         <p>Account balances remain unchanged until the request is reviewed and posted.</p>`,
-        { primaryAction: { label: "View transfers", href: "/transfers" } },
+         <p>Your balance won't change until we finish our review.</p>`,
+        { primaryAction: { label: "View transfers", href: "/auth/transfers" } },
       ),
       text: buildEmailText(
-        "Transfer request submitted",
-        `Hi ${fullName},\n\nYour transfer request for ${formatEmailCurrency(250)} is pending review.`,
-        APP_URL,
+        "We're reviewing your transfer",
+        `Hi ${fullName},\n\nWe received your transfer of ${formatEmailCurrency(250)} (TRX-20260530-001). We're reviewing it now and will email you when it's complete.`,
+        appUrl,
       ),
     },
     {
       id: "transfer-approved",
       name: "Transfer approved",
-      subject: "Transfer request approved",
-      description: "Sent when operations approves and posts a transfer.",
+      subject: "Your transfer was approved",
+      description: "Sent when operations approves a transfer.",
       html: previewLayout(
-        "Transfer request approved",
+        appUrl,
+        "Your transfer was approved",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>Your transfer request <strong>TRX-20260530-001</strong> for <strong>${formatEmailCurrency(250)}</strong> has been <strong>approved</strong>.</p>
-         <p>Balances have been updated after ledger posting.</p>`,
-        { primaryAction: { label: "View activity", href: "/transactions" } },
+         <p>Good news — your transfer <strong>TRX-20260530-001</strong> for <strong>${formatEmailCurrency(250)}</strong> was approved.</p>
+         <p>The money has been sent and your balance is updated.</p>`,
+        { primaryAction: { label: "View activity", href: "/auth/transactions" } },
       ),
       text: buildEmailText(
-        "Transfer request approved",
-        `Hi ${fullName},\n\nYour transfer TRX-20260530-001 was approved.`,
-        APP_URL,
+        "Your transfer was approved",
+        `Hi ${fullName},\n\nYour transfer of ${formatEmailCurrency(250)} (TRX-20260530-001) was approved. The money has been sent and your balance is updated.`,
+        appUrl,
       ),
     },
     {
@@ -171,16 +218,17 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Bill payment saved",
       description: "Sent when a bill payment is saved for review.",
       html: previewLayout(
+        appUrl,
         "Bill payment saved",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>Your bill payment to <strong>City Utilities</strong> for <strong>${formatEmailCurrency(142.18)}</strong> was saved.</p>
-         <p>Status: <strong>Pending review</strong>. Bill payments are submitted for review before posting.</p>`,
-        { primaryAction: { label: "View bill pay", href: "/bill-pay" } },
+         <p>We've saved your bill payment to <strong>Oncor Electric Delivery</strong> for <strong>${formatEmailCurrency(142.18)}</strong>.</p>
+         <p>We're reviewing it now and will email you when it's complete.</p>`,
+        { primaryAction: { label: "View bill pay", href: "/auth/bill-pay" } },
       ),
       text: buildEmailText(
         "Bill payment saved",
-        `Hi ${fullName},\n\nYour bill payment to City Utilities was saved for review.`,
-        APP_URL,
+        `Hi ${fullName},\n\nYour bill payment to Oncor Electric Delivery was saved for review.`,
+        appUrl,
       ),
     },
     {
@@ -189,17 +237,18 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Bill payment posted",
       description: "Sent when operations posts an approved bill payment.",
       html: previewLayout(
+        appUrl,
         "Bill payment posted",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>Your bill payment to <strong>City Utilities</strong> for <strong>${formatEmailCurrency(142.18)}</strong> is now <strong>Posted</strong>.</p>
+         <p>Your bill payment to <strong>Oncor Electric Delivery</strong> for <strong>${formatEmailCurrency(142.18)}</strong> is now <strong>Posted</strong>.</p>
          <p><strong>Reference:</strong> BP-20260530-004</p>
-         <p>Balances were updated after operations approval and ledger posting.</p>`,
-        { primaryAction: { label: "View bill pay history", href: "/bill-pay" } },
+         <p>The payment has been sent and your balance is updated.</p>`,
+        { primaryAction: { label: "View bill pay history", href: "/auth/bill-pay" } },
       ),
       text: buildEmailText(
         "Bill payment posted",
-        `Hi ${fullName},\n\nYour bill payment to City Utilities was posted.`,
-        APP_URL,
+        `Hi ${fullName},\n\nYour bill payment to Oncor Electric Delivery was posted.`,
+        appUrl,
       ),
     },
     {
@@ -208,13 +257,14 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Payee added to your account",
       description: "Sent when a member adds a new bill pay recipient.",
       html: previewLayout(
+        appUrl,
         "Payee added",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p><strong>City Utilities</strong> was added to your Bluewave payee list.</p>
+         <p><strong>Oncor Electric Delivery</strong> was added to your Bluewave payee list.</p>
          <p>If you did not add this payee, contact member services immediately.</p>`,
-        { primaryAction: { label: "Manage payees", href: "/payees" } },
+        { primaryAction: { label: "Manage payees", href: "/auth/payees" } },
       ),
-      text: buildEmailText("Payee added", `Hi ${fullName},\n\nCity Utilities was added to your payee list.`, APP_URL),
+      text: buildEmailText("Payee added", `Hi ${fullName},\n\nOncor Electric Delivery was added to your payee list.`, appUrl),
     },
     {
       id: "support-created",
@@ -222,17 +272,18 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Support ticket received",
       description: "Sent when a signed-in member opens a support ticket.",
       html: previewLayout(
+        appUrl,
         "Support ticket received",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>We received your support request and our member services team will review it shortly.</p>
          <p><strong>Subject:</strong> Unable to view recent transfer</p>
          <p><strong>Ticket ID:</strong> SUP-20260530-019</p>`,
-        { primaryAction: { label: "View support tickets", href: "/member/support" } },
+        { primaryAction: { label: "View support tickets", href: "/auth/support" } },
       ),
       text: buildEmailText(
         "Support ticket received",
         `Hi ${fullName},\n\nWe received your support ticket SUP-20260530-019.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -241,37 +292,97 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Support ticket update",
       description: "Sent when operations updates a support ticket status.",
       html: previewLayout(
+        appUrl,
         "Support ticket updated",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>Your support ticket has been updated.</p>
          <p><strong>Subject:</strong> Unable to view recent transfer</p>
          <p><strong>Status:</strong> Resolved</p>
          <p><strong>Ticket ID:</strong> SUP-20260530-019</p>`,
-        { primaryAction: { label: "Open support", href: "/member/support" } },
+        { primaryAction: { label: "Open support", href: "/auth/support" } },
       ),
       text: buildEmailText(
         "Support ticket updated",
         `Hi ${fullName},\n\nYour support ticket is now Resolved.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
       id: "contact-confirmation",
       name: "Contact form confirmation",
-      subject: "We received your message",
+      subject: "We received your message — Business banking",
       description: "Sent to visitors who submit the public contact form.",
       html: previewLayout(
-        "Message received",
+        appUrl,
+        "We received your message",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>Thank you for contacting Bluewave Credit Union. We received your message regarding <strong>Account support</strong>.</p>
-         <p><strong>Reference:</strong> BW-A1B2C3D4</p>
-         <p>A member services representative will respond using the email address you provided.</p>`,
-        { primaryAction: { label: "Visit Bluewave", href: "/" } },
+         <p>Thank you for contacting Bluewave Credit Union about <strong>Business banking</strong>. We received your message and a member services representative will reply using the email address you provided.</p>
+         <p>Keep the details below for your records:</p>
+         ${buildEmailDetailsBlock([
+           { label: "Reference", value: "BW-A1B2C3D4" },
+           { label: "Topic", value: "Business banking" },
+           { label: "Message", value: "I would like to learn more about business checking and merchant services." },
+           { label: "Name", value: fullName },
+           { label: "Email", value: email },
+           { label: "Phone", value: memberPhone },
+           { label: "Submitted", value: "Saturday, May 30, 2026 at 2:15 PM" },
+         ])}
+         <p>Typical response time is one business day during ${INSTITUTION.memberServicesHoursShort}.</p>`,
+        {
+          preheader: "We received your business banking message — reference BW-A1B2C3D4.",
+          primaryAction: { label: "Visit member support", href: "/support" },
+        },
       ),
       text: buildEmailText(
-        "Message received",
-        `Hi ${fullName},\n\nWe received your contact form message. Reference: BW-A1B2C3D4`,
-        APP_URL,
+        "We received your message",
+        `Hi ${fullName},\n\nThank you for contacting Bluewave Credit Union about Business banking.\n\n${buildEmailDetailsPlainText([
+          { label: "Reference", value: "BW-A1B2C3D4" },
+          { label: "Topic", value: "Business banking" },
+          { label: "Message", value: "I would like to learn more about business checking and merchant services." },
+          { label: "Name", value: fullName },
+          { label: "Email", value: email },
+          { label: "Phone", value: memberPhone },
+          { label: "Submitted", value: "Saturday, May 30, 2026 at 2:15 PM" },
+        ])}`,
+        appUrl,
+      ),
+    },
+    {
+      id: "contact-form-admin",
+      name: "Contact form admin alert",
+      subject: "[Bluewave Admin] Contact form: Business banking — Avery Morgan",
+      description: "Sent to the operations inbox when a visitor submits the public contact form.",
+      html: previewLayout(
+        appUrl,
+        "New contact form message",
+        `<p><strong>${escapeHtml(fullName)}</strong> sent a new contact form message about <strong>Business banking</strong>.</p>
+         <p>Review the message below, then reply directly to <a href="mailto:${escapeHtml(email)}" style="color: #0D47A1; text-decoration: none; font-weight: 700;">${escapeHtml(email)}</a>.</p>
+         ${buildEmailDetailsBlock([
+           { label: "Topic", value: "Business banking" },
+           { label: "Reference", value: "BW-A1B2C3D4" },
+           { label: "Submitted", value: "Saturday, May 30, 2026 at 2:15 PM" },
+           { label: "From", value: fullName },
+           { label: "Email", value: email },
+           { label: "Phone", value: memberPhone },
+           { label: "Message", value: "I would like to learn more about business checking and merchant services." },
+         ])}`,
+        {
+          preheader: `Business banking message from ${fullName} — reply to ${email}.`,
+          primaryAction: { label: "Open operations console", href: "/lex/auth" },
+        },
+      ),
+      text: buildEmailText(
+        "New contact form message",
+        `${fullName} sent a message about Business banking.\n\n${buildEmailDetailsPlainText([
+          { label: "Topic", value: "Business banking" },
+          { label: "Reference", value: "BW-A1B2C3D4" },
+          { label: "Submitted", value: "Saturday, May 30, 2026 at 2:15 PM" },
+          { label: "From", value: fullName },
+          { label: "Email", value: email },
+          { label: "Phone", value: memberPhone },
+          { label: "Message", value: "I would like to learn more about business checking and merchant services." },
+        ])}\n\nReply to: ${email}`,
+        appUrl,
       ),
     },
     {
@@ -280,17 +391,18 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Dispute submitted",
       description: "Sent when a member files a transaction dispute.",
       html: previewLayout(
+        appUrl,
         "Dispute submitted",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>We received your dispute for transaction <strong>TRX-20260512-884</strong>.</p>
          <p><strong>Reason:</strong> Unauthorized charge</p>
          <p>Submitting a dispute does not automatically reverse a transaction while our team reviews your claim.</p>`,
-        { primaryAction: { label: "View disputes", href: "/disputes" } },
+        { primaryAction: { label: "View disputes", href: "/auth/disputes" } },
       ),
       text: buildEmailText(
         "Dispute submitted",
         `Hi ${fullName},\n\nWe received your dispute for transaction TRX-20260512-884.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -299,16 +411,17 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "Dispute under review",
       description: "Sent when operations updates dispute status.",
       html: previewLayout(
+        appUrl,
         "Dispute update",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>Your dispute for <strong>TRX-20260512-884</strong> is now <strong>Under review</strong>.</p>
          <p>Our team is investigating the claim and will contact you if additional information is needed.</p>`,
-        { primaryAction: { label: "View disputes", href: "/disputes" } },
+        { primaryAction: { label: "View disputes", href: "/auth/disputes" } },
       ),
       text: buildEmailText(
         "Dispute update",
         `Hi ${fullName},\n\nYour dispute is now Under review.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
@@ -317,53 +430,69 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       subject: "KYC review approved",
       description: "Sent when KYC / identity verification status changes.",
       html: previewLayout(
+        appUrl,
         "Identity verification update",
         `<p>Hi ${escapeHtml(fullName)},</p>
          <p>Your identity verification status is now <strong>Approved</strong>.</p>
          <p>Visit your profile page to review details or update your information if anything has changed.</p>`,
-        { primaryAction: { label: "View profile", href: "/profile" } },
+        { primaryAction: { label: "View profile", href: "/auth/profile" } },
       ),
       text: buildEmailText(
         "Identity verification update",
         `Hi ${fullName},\n\nYour identity verification status is now Approved.`,
-        APP_URL,
+        appUrl,
       ),
     },
     {
       id: "adjustment-posted",
-      name: "Balance adjustment",
-      subject: "Balance adjustment posted",
-      description: "Sent when operations posts a controlled balance adjustment.",
+      name: "Account credit",
+      subject: "Your account was updated",
+      description: "Sent when a credit or debit is posted to a member account.",
       html: previewLayout(
-        "Balance adjustment posted",
+        appUrl,
+        "Your account was updated",
         `<p>Hi ${escapeHtml(fullName)},</p>
-         <p>A controlled <strong>credit</strong> adjustment of <strong>${formatEmailCurrency(25)}</strong> was posted to your account.</p>
+         <p>You have been credited <strong>${formatEmailCurrency(25)}</strong>, which has been posted to your account.</p>
          <p><strong>Reference:</strong> ADJ-20260530-002</p>`,
-        { primaryAction: { label: "View accounts", href: "/accounts" } },
+        { primaryAction: { label: "View accounts", href: "/auth/accounts" } },
       ),
       text: buildEmailText(
-        "Balance adjustment posted",
-        `Hi ${fullName},\n\nA credit adjustment of ${formatEmailCurrency(25)} was posted.`,
-        APP_URL,
+        "Your account was updated",
+        `Hi ${fullName},\n\nYou have been credited ${formatEmailCurrency(25)}, which has been posted to your account.\n\nReference: ADJ-20260530-002`,
+        appUrl,
       ),
     },
     {
       id: "admin-alert",
-      name: "Operations alert",
-      subject: "[Bluewave Admin] New member registration",
-      description: "Sent to the operations inbox for high-priority events.",
+      name: "New membership application",
+      subject: "[Bluewave Admin] New membership application — Avery Morgan",
+      description: "Sent to operations when a new member completes enrollment.",
       html: previewLayout(
-        "New member registration",
-        `<p>A new member registration requires review.</p>
-         <p><strong>Name:</strong> ${escapeHtml(fullName)}</p>
-         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-         <p>Sign in to the operations console to review membership status and KYC.</p>`,
-        { primaryAction: { label: "Open operations console", href: "/lex/auth" } },
+        appUrl,
+        "New membership application",
+        `<p><strong>${escapeHtml(fullName)}</strong> submitted a new membership application.</p>
+         <p>Review the applicant details below, then sign in to the operations console to approve or follow up.</p>
+         ${buildEmailDetailsBlock([
+           { label: "Status", value: "Pending review" },
+           { label: "Applicant", value: fullName },
+           { label: "Email", value: email },
+           { label: "Phone", value: memberPhone },
+           { label: "Date of birth", value: "1990-04-12" },
+           { label: "Occupation", value: "Software engineer" },
+           {
+             label: "Address",
+             value: memberAddress,
+           },
+         ])}`,
+        {
+          preheader: `${fullName} submitted a membership application — pending review.`,
+          primaryAction: { label: "Open operations console", href: "/lex/auth" },
+        },
       ),
       text: buildEmailText(
-        "New member registration",
-        `A new member registration requires review.\n\nName: ${fullName}\nEmail: ${email}`,
-        APP_URL,
+        "New membership application",
+        `${fullName} submitted a new membership application.\n\nStatus: Pending review\nApplicant: ${fullName}\nEmail: ${email}\nPhone: ${memberPhone}\nDate of birth: 1990-04-12\nOccupation: Software engineer\nAddress:\n${memberAddress}`,
+        appUrl,
       ),
     },
   ];
@@ -378,5 +507,5 @@ export function getEmailPreviewAppUrl() {
 }
 
 export function getEmailPreviewFooter() {
-  return buildEmailPlainTextFooter(APP_URL);
+  return buildEmailPlainTextFooter(getEmailAppUrl());
 }

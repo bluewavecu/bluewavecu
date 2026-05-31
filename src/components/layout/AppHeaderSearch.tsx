@@ -13,7 +13,7 @@ export function AppHeaderSearch() {
     const trimmed = query.trim();
 
     if (!trimmed) {
-      router.push("/transactions");
+      router.push("/auth/transactions");
       return;
     }
 

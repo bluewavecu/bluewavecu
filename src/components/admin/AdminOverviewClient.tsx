@@ -86,7 +86,7 @@ export function AdminOverviewClient() {
               </p>
             </div>
             <Link
-              href="/admin/risk"
+              href="/lex/auth/risk"
               className="text-sm font-semibold text-royal-blue dark:text-light-blue"
             >
               Open risk monitoring
@@ -171,7 +171,7 @@ export function AdminOverviewClient() {
         <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent users</h2>
-            <Link href="/admin/users" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
+            <Link href="/lex/auth/users" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
               View all
             </Link>
           </div>
@@ -194,7 +194,7 @@ export function AdminOverviewClient() {
               Recent transactions
             </h2>
             <Link
-              href="/admin/transactions"
+              href="/lex/auth/transactions"
               className="text-sm font-semibold text-royal-blue dark:text-light-blue"
             >
               View all
@@ -236,7 +236,7 @@ export function AdminOverviewClient() {
             <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
               Recent support tickets
             </h2>
-            <Link href="/admin/support" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
+            <Link href="/lex/auth/support" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
               View all
             </Link>
           </div>

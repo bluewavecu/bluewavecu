@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { createDispute, serializeDispute } from "@/lib/disputes";
 import { getPrisma } from "@/lib/prisma";
 import { disputeCreateSchema } from "@/lib/validators";
@@ -10,12 +11,11 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const disputes = await getPrisma().dispute.findMany({
       where: { userId: payload.userId },
@@ -45,12 +45,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const input = disputeCreateSchema.parse(await request.json());
     const dispute = await createDispute({

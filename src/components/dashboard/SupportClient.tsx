@@ -5,10 +5,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { INSTITUTION } from "@/lib/institution";
 
 const supportContacts = [
-  { label: "support@bluewavecu.com", icon: Mail },
-  { label: "(646) 776-4480", icon: Phone },
+  { label: INSTITUTION.email, icon: Mail },
+  { label: INSTITUTION.phone.display, icon: Phone },
   { label: "Secure message center", icon: MessageSquareText },
 ];
 

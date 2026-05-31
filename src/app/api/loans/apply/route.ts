@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { sendAdminAlertEmail } from "@/lib/email";
 import { writeEventLog } from "@/lib/eventLog";
 import { createSupportNotification } from "@/lib/notifications";
@@ -12,12 +13,11 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const input = loanApplySchema.parse(await request.json());
     const prisma = getPrisma();

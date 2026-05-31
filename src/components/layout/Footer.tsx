@@ -19,7 +19,7 @@ const footerLinks = [
   {
     title: "Resources",
     links: [
-      { label: "Online banking", href: "/auth" },
+      { label: "Online banking", href: "/auth/login" },
       { label: "Support", href: "/support" },
       { label: "Security", href: "/security" },
       { label: "Mobile App", href: "/mobile-app" },

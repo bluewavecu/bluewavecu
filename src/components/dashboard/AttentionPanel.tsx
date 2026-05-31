@@ -28,7 +28,7 @@ export function AttentionPanel() {
   if (summary.pendingTransferCount > 0) {
     items.push({
       label: `${summary.pendingTransferCount} transfer(s) pending review`,
-      href: "/transfers",
+      href: "/auth/transfers",
       count: summary.pendingTransferCount,
     });
   }
@@ -36,7 +36,7 @@ export function AttentionPanel() {
   if (summary.pendingBillPaymentCount > 0) {
     items.push({
       label: `${summary.pendingBillPaymentCount} bill payment(s) in review`,
-      href: "/bill-pay",
+      href: "/auth/bill-pay",
       count: summary.pendingBillPaymentCount,
     });
   }
@@ -44,19 +44,31 @@ export function AttentionPanel() {
   if (summary.openDisputeCount > 0) {
     items.push({
       label: `${summary.openDisputeCount} open dispute(s)`,
-      href: "/disputes",
+      href: "/auth/disputes",
       count: summary.openDisputeCount,
     });
   }
 
   if (summary.needsProfileCompletion) {
-    items.push({ label: "Complete profile & KYC verification", href: "/profile" });
+    items.push({ label: "Complete profile & KYC verification", href: "/auth/profile" });
+  }
+
+  if (summary.needsIdVerification) {
+    items.push({ label: "Submit your ID photos for verification", href: "/auth/profile" });
+  }
+
+  if (summary.pendingIdVerificationCount > 0) {
+    items.push({
+      label: `${summary.pendingIdVerificationCount} ID submission(s) pending review`,
+      href: "/auth/profile",
+      count: summary.pendingIdVerificationCount,
+    });
   }
 
   if (summary.unreadNotificationCount > 0) {
     items.push({
       label: `${summary.unreadNotificationCount} unread notification(s)`,
-      href: "/notifications",
+      href: "/auth/notifications",
       count: summary.unreadNotificationCount,
     });
   }
@@ -64,7 +76,7 @@ export function AttentionPanel() {
   if (summary.openSupportTicketCount > 0) {
     items.push({
       label: `${summary.openSupportTicketCount} open support ticket(s)`,
-      href: "/member/support",
+      href: "/auth/support",
       count: summary.openSupportTicketCount,
     });
   }

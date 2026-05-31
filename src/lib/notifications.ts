@@ -196,7 +196,7 @@ export async function createPayeeNotification(params: {
     type: "ACCOUNT",
     title: "Payee added",
     message: `${params.payeeName} was added to your payee list.`,
-    metadata: { href: "/bill-pay", payeeId: params.payeeId },
+    metadata: { href: "/auth/bill-pay", payeeId: params.payeeId },
   });
 }
 
@@ -230,7 +230,7 @@ export async function createBillPaymentNotification(params: {
     title: titles[params.event],
     message: messages[params.event],
     metadata: {
-      href: "/bill-pay",
+      href: "/auth/bill-pay",
       billPaymentId: params.billPaymentId,
       event: params.event,
     },

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { createNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
@@ -27,7 +28,7 @@ function serializeScheduledTransfer(record: {
   status: ScheduledTransferRecord["status"];
   createdAt: Date;
   updatedAt: Date;
-  fromAccount: { accountNumber: string };
+  fromAccount: { accountNumber: string | null };
 }): ScheduledTransferRecord {
   const masked = maskAccountNumber(record.fromAccount.accountNumber);
 
@@ -50,12 +51,11 @@ function serializeScheduledTransfer(record: {
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const { id } = await context.params;
     const input = scheduledTransferUpdateSchema.parse(await request.json());
@@ -100,7 +100,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       type: "TRANSFER",
       title: "Scheduled transfer updated",
       message: `Your scheduled transfer was ${statusLabel}.`,
-      metadata: { href: "/transfers", scheduledTransferId: updated.id, status: input.status },
+      metadata: { href: "/auth/transfers", scheduledTransferId: updated.id, status: input.status },
     });
 
     return apiSuccess({

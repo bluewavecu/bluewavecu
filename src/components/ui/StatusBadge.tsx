@@ -33,15 +33,15 @@ export function StatusBadge({ label, tone = "default", className }: StatusBadgeP
 export function statusToTone(status: string): StatusBadgeTone {
   const normalized = status.toUpperCase();
 
-  if (["COMPLETED", "ACTIVE", "VERIFIED", "RESOLVED", "POSTED"].includes(normalized)) {
+  if (["COMPLETED", "ACTIVE", "VERIFIED", "RESOLVED", "POSTED", "APPROVED"].includes(normalized)) {
     return "success";
   }
 
-  if (["PENDING", "SUBMITTED", "UNDER_REVIEW", "PAUSED"].includes(normalized)) {
+  if (["PENDING", "SUBMITTED", "UNDER_REVIEW", "PAUSED", "PENDING_APPROVAL"].includes(normalized)) {
     return "warning";
   }
 
-  if (["FAILED", "REVERSED", "REJECTED", "DENIED", "CANCELLED", "LOCKED"].includes(normalized)) {
+  if (["FAILED", "REVERSED", "REJECTED", "DENIED", "DECLINED", "CANCELLED", "LOCKED"].includes(normalized)) {
     return "danger";
   }
 

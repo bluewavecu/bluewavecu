@@ -239,7 +239,7 @@ npm run build
 | `CRON_SECRET` | Yes | Bearer secret for `/api/cron/run-jobs` |
 | `ALLOW_DEMO_SEED` | Yes | **`false`** on real production data |
 | `RESEND_API_KEY` | Yes | Required in production (`src/lib/env.ts`) |
-| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <no-reply@bluewavecu.com>` |
+| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <support@bluewavecu.com>` |
 | `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
 
 **Preview deploys:** separate database; set `NEXT_PUBLIC_APP_URL` to the preview URL.
@@ -340,7 +340,7 @@ Point the production domain to Render:
 | `CRON_SECRET` | Yes (production cron) | Bearer secret for `POST /api/cron/run-jobs` |
 | `ALLOW_DEMO_SEED` | No | Default `false`; set `true` only for demo/staging seeds |
 | `RESEND_API_KEY` | Yes (production) | Resend API key for transactional email |
-| `EMAIL_FROM` | No | Default: `Bluewave Credit Union <no-reply@bluewavecu.com>` |
+| `EMAIL_FROM` | No | Default: `Bluewave Credit Union <support@bluewavecu.com>` |
 | `ADMIN_ALERT_EMAIL` | No | Admin inbox for registration/transfer/support alerts |
 
 Environment validation runs at startup via `src/lib/env.ts` and fails fast with readable errors when required variables are missing or invalid.
@@ -771,7 +771,7 @@ Pending Step 19: visual polish, accessibility audit, loading/error consistency, 
 
 Contact and legal copy are centralized — do not duplicate in components:
 
-- **`src/lib/institution.ts`** — address, phone `(214) 555-0147`, email, routing `311978875`, NCUA disclaimer, member services hours
+- **`src/lib/institution.ts`** — address, phone `(646) 776-4480`, email, routing `311978875`, NCUA disclaimer, member services hours
 - **`/privacy`** and **`/terms`** — legal pages linked from footer
 - Member sign-in: **`/auth`** (legacy `/login` redirects)
 - Operations sign-in: **`/lex/auth`** (private URL)

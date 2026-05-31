@@ -136,7 +136,7 @@ export async function createDispute(params: {
     type: "SUPPORT",
     title: "Dispute submitted",
     message: `Your dispute for ${transaction.reference} was received.`,
-    metadata: { href: "/disputes", disputeId: dispute.id },
+    metadata: { href: "/auth/disputes", disputeId: dispute.id },
   });
 
   return serializeDispute(dispute);
@@ -202,7 +202,7 @@ export async function updateDisputeStatus(params: {
     type: "SUPPORT",
     title: "Dispute updated",
     message: `Your dispute for ${updated.transaction.reference} is now ${params.status.replaceAll("_", " ").toLowerCase()}.`,
-    metadata: { href: "/disputes", disputeId: updated.id },
+    metadata: { href: "/auth/disputes", disputeId: updated.id },
   });
 
   return serializeDispute(updated);

@@ -102,7 +102,21 @@ export function TransfersClient() {
   const [activeTab, setActiveTab] = useState<TransferTab>("immediate");
   const { data: accountsData, error: accountsError, isLoading: accountsLoading, refetch } =
     useAccounts();
-  const { isSubmitting, error, successMessage, submitTransfer, reset } = useTransfer();
+  const {
+    isSubmitting,
+    isSendingOtp,
+    error,
+    successMessage,
+    otpMessage,
+    requiresTransactionPin,
+    otpRequired,
+    adminSteps,
+    adminStepsRequired,
+    verificationRequired,
+    submitTransfer,
+    requestOtp,
+    reset,
+  } = useTransfer();
   const {
     scheduledTransfers,
     error: scheduledError,
@@ -118,6 +132,10 @@ export function TransfersClient() {
   const [toAccountNumber, setToAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [stepOtpCodes, setStepOtpCodes] = useState<Record<string, string>>({});
+  const [transactionPin, setTransactionPin] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
   const [scheduledSuccess, setScheduledSuccess] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<ScheduledTransferRecord["frequency"]>("ONE_TIME");
   const [scheduledFor, setScheduledFor] = useState("");
@@ -147,7 +165,6 @@ export function TransfersClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    reset();
 
     const parsedAmount = Number.parseFloat(amount);
 
@@ -155,12 +172,49 @@ export function TransfersClient() {
       return;
     }
 
-    const success = await submitTransfer({
+    const payload = {
       fromAccountId: fromAccountId || selectedAccount.id,
       recipientName: recipientName.trim() || undefined,
       toAccountNumber: toAccountNumber.trim() || undefined,
       amount: parsedAmount,
       memo: memo.trim() || undefined,
+    };
+
+    if (!verificationSent) {
+      reset();
+      const sent = await requestOtp(payload);
+
+      if (!sent) {
+        return;
+      }
+
+      if (!verificationRequired) {
+        const success = await submitTransfer(payload);
+
+        if (success) {
+          setRecipientName("");
+          setToAccountNumber("");
+          setAmount("");
+          setMemo("");
+          setVerificationSent(false);
+          setOtpCode("");
+          setStepOtpCodes({});
+          setTransactionPin("");
+        }
+
+        return;
+      }
+
+      setVerificationSent(true);
+      setStepOtpCodes({});
+      return;
+    }
+
+    const success = await submitTransfer({
+      ...payload,
+      otpCode: otpRequired ? otpCode : undefined,
+      stepOtpCodes,
+      transactionPin: requiresTransactionPin ? transactionPin : undefined,
     });
 
     if (success) {
@@ -168,6 +222,10 @@ export function TransfersClient() {
       setToAccountNumber("");
       setAmount("");
       setMemo("");
+      setOtpCode("");
+      setStepOtpCodes({});
+      setTransactionPin("");
+      setVerificationSent(false);
     }
   }
 
@@ -204,14 +262,14 @@ export function TransfersClient() {
   return (
     <section className="grid gap-5">
       <InfoPanel title="How transfers are processed">
-        Transfers are reviewed by member services before posting. Submitted requests stay pending
-        until approved — your available balance updates once the transfer posts.
+        Transfers require email verification before submission. Approved transfers stay pending until
+        member services review them unless your account has friction-free transfer access.
       </InfoPanel>
 
       {summary?.needsProfileCompletion ? (
         <InfoPanel title="Profile verification recommended" variant="warning">
           Your profile is not fully verified. High-value transfers may receive additional review.{" "}
-          <Link href="/profile" className="font-semibold text-royal-blue underline">
+          <Link href="/auth/profile" className="font-semibold text-royal-blue underline">
             Complete profile & verification
           </Link>
         </InfoPanel>
@@ -344,6 +402,80 @@ export function TransfersClient() {
                 />
               </label>
 
+              {otpMessage ? (
+                <p className="rounded-lg border border-ocean-blue/[0.20] bg-ocean-blue/[0.08] px-4 py-3 text-sm font-medium text-primary-navy dark:text-white">
+                  {otpMessage}
+                </p>
+              ) : null}
+
+              {verificationSent ? (
+                <>
+                  {otpRequired ? (
+                    <label className="block">
+                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                        Email verification code
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        required
+                        value={otpCode}
+                        onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ""))}
+                        placeholder="6-digit code"
+                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                      />
+                    </label>
+                  ) : null}
+
+                  {adminSteps.map((step) => (
+                    <label key={step.stepKey} className="block">
+                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                        {step.label}
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        required
+                        value={stepOtpCodes[step.stepKey] ?? ""}
+                        onChange={(event) =>
+                          setStepOtpCodes((current) => ({
+                            ...current,
+                            [step.stepKey]: event.target.value.replace(/\D/g, "").slice(0, 6),
+                          }))
+                        }
+                        placeholder="6-digit code from member services"
+                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                      />
+                    </label>
+                  ))}
+
+                  {requiresTransactionPin ? (
+                    <label className="block">
+                      <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                        Transaction PIN
+                      </span>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        required
+                        value={transactionPin}
+                        onChange={(event) =>
+                          setTransactionPin(event.target.value.replace(/\D/g, ""))
+                        }
+                        placeholder="6-digit PIN"
+                        className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                      />
+                    </label>
+                  ) : null}
+                </>
+              ) : null}
+
               {error ? (
                 <p className="rounded-lg border border-red-500/[0.20] bg-red-500/[0.08] px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
                   {error}
@@ -352,10 +484,18 @@ export function TransfersClient() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSendingOtp}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSubmitting ? "Submitting..." : "Submit Transfer Request"}
+                {isSendingOtp
+                  ? "Preparing verification..."
+                  : isSubmitting
+                    ? "Submitting..."
+                    : verificationSent
+                      ? "Confirm transfer"
+                      : verificationRequired
+                        ? "Continue to verification"
+                        : "Submit transfer"}
                 <ArrowLeftRight size={17} aria-hidden="true" />
               </button>
             </form>

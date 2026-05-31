@@ -65,4 +65,6 @@ export const rateLimitPresets = {
   register: { limit: 5, windowMs: 60 * 60 * 1000 },
   transfer: { limit: 10, windowMs: 15 * 60 * 1000 },
   support: { limit: 8, windowMs: 15 * 60 * 1000 },
+  passwordReset: { limit: 5, windowMs: 15 * 60 * 1000 },
+  verifyEmail: { limit: 10, windowMs: 15 * 60 * 1000 },
 } as const;

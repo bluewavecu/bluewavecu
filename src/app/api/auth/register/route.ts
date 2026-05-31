@@ -1,10 +1,17 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { createAuthCookie, hashPassword, sanitizeUser, signAuthToken } from "@/lib/auth";
-import { sendAdminAlertEmail, sendWelcomeEmail } from "@/lib/email";
-import { writeAdminEvent } from "@/lib/eventLog";
+import { hashPassword } from "@/lib/auth";
+import { createMemberUser } from "@/lib/createMemberUser";
+import { createEmailVerificationOtpChallenge } from "@/lib/emailVerificationOtp";
+import {
+  sendEmailVerificationOtpEmail,
+  sendMembershipApplicationAdminEmail,
+} from "@/lib/email";
+import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
+import { describeRequestedAccounts } from "@/lib/memberAccounts";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
+import { maskEmailAddress } from "@/lib/username";
 import { registerSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
@@ -17,14 +24,14 @@ function formatAddress(input: {
   postalCode: string;
   country: string;
 }) {
-  const lines = [
+  return [
     input.addressLine1,
     input.addressLine2,
     `${input.city}, ${input.state} ${input.postalCode}`,
     input.country,
-  ].filter(Boolean);
-
-  return lines.join(", ");
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 export async function POST(request: NextRequest) {
@@ -46,58 +53,44 @@ export async function POST(request: NextRequest) {
       return apiError("An account with this email already exists", 409);
     }
 
-    const user = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.user.create({
-        data: {
-          fullName: input.fullName,
-          email: input.email,
-          phone: input.phone,
-          passwordHash: await hashPassword(input.password),
-          role: "USER",
-          status: "PENDING",
-        },
-      });
-
-      await tx.customerProfile.create({
-        data: {
-          userId: createdUser.id,
-          dateOfBirth: input.dateOfBirth,
-          addressLine1: input.addressLine1,
-          addressLine2: input.addressLine2 ?? null,
-          city: input.city,
-          state: input.state,
-          postalCode: input.postalCode,
-          country: input.country,
-          employmentStatus: input.occupation,
-        },
-      });
-
-      return createdUser;
+    const existingUsername = await prisma.user.findUnique({
+      where: { username: input.username },
     });
 
-    const safeUser = sanitizeUser(user);
-    const token = signAuthToken({
-      userId: user.id,
-      role: user.role,
+    if (existingUsername) {
+      return apiError("This username is already taken", 409);
+    }
+
+    const user = await createMemberUser({
+      fullName: input.fullName,
+      username: input.username,
+      email: input.email,
+      phone: input.phone,
+      passwordHash: await hashPassword(input.password),
+      status: "PENDING",
+      emailVerifiedAt: null,
+      dateOfBirth: input.dateOfBirth,
+      addressLine1: input.addressLine1,
+      addressLine2: input.addressLine2 ?? null,
+      city: input.city,
+      state: input.state,
+      postalCode: input.postalCode,
+      country: input.country,
+      occupation: input.occupation,
+      accountTypes: input.accountTypes,
     });
 
-    const response = apiSuccess(
-      {
-        user: safeUser,
-        token,
-      },
-      { status: 201 },
-    );
-    response.cookies.set(createAuthCookie(token));
+    const challenge = await createEmailVerificationOtpChallenge(user.id);
+
+    void sendEmailVerificationOtpEmail({
+      email: user.email,
+      fullName: user.fullName,
+      code: challenge.code,
+      expiresMinutes: challenge.expiresMinutes,
+    });
 
     const formattedDob = input.dateOfBirth.toISOString().slice(0, 10);
     const formattedAddress = formatAddress(input);
-
-    void sendWelcomeEmail({
-      email: user.email,
-      fullName: user.fullName,
-      userId: user.id,
-    });
 
     void writeAdminEvent({
       eventType: "MEMBER_REGISTRATION",
@@ -105,30 +98,51 @@ export async function POST(request: NextRequest) {
       entityId: user.id,
       message: `${user.fullName} submitted a membership application.`,
       metadata: {
+        username: user.username,
         email: user.email,
         phone: user.phone,
         dateOfBirth: formattedDob,
         occupation: input.occupation,
         address: formattedAddress,
+        accountTypes: describeRequestedAccounts(input.accountTypes),
         status: user.status,
       },
     });
 
-    void sendAdminAlertEmail({
-      subject: "New membership application",
-      message: [
-        `${user.fullName} submitted a membership application.`,
-        `Email: ${user.email}`,
-        `Phone: ${user.phone}`,
-        `Date of birth: ${formattedDob}`,
-        `Occupation: ${input.occupation}`,
-        `Address: ${formattedAddress}`,
-        "Status: Pending review",
-      ].join("\n"),
-      idempotencyKey: `admin-alert/register/${user.id}`,
+    void sendMembershipApplicationAdminEmail({
+      userId: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      dateOfBirth: formattedDob,
+      occupation: input.occupation,
+      addressLine1: input.addressLine1,
+      addressLine2: input.addressLine2,
+      city: input.city,
+      state: input.state,
+      postalCode: input.postalCode,
+      country: input.country,
+      requestedAccountTypes: describeRequestedAccounts(input.accountTypes),
     });
 
-    return response;
+    void writeSecurityEvent({
+      eventType: "EMAIL_VERIFICATION_SENT",
+      actorId: user.id,
+      entityId: challenge.challengeId,
+      message: `Email verification code sent to ${maskEmailAddress(user.email)}.`,
+      severity: "INFO",
+    });
+
+    return apiSuccess(
+      {
+        requiresEmailVerification: true as const,
+        verificationChallengeId: challenge.challengeId,
+        username: user.username,
+        maskedEmail: maskEmailAddress(user.email),
+        message: `Enter the 6-digit code sent to ${maskEmailAddress(user.email)}.`,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     return handleApiError(error);
   }

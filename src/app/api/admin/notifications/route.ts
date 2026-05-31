@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         severity: "warning",
         title: "Pending membership applications",
         message: `${pendingUsers} membership application${pendingUsers === 1 ? "" : "s"} awaiting review.`,
-        href: "/admin/users",
+        href: "/lex/auth/users",
         createdAt: new Date().toISOString(),
       });
     }
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         severity: "warning",
         title: "Pending transfer reviews",
         message: `${pendingTransfers} transfer request${pendingTransfers === 1 ? "" : "s"} awaiting operations approval.`,
-        href: "/admin/transactions",
+        href: "/lex/auth/transactions",
         createdAt: new Date().toISOString(),
       });
     }
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         severity: "info",
         title: "Recent failed transfer reviews",
         message: `${failedTransfers} transfer review${failedTransfers === 1 ? "" : "s"} marked failed in the last 7 days.`,
-        href: "/admin/transactions",
+        href: "/lex/auth/transactions",
         createdAt: new Date().toISOString(),
       });
     }
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
         severity: urgentSupportTickets > 0 ? "warning" : "info",
         title: "Open support tickets",
         message: `${openSupportTickets} open ticket${openSupportTickets === 1 ? "" : "s"} need attention.`,
-        href: "/admin/support",
+        href: "/lex/auth/support",
         createdAt: new Date().toISOString(),
       });
     }
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         severity: "info",
         title: "Recent sign-in activity",
         message: `${recentSecurityEvents} security notification${recentSecurityEvents === 1 ? "" : "s"} recorded in the last 24 hours.`,
-        href: "/admin/audit-logs",
+        href: "/lex/auth/audit-logs",
         createdAt: new Date().toISOString(),
       });
     }

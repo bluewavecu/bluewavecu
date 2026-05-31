@@ -14,7 +14,7 @@ Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** 
 | `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` |
 | `CRON_SECRET` | Yes | `openssl rand -hex 32` |
 | `RESEND_API_KEY` | Yes (production) | Required by `src/lib/env.ts` in production |
-| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <no-reply@bluewavecu.com>` |
+| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <support@bluewavecu.com>` |
 | `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
 | `ALLOW_DEMO_SEED` | Yes | **`false`** on production |
 | `NODE_ENV` | Yes | `production` on Production deploys |
@@ -144,7 +144,7 @@ Hourly cron is not available on Vercel Hobby.
 Public contact info lives in `src/lib/institution.ts`:
 
 - Address: 2000 McKinney Ave, Dallas, TX 75201
-- Phone: (214) 555-0147
+- Phone: (646) 776-4480
 - Email: support@bluewavecu.com
 - Routing: 311978875 (seed + display)
 

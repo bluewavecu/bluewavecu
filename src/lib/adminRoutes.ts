@@ -1,3 +1,5 @@
+import { ADMIN_DASHBOARD_PATH, adminConsolePath } from "@/lib/authRoutes";
+
 export type AdminNavItem = {
   label: string;
   href: string;
@@ -9,75 +11,81 @@ export type AdminNavSection = {
   items: AdminNavItem[];
 };
 
+export { ADMIN_DASHBOARD_PATH, adminConsolePath };
+
 export const adminNavSections: AdminNavSection[] = [
   {
     title: "Overview",
     items: [
-      { label: "Command Center", href: "/admin", icon: "LayoutDashboard" },
-      { label: "Operational Alerts", href: "/admin/alerts", icon: "BellRing" },
+      { label: "Command Center", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
+      { label: "Operational Alerts", href: adminConsolePath("alerts"), icon: "BellRing" },
     ],
   },
   {
     title: "Members",
     items: [
-      { label: "Users", href: "/admin/users", icon: "Users" },
-      { label: "Accounts", href: "/admin/accounts", icon: "WalletCards" },
-      { label: "Customer Profiles / KYC", href: "/admin/compliance", icon: "BadgeCheck" },
-      { label: "Sessions / Security", href: "/admin/sessions", icon: "Shield" },
+      { label: "Users", href: adminConsolePath("users"), icon: "Users" },
+      { label: "Accounts", href: adminConsolePath("accounts"), icon: "WalletCards" },
+      { label: "Customer Profiles / KYC", href: adminConsolePath("compliance"), icon: "BadgeCheck" },
+      { label: "ID Verifications", href: adminConsolePath("id-verifications"), icon: "IdCard" },
+      { label: "Sessions / Security", href: adminConsolePath("sessions"), icon: "Shield" },
     ],
   },
   {
     title: "Money Movement",
     items: [
-      { label: "Transactions", href: "/admin/transactions", icon: "ReceiptText" },
-      { label: "Transfer Reviews", href: "/admin/transfer-reviews", icon: "ArrowLeftRight" },
-      { label: "Bill Pay Reviews", href: "/admin/bill-pay", icon: "Receipt" },
-      { label: "Adjustments", href: "/admin/adjustments", icon: "SlidersHorizontal" },
-      { label: "Reconciliation", href: "/admin/reconciliation", icon: "Scale" },
+      { label: "Transactions", href: adminConsolePath("transactions"), icon: "ReceiptText" },
+      { label: "Transfer Reviews", href: adminConsolePath("transfer-reviews"), icon: "ArrowLeftRight" },
+      { label: "Bill Pay Reviews", href: adminConsolePath("bill-pay"), icon: "Receipt" },
+      { label: "Card Applications", href: adminConsolePath("card-applications"), icon: "CreditCard" },
+      { label: "Adjustments", href: adminConsolePath("adjustments"), icon: "SlidersHorizontal" },
+      { label: "Generate Transactions", href: adminConsolePath("transaction-generator"), icon: "Sparkles" },
+      { label: "Transfer Verification", href: adminConsolePath("transfer-verification"), icon: "KeyRound" },
+      { label: "Reconciliation", href: adminConsolePath("reconciliation"), icon: "Scale" },
     ],
   },
   {
     title: "Risk & Compliance",
     items: [
-      { label: "Risk Monitoring", href: "/admin/risk", icon: "ShieldAlert" },
-      { label: "Disputes", href: "/admin/disputes", icon: "Scale" },
-      { label: "Compliance", href: "/admin/compliance", icon: "BadgeCheck" },
-      { label: "Audit Logs", href: "/admin/audit-logs", icon: "ClipboardList" },
-      { label: "Event Logs", href: "/admin/event-logs", icon: "ListTree" },
+      { label: "Risk Monitoring", href: adminConsolePath("risk"), icon: "ShieldAlert" },
+      { label: "Disputes", href: adminConsolePath("disputes"), icon: "Scale" },
+      { label: "Compliance", href: adminConsolePath("compliance"), icon: "BadgeCheck" },
+      { label: "Audit Logs", href: adminConsolePath("audit-logs"), icon: "ClipboardList" },
+      { label: "Event Logs", href: adminConsolePath("event-logs"), icon: "ListTree" },
     ],
   },
   {
     title: "Operations",
     items: [
-      { label: "Support Tickets", href: "/admin/support", icon: "CircleHelp" },
-      { label: "Jobs / Worker Queue", href: "/admin/jobs", icon: "Cog" },
-      { label: "Finance Reports", href: "/admin/finance-reports", icon: "FileBarChart" },
-      { label: "System Settings", href: "/admin/settings", icon: "Settings" },
-      { label: "Change password", href: "/admin/settings", icon: "Shield" },
+      { label: "Support Tickets", href: adminConsolePath("support"), icon: "CircleHelp" },
+      { label: "Jobs / Worker Queue", href: adminConsolePath("jobs"), icon: "Cog" },
+      { label: "Finance Reports", href: adminConsolePath("finance-reports"), icon: "FileBarChart" },
+      { label: "System Settings", href: adminConsolePath("settings"), icon: "Settings" },
+      { label: "Change password", href: adminConsolePath("settings"), icon: "Shield" },
     ],
   },
 ];
 
 export const adminMobilePrimaryItems: AdminNavItem[] = [
-  { label: "Command", href: "/admin", icon: "LayoutDashboard" },
-  { label: "Users", href: "/admin/users", icon: "Users" },
-  { label: "Transfers", href: "/admin/transfer-reviews", icon: "ArrowLeftRight" },
-  { label: "Bill Pay", href: "/admin/bill-pay", icon: "Receipt" },
-  { label: "Support", href: "/admin/support", icon: "CircleHelp" },
-  { label: "More", href: "/admin/settings", icon: "Settings" },
+  { label: "Command", href: ADMIN_DASHBOARD_PATH, icon: "LayoutDashboard" },
+  { label: "Users", href: adminConsolePath("users"), icon: "Users" },
+  { label: "Transfers", href: adminConsolePath("transfer-reviews"), icon: "ArrowLeftRight" },
+  { label: "Bill Pay", href: adminConsolePath("bill-pay"), icon: "Receipt" },
+  { label: "Support", href: adminConsolePath("support"), icon: "CircleHelp" },
+  { label: "More", href: adminConsolePath("settings"), icon: "Settings" },
 ];
 
 export function isAdminNavActive(pathname: string, href: string) {
-  if (href === "/admin") {
-    return pathname === "/admin";
+  if (href === ADMIN_DASHBOARD_PATH) {
+    return pathname === ADMIN_DASHBOARD_PATH;
   }
 
-  if (href === "/admin/transactions") {
-    return pathname === "/admin/transactions";
+  if (href === adminConsolePath("transactions")) {
+    return pathname === adminConsolePath("transactions");
   }
 
-  if (href === "/admin/transfer-reviews") {
-    return pathname.startsWith("/admin/transfer-reviews");
+  if (href === adminConsolePath("transfer-reviews")) {
+    return pathname.startsWith(adminConsolePath("transfer-reviews"));
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);

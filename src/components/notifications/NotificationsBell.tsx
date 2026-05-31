@@ -37,7 +37,7 @@ export function NotificationsBell() {
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          "relative flex h-12 w-12 items-center justify-center rounded-full border border-primary-navy/[0.08] bg-white text-primary-navy shadow-[0_12px_34px_rgba(10,42,94,0.07)] transition hover:text-ocean-blue dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-white",
+          "relative flex h-10 w-10 items-center justify-center rounded-full border border-primary-navy/[0.08] bg-white text-primary-navy shadow-[0_12px_34px_rgba(10,42,94,0.07)] transition hover:text-ocean-blue dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-white",
           open && "border-ocean-blue/[0.40] text-ocean-blue",
         )}
       >

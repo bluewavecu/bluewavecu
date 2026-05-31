@@ -67,7 +67,7 @@ export function AuthPageShell({
         </section>
 
         <section className="flex min-h-screen flex-col px-4 py-8 sm:px-6 sm:py-10">
-          <div className={cn("mx-auto flex w-full flex-1 flex-col", wide ? "max-w-xl" : "max-w-md")}>
+          <div className={cn("mx-auto flex w-full flex-1 flex-col", wide ? "max-w-5xl" : "max-w-md")}>
             <AuthLogo priority className="mb-6 sm:mb-8" />
 
             <div className="flex flex-1 flex-col rounded-xl border border-primary-navy/[0.08] bg-white shadow-[0_24px_80px_rgba(10,42,94,0.10)] dark:border-white/[0.08] dark:bg-[#0a1a2e]">

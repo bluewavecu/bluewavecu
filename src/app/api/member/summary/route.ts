@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { getUserKycStatus } from "@/lib/customerProfile";
 import { getPrisma } from "@/lib/prisma";
 import type { MemberSummary } from "@/types/banking";
@@ -9,12 +10,11 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const prisma = getPrisma();
     const userId = payload.userId;
@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
       openSupportTickets,
       activeSessions,
       kycStatus,
+      pendingIdVerifications,
+      approvedIdVerifications,
     ] = await Promise.all([
       prisma.account.findMany({ where: { userId }, select: { availableBalance: true } }),
       prisma.transaction.count({
@@ -45,6 +47,12 @@ export async function GET(request: NextRequest) {
       }),
       prisma.userSession.count({ where: { userId, revokedAt: null } }),
       getUserKycStatus(userId),
+      prisma.idVerificationSubmission.count({
+        where: { userId, status: "PENDING" },
+      }),
+      prisma.idVerificationSubmission.count({
+        where: { userId, status: "APPROVED" },
+      }),
     ]);
 
     const totalAvailableBalance = accounts.reduce(
@@ -61,6 +69,8 @@ export async function GET(request: NextRequest) {
       openSupportTicketCount: openSupportTickets,
       kycStatus,
       needsProfileCompletion: kycStatus === "NOT_STARTED" || kycStatus === "REJECTED",
+      needsIdVerification: approvedIdVerifications === 0 && pendingIdVerifications === 0,
+      pendingIdVerificationCount: pendingIdVerifications,
       activeSessionCount: activeSessions,
     };
 

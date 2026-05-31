@@ -7,12 +7,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { INSTITUTION, formatInstitutionAddress } from "@/lib/institution";
 import { cn } from "@/lib/utils";
 import type { SupportTicketPriority } from "@/types/banking";
 
 const supportContacts = [
-  { label: "support@bluewavecu.com", icon: Mail },
-  { label: "(646) 776-4480", icon: Phone },
+  { label: INSTITUTION.email, icon: Mail },
+  { label: INSTITUTION.phone.display, icon: Phone },
   { label: "Secure message center", icon: MessageSquareText },
 ];
 
@@ -246,11 +247,11 @@ export function SupportClient() {
           </p>
           <p className="mt-4 inline-flex items-start gap-2 text-sm text-white/[0.68]">
             <MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-            2000 McKinney Ave, Dallas, TX 75201
+            {formatInstitutionAddress()}
           </p>
           <p className="mt-2 text-sm text-white/[0.68]">
             For transaction disputes, visit{" "}
-            <Link href="/disputes" className="font-semibold text-light-blue underline">
+            <Link href="/auth/disputes" className="font-semibold text-light-blue underline">
               Disputes
             </Link>
             .

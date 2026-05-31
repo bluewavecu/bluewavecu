@@ -302,31 +302,42 @@ export default function Home() {
                   pay, and dedicated member support.
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-4 lg:min-w-[280px]">
+              <div className="flex w-full flex-col gap-4 lg:min-w-[300px]">
+                <div className="rounded-lg border border-white/[0.24] bg-white p-5 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
+                  <p className="text-sm font-semibold uppercase tracking-wide text-ocean-blue">
+                    New membership
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-primary-navy">
+                    Open your Bluewave account
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-bluewave-gray">
+                    Start online banking, transfers, bill pay, and member support in one enrollment.
+                  </p>
+                  <ButtonLink
+                    href="/auth/register"
+                    variant="primary"
+                    size="lg"
+                    className="mt-5 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
+                  >
+                    Open Account
+                    <ArrowRight size={18} aria-hidden="true" />
+                  </ButtonLink>
+                </div>
                 <div className="rounded-lg border border-white/[0.18] bg-white/[0.08] p-4 backdrop-blur-xl">
                   <p className="text-sm font-semibold text-white">Already a member?</p>
                   <p className="mt-1 text-sm leading-6 text-white/[0.72]">
                     Sign in to online banking to view accounts, transfers, and statements.
                   </p>
                   <ButtonLink
-                    href="/auth"
-                    variant="primary"
+                    href="/auth/login"
+                    variant="secondary"
                     size="lg"
-                    className="mt-4 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
+                    className="mt-4 w-full justify-center"
                   >
                     <LogIn size={18} aria-hidden="true" />
                     Sign in to online banking
                   </ButtonLink>
                 </div>
-                <ButtonLink
-                  href="/register"
-                  variant="light"
-                  size="lg"
-                  className="w-full justify-center"
-                >
-                  Open Account
-                  <ArrowRight size={18} aria-hidden="true" />
-                </ButtonLink>
               </div>
             </div>
           </MotionReveal>

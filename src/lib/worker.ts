@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { submitBillPaymentForReview } from "@/lib/billPay";
+import { postAdjustmentRequest } from "@/lib/adjustments";
 import { sendAdminAlertEmail, sendTransferCreatedEmail } from "@/lib/email";
 import {
   getDueJobs,
@@ -121,7 +122,7 @@ export async function processScheduledTransferReviewJob(payload: JobPayload) {
     event: "created",
     reference: transaction.reference,
     amount: transaction.amount.toNumber(),
-    metadata: { href: "/transfers", scheduledTransferId: scheduledTransfer.id },
+    metadata: { href: "/auth/transfers", scheduledTransferId: scheduledTransfer.id },
   });
 
   if (scheduledTransfer.frequency === "ONE_TIME") {
@@ -179,6 +180,22 @@ export async function processBillPaymentReviewJob(payload: JobPayload) {
   };
 }
 
+async function processPostAdjustmentJob(payload: JobPayload) {
+  const adjustmentId = getPayloadString(payload, "adjustmentId");
+  const adminId = getPayloadString(payload, "adminId");
+
+  await postAdjustmentRequest({
+    adjustmentId,
+    adminId,
+    fromSchedule: true,
+  });
+
+  return {
+    skipped: false,
+    adjustmentId,
+  };
+}
+
 async function processJob(job: { id: string; jobType: string; payload: unknown; attempts: number; maxAttempts: number }) {
   const payload = job.payload as JobPayload;
 
@@ -188,6 +205,10 @@ async function processJob(job: { id: string; jobType: string; payload: unknown; 
 
   if (job.jobType === "BILL_PAYMENT_REVIEW") {
     return processBillPaymentReviewJob(payload);
+  }
+
+  if (job.jobType === "POST_ADJUSTMENT") {
+    return processPostAdjustmentJob(payload);
   }
 
   throw new Error(`Unsupported job type: ${job.jobType}`);

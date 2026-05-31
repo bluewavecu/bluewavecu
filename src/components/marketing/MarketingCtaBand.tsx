@@ -17,12 +17,23 @@ export function MarketingCtaBand() {
                 Open an account in minutes or sign in to manage your existing membership online.
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <ButtonLink href="/register" variant="light" size="lg">
-                Open Account
-                <ArrowRight size={18} aria-hidden="true" />
-              </ButtonLink>
-              <ButtonLink href="/auth" variant="secondary" size="lg">
+            <div className="flex w-full flex-col gap-4 lg:min-w-[300px]">
+              <div className="rounded-lg border border-white/[0.24] bg-white p-5 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
+                <p className="text-sm font-semibold uppercase tracking-wide text-ocean-blue">
+                  New membership
+                </p>
+                <p className="mt-2 text-lg font-semibold text-primary-navy">Open your Bluewave account</p>
+                <ButtonLink
+                  href="/auth/register"
+                  variant="primary"
+                  size="lg"
+                  className="mt-5 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
+                >
+                  Open Account
+                  <ArrowRight size={18} aria-hidden="true" />
+                </ButtonLink>
+              </div>
+              <ButtonLink href="/auth/login" variant="secondary" size="lg" className="w-full justify-center">
                 Sign in to online banking
                 <Fingerprint size={18} aria-hidden="true" />
               </ButtonLink>

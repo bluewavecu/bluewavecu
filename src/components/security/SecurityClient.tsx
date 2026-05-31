@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { InfoPanel } from "@/components/ui/InfoPanel";
 import { SessionsClient } from "@/components/security/SessionsClient";
-import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
+import { FORGOT_PASSWORD_PATH } from "@/lib/authRoutes";
 
 export function SecurityClient() {
   return (
@@ -13,12 +13,12 @@ export function SecurityClient() {
         regularly and revoke unfamiliar devices.
       </InfoPanel>
 
-      <InfoPanel title="Password change">
-        To reset your password, contact{" "}
-        <Link href={MEMBER_SUPPORT_PATH} className="font-semibold text-royal-blue">
-          member support
-        </Link>{" "}
-        if you need immediate help.
+      <InfoPanel title="Forgot your password?">
+        If you are signed out and need to recover access,{" "}
+        <Link href={FORGOT_PASSWORD_PATH} className="font-semibold text-royal-blue">
+          request password reset instructions
+        </Link>
+        . We will email you a secure link and verification code.
       </InfoPanel>
 
       <SessionsClient />

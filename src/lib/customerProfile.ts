@@ -21,6 +21,7 @@ export function serializeCustomerProfile(record: {
   kycReviewedAt: Date | null;
   kycReviewedBy: string | null;
   kycReviewNote: string | null;
+  profilePhotoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   user?: { fullName: string; email: string; phone: string };
@@ -42,6 +43,7 @@ export function serializeCustomerProfile(record: {
     kycReviewedAt: record.kycReviewedAt?.toISOString() ?? null,
     kycReviewedBy: record.kycReviewedBy,
     kycReviewNote: record.kycReviewNote,
+    profilePhotoUrl: record.profilePhotoUrl,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
     userName: record.user?.fullName,
@@ -188,7 +190,7 @@ export async function submitCustomerKyc(userId: string) {
     type: "ACCOUNT",
     title: "KYC submitted",
     message: "Your profile was submitted for identity verification review.",
-    metadata: { href: "/profile", kycStatus: "SUBMITTED" },
+    metadata: { href: "/auth/profile", kycStatus: "SUBMITTED" },
   });
 
   void sendAdminAlertEmail({
@@ -267,7 +269,7 @@ export async function updateCustomerKycStatus(params: {
       params.status === "REJECTED" && params.reviewNote
         ? `Your KYC review was rejected: ${params.reviewNote}`
         : `Your KYC status is now ${statusLabel}.`,
-    metadata: { href: "/profile", kycStatus: params.status },
+    metadata: { href: "/auth/profile", kycStatus: params.status },
   });
 
   void sendKycStatusEmail({

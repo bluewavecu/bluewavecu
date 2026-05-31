@@ -1,10 +1,11 @@
 "use client";
 
-import { Menu, UserPlus, X, LogIn } from "lucide-react";
+import { LogIn, Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
+import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -15,6 +16,20 @@ const navLinks = [
   { label: "Support", href: "/support" },
 ];
 
+const loginButtonClassName = buttonVariants({
+  variant: "primary",
+  size: "sm",
+  className:
+    "h-9 gap-1.5 px-3.5 text-xs shadow-[0_10px_28px_rgba(0,168,232,0.32)] sm:h-10 sm:gap-2 sm:px-4 sm:text-sm",
+});
+
+const registerButtonClassName = buttonVariants({
+  variant: "secondary",
+  size: "sm",
+  className:
+    "hidden h-9 border-white/[0.18] bg-white/[0.08] px-3.5 text-xs sm:inline-flex sm:h-10 sm:px-4 sm:text-sm",
+});
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
 
@@ -22,11 +37,11 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-navy text-white shadow-[0_12px_40px_rgba(20,35,60,0.18)]">
       <nav
         aria-label="Main navigation"
-        className="section-shell flex h-20 items-center justify-between gap-6"
+        className="section-shell flex h-[4.5rem] items-center justify-between gap-3 sm:gap-4 lg:h-20 lg:gap-6"
       >
         <BrandLogo priority displayHeight={44} onClick={() => setOpen(false)} />
 
-        <div className="hidden items-center gap-8 lg:flex">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:gap-8 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -38,72 +53,57 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/auth"
-            className={cn(
-              buttonVariants({ variant: "secondary", size: "sm" }),
-              "border-white/[0.18] bg-white/[0.08]",
-            )}
-          >
+        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+          <Link href={MEMBER_LOGIN_PATH} className={loginButtonClassName}>
             <LogIn size={16} aria-hidden="true" />
-            Online banking
+            Log in
           </Link>
-          <Link href="/register" className={buttonVariants({ size: "sm" })}>
-            <UserPlus size={16} aria-hidden="true" />
-            Open Account
-          </Link>
-        </div>
 
-        <button
-          type="button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition hover:bg-white/[0.14] lg:hidden"
-        >
-          {open ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
-        </button>
+          <Link href={MEMBER_REGISTER_PATH} className={registerButtonClassName}>
+            <UserPlus size={16} aria-hidden="true" />
+            Open account
+          </Link>
+
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition hover:bg-white/[0.14] sm:h-10 sm:w-10 lg:hidden"
+          >
+            {open ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+          </button>
+        </div>
       </nav>
 
       <div
         className={cn(
           "overflow-hidden border-t border-white/10 bg-brand-navy transition-[max-height,opacity] duration-300 lg:hidden",
-          open ? "max-h-[480px] opacity-100" : "max-h-0 opacity-0",
+          open ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <div className="section-shell flex flex-col gap-2 py-5">
+        <div className="section-shell flex flex-col gap-1 py-4">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-3 text-sm font-semibold text-white/[0.82] transition hover:bg-white/[0.08] hover:text-light-blue"
+              className="rounded-lg px-3 py-2.5 text-sm font-semibold text-white/[0.82] transition hover:bg-white/[0.08] hover:text-light-blue"
             >
               {link.label}
             </Link>
           ))}
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Link
-              href="/auth"
-              onClick={() => setOpen(false)}
-              className={buttonVariants({
-                variant: "secondary",
-                className: "w-full border-white/[0.18] bg-white/[0.08]",
-              })}
-            >
-              <LogIn size={16} aria-hidden="true" />
-              Online banking
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setOpen(false)}
-              className={buttonVariants({ className: "w-full" })}
-            >
-              <UserPlus size={16} aria-hidden="true" />
-              Open Account
-            </Link>
-          </div>
+          <Link
+            href={MEMBER_REGISTER_PATH}
+            onClick={() => setOpen(false)}
+            className={buttonVariants({
+              size: "sm",
+              className: "mt-3 w-full sm:hidden",
+            })}
+          >
+            <UserPlus size={16} aria-hidden="true" />
+            Open account
+          </Link>
         </div>
       </div>
     </header>

@@ -197,7 +197,7 @@ export function useUserSessions() {
       }
 
       if (result.data?.loggedOut) {
-        window.location.href = "/auth?next=/member/security";
+        window.location.href = "/auth/login?next=/auth/security";
         return true;
       }
 

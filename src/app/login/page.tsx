@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { MEMBER_LOGIN_PATH } from "@/lib/authRoutes";
 
 type LoginRedirectPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -19,5 +20,5 @@ export default async function LoginRedirectPage({ searchParams }: LoginRedirectP
   }
 
   const queryString = query.toString();
-  redirect(queryString ? `/auth?${queryString}` : "/auth");
+  redirect(queryString ? `${MEMBER_LOGIN_PATH}?${queryString}` : MEMBER_LOGIN_PATH);
 }

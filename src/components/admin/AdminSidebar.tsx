@@ -8,7 +8,10 @@ import {
   CircleHelp,
   ClipboardList,
   Cog,
+  CreditCard,
   FileBarChart,
+  IdCard,
+  KeyRound,
   LayoutDashboard,
   ListTree,
   Receipt,
@@ -18,6 +21,7 @@ import {
   Shield,
   ShieldAlert,
   SlidersHorizontal,
+  Sparkles,
   Users,
   WalletCards,
 } from "lucide-react";
@@ -25,6 +29,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import {
+  ADMIN_DASHBOARD_PATH,
   adminMobilePrimaryItems,
   adminNavSections,
   isAdminNavActive,
@@ -37,10 +42,14 @@ const iconMap = {
   Users,
   WalletCards,
   BadgeCheck,
+  IdCard,
+  KeyRound,
   Shield,
+  Sparkles,
   ReceiptText,
   ArrowLeftRight,
   Receipt,
+  CreditCard,
   SlidersHorizontal,
   Scale,
   ShieldAlert,
@@ -79,7 +88,7 @@ export function AdminSidebar() {
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-primary-navy/[0.08] bg-white/92 p-5 shadow-[12px_0_60px_rgba(10,42,94,0.08)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#071526]/92 lg:flex lg:flex-col">
-        <BrandLogo href="/admin" displayHeight={44} priority tone="dark" className="h-14 items-center" />
+        <BrandLogo href={ADMIN_DASHBOARD_PATH} displayHeight={44} priority tone="dark" className="h-14 items-center" />
 
         <div className="mt-6 rounded-lg border border-primary-navy/[0.08] bg-primary-navy p-4 text-white">
           <p className="text-sm font-semibold">Banking Operations</p>
@@ -103,7 +112,7 @@ export function AdminSidebar() {
 
         <div className="mt-auto rounded-lg border border-primary-navy/[0.08] bg-[#f4f9ff] p-4 dark:border-white/[0.08] dark:bg-white/[0.06]">
           <Link
-            href="/dashboard"
+            href="/auth/dashboard"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary-navy transition hover:text-ocean-blue dark:text-white"
           >
             <ArrowLeft size={16} aria-hidden="true" />

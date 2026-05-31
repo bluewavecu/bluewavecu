@@ -19,7 +19,7 @@ export function SupportHubPage() {
         heroImage={marketingImages.supportHero}
         heroImageAlt="Support specialist ready to help a member"
         primaryCta={{ label: "Contact support", href: "/contact" }}
-        secondaryCta={{ label: "Sign in for ticket tracking", href: "/auth" }}
+        secondaryCta={{ label: "Sign in for ticket tracking", href: "/auth/login" }}
       />
 
       <section className="bg-background py-16 sm:py-20">
@@ -29,7 +29,7 @@ export function SupportHubPage() {
               icon: MessageSquare,
               title: "Submit a ticket",
               text: "Signed-in members can create and track support requests online.",
-              href: "/auth",
+              href: "/auth/login",
             },
             {
               icon: Phone,

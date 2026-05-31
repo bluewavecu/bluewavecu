@@ -1,18 +1,20 @@
 import { randomUUID } from "crypto";
 import { Prisma } from "@/generated/prisma/client";
 import { logAdminAction } from "@/lib/admin";
+import { maskAccountNumber } from "@/lib/bankingSerialize";
 import { sendAdjustmentPostedEmail, sendAdminAlertEmail } from "@/lib/email";
 import { writeAdminEvent, writeLedgerEvent } from "@/lib/eventLog";
+import { enqueueJob } from "@/lib/jobQueue";
 import { LedgerError } from "@/lib/ledger";
 import { createNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
-import type { AdjustmentRecord, AdjustmentStatus, LedgerDirection } from "@/types/banking";
+import type { AccountType, AdjustmentRecord, AdjustmentStatus, LedgerDirection } from "@/types/banking";
 
 function decimal(value: number) {
   return new Prisma.Decimal(value.toFixed(2));
 }
 
-function hasInsufficientFunds(accountType: "CHECKING" | "SAVINGS" | "CREDIT", balance: number, amount: number) {
+function hasInsufficientFunds(accountType: AccountType, balance: number, amount: number) {
   if (accountType === "CREDIT") {
     return false;
   }
@@ -31,11 +33,12 @@ export function serializeAdjustment(record: {
   status: AdjustmentStatus;
   reviewedAt: Date | null;
   postedAt: Date | null;
+  effectiveAt: Date;
   reviewNote: string | null;
   transactionId: string | null;
   createdAt: Date;
   updatedAt: Date;
-  account?: { accountNumber: string; accountType: string };
+  account?: { accountNumber: string | null; accountType: string };
   user?: { fullName: string; email: string };
 }): AdjustmentRecord {
   return {
@@ -49,11 +52,12 @@ export function serializeAdjustment(record: {
     status: record.status,
     reviewedAt: record.reviewedAt?.toISOString() ?? null,
     postedAt: record.postedAt?.toISOString() ?? null,
+    effectiveAt: record.effectiveAt.toISOString(),
     reviewNote: record.reviewNote,
     transactionId: record.transactionId,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
-    accountNumber: record.account?.accountNumber,
+    accountNumber: record.account?.accountNumber ?? undefined,
     accountType: record.account?.accountType as AdjustmentRecord["accountType"],
     userName: record.user?.fullName,
     userEmail: record.user?.email,
@@ -71,6 +75,7 @@ export async function createAdjustmentRequest(params: {
   amount: number;
   direction: LedgerDirection;
   reason: string;
+  effectiveAt: Date;
 }) {
   const prisma = getPrisma();
 
@@ -95,6 +100,7 @@ export async function createAdjustmentRequest(params: {
       amount: decimal(params.amount),
       direction: params.direction,
       reason: params.reason.trim(),
+      effectiveAt: params.effectiveAt,
       status: "PENDING",
     },
     include: adjustmentInclude,
@@ -104,10 +110,11 @@ export async function createAdjustmentRequest(params: {
     eventType: "ADJUSTMENT_REQUEST_CREATED",
     actorId: params.adminId,
     entityId: adjustment.id,
-    message: `Adjustment request created for account ending ${account.accountNumber.slice(-4)}.`,
+    message: `Adjustment request created for account ending ${maskAccountNumber(account.accountNumber).last4}.`,
     metadata: {
       direction: params.direction,
       amount: params.amount,
+      effectiveAt: params.effectiveAt.toISOString(),
     },
   });
 
@@ -178,7 +185,11 @@ export async function rejectAdjustmentRequest(params: {
     throw new LedgerError("Adjustment request not found", "NOT_FOUND");
   }
 
-  if (adjustment.status !== "PENDING" && adjustment.status !== "APPROVED") {
+  if (
+    adjustment.status !== "PENDING" &&
+    adjustment.status !== "APPROVED" &&
+    adjustment.status !== "SCHEDULED"
+  ) {
     throw new LedgerError("Adjustment cannot be rejected in current status", "INVALID_STATUS");
   }
 
@@ -213,7 +224,54 @@ export async function rejectAdjustmentRequest(params: {
     type: "ACCOUNT",
     title: "Adjustment request rejected",
     message: `Your balance adjustment request was rejected.`,
-    metadata: { href: "/accounts", adjustmentId: updated.id },
+    metadata: { href: "/auth/accounts", adjustmentId: updated.id },
+  });
+
+  return serializeAdjustment(updated);
+}
+
+async function scheduleAdjustmentPost(params: { adjustmentId: string; adminId: string }) {
+  const prisma = getPrisma();
+  const adjustment = await prisma.adjustmentRequest.findUnique({
+    where: { id: params.adjustmentId },
+    include: adjustmentInclude,
+  });
+
+  if (!adjustment) {
+    throw new LedgerError("Adjustment request not found", "NOT_FOUND");
+  }
+
+  if (adjustment.status !== "APPROVED") {
+    throw new LedgerError("Only approved adjustments can be scheduled", "INVALID_STATUS");
+  }
+
+  if (adjustment.transactionId) {
+    throw new LedgerError("Adjustment has already been posted", "ALREADY_POSTED");
+  }
+
+  await enqueueJob({
+    jobType: "POST_ADJUSTMENT",
+    runAt: adjustment.effectiveAt,
+    payload: {
+      adjustmentId: adjustment.id,
+      adminId: params.adminId,
+    },
+  });
+
+  const updated = await prisma.adjustmentRequest.update({
+    where: { id: adjustment.id },
+    data: { status: "SCHEDULED" },
+    include: adjustmentInclude,
+  });
+
+  void writeAdminEvent({
+    eventType: "ADJUSTMENT_SCHEDULED",
+    actorId: params.adminId,
+    entityId: updated.id,
+    message: `Adjustment scheduled for ${adjustment.effectiveAt.toISOString()}.`,
+    metadata: {
+      effectiveAt: adjustment.effectiveAt.toISOString(),
+    },
   });
 
   return serializeAdjustment(updated);
@@ -222,11 +280,46 @@ export async function rejectAdjustmentRequest(params: {
 export async function postAdjustmentRequest(params: {
   adjustmentId: string;
   adminId: string;
+  fromSchedule?: boolean;
 }) {
   const prisma = getPrisma();
 
+  const adjustment = await prisma.adjustmentRequest.findUnique({
+    where: { id: params.adjustmentId },
+    include: {
+      account: true,
+      user: { select: { id: true, email: true, fullName: true } },
+    },
+  });
+
+  if (!adjustment) {
+    throw new LedgerError("Adjustment request not found", "NOT_FOUND");
+  }
+
+  const allowedStatus = params.fromSchedule ? "SCHEDULED" : "APPROVED";
+
+  if (adjustment.status !== allowedStatus) {
+    throw new LedgerError(
+      params.fromSchedule
+        ? "Only scheduled adjustments can be posted by the worker"
+        : "Only approved adjustments can be posted",
+      "INVALID_STATUS",
+    );
+  }
+
+  if (adjustment.transactionId) {
+    throw new LedgerError("Adjustment has already been posted", "ALREADY_POSTED");
+  }
+
+  const effectiveAt = adjustment.effectiveAt;
+  const now = new Date();
+
+  if (!params.fromSchedule && effectiveAt > now) {
+    return scheduleAdjustmentPost(params);
+  }
+
   return prisma.$transaction(async (tx) => {
-    const adjustment = await tx.adjustmentRequest.findUnique({
+    const lockedAdjustment = await tx.adjustmentRequest.findUnique({
       where: { id: params.adjustmentId },
       include: {
         account: true,
@@ -234,24 +327,16 @@ export async function postAdjustmentRequest(params: {
       },
     });
 
-    if (!adjustment) {
+    if (!lockedAdjustment) {
       throw new LedgerError("Adjustment request not found", "NOT_FOUND");
     }
 
-    if (adjustment.status !== "APPROVED") {
-      throw new LedgerError("Only approved adjustments can be posted", "INVALID_STATUS");
-    }
-
-    if (adjustment.transactionId) {
-      throw new LedgerError("Adjustment has already been posted", "ALREADY_POSTED");
-    }
-
-    const amount = adjustment.amount.toNumber();
-    const account = adjustment.account;
+    const amount = lockedAdjustment.amount.toNumber();
+    const account = lockedAdjustment.account;
     const balance = account.balance.toNumber();
     const available = account.availableBalance.toNumber();
 
-    if (adjustment.direction === "DEBIT") {
+    if (lockedAdjustment.direction === "DEBIT") {
       if (
         hasInsufficientFunds(account.accountType, balance, amount) ||
         hasInsufficientFunds(account.accountType, available, amount)
@@ -261,28 +346,29 @@ export async function postAdjustmentRequest(params: {
     }
 
     const balanceAfter =
-      adjustment.direction === "CREDIT" ? balance + amount : balance - amount;
+      lockedAdjustment.direction === "CREDIT" ? balance + amount : balance - amount;
     const availableAfter =
-      adjustment.direction === "CREDIT" ? available + amount : available - amount;
+      lockedAdjustment.direction === "CREDIT" ? available + amount : available - amount;
 
     const reference = `ADJ-${randomUUID()}`;
-    const txType = adjustment.direction === "CREDIT" ? "DEPOSIT" : "WITHDRAWAL";
-    const signedAmount = adjustment.direction === "CREDIT" ? amount : -amount;
+    const txType = lockedAdjustment.direction === "CREDIT" ? "DEPOSIT" : "WITHDRAWAL";
+    const signedAmount = lockedAdjustment.direction === "CREDIT" ? amount : -amount;
 
     const transaction = await tx.transaction.create({
       data: {
-        userId: adjustment.userId,
-        accountId: adjustment.accountId,
+        userId: lockedAdjustment.userId,
+        accountId: lockedAdjustment.accountId,
         type: txType,
         amount: decimal(signedAmount),
-        description: `Controlled balance adjustment: ${adjustment.reason}`,
-        merchant: "Bluewave Adjustment",
+        description: lockedAdjustment.reason,
+        merchant: null,
         reference,
         status: "COMPLETED",
-        postedAt: new Date(),
-        reviewedAt: new Date(),
+        createdAt: effectiveAt,
+        postedAt: effectiveAt,
+        reviewedAt: now,
         reviewedBy: params.adminId,
-        reviewNote: adjustment.reviewNote,
+        reviewNote: lockedAdjustment.reviewNote,
       },
     });
 
@@ -298,20 +384,21 @@ export async function postAdjustmentRequest(params: {
       data: {
         transactionId: transaction.id,
         accountId: account.id,
-        userId: adjustment.userId,
-        direction: adjustment.direction,
+        userId: lockedAdjustment.userId,
+        direction: lockedAdjustment.direction,
         amount: decimal(amount),
         currency: account.currency,
         balanceBefore: decimal(balance),
         balanceAfter: decimal(balanceAfter),
-        description: `Controlled adjustment (${adjustment.direction}): ${adjustment.reason}`,
+        description: `${lockedAdjustment.direction === "CREDIT" ? "Credit" : "Debit"}: ${lockedAdjustment.reason}`,
+        createdAt: effectiveAt,
       },
     });
 
-    const postedAt = new Date();
+    const postedAt = now;
 
     const updated = await tx.adjustmentRequest.update({
-      where: { id: adjustment.id },
+      where: { id: lockedAdjustment.id },
       data: {
         status: "POSTED",
         postedAt,
@@ -327,25 +414,26 @@ export async function postAdjustmentRequest(params: {
       message: `Controlled adjustment posted for ${reference}.`,
       metadata: {
         reference,
-        direction: adjustment.direction,
+        direction: lockedAdjustment.direction,
         amount,
+        effectiveAt: effectiveAt.toISOString(),
       },
     });
 
     void sendAdjustmentPostedEmail({
-      email: adjustment.user.email,
-      fullName: adjustment.user.fullName,
+      email: lockedAdjustment.user.email,
+      fullName: lockedAdjustment.user.fullName,
       amount,
-      direction: adjustment.direction,
+      direction: lockedAdjustment.direction,
       reference,
     });
 
     void createNotification({
-      userId: adjustment.userId,
+      userId: lockedAdjustment.userId,
       type: "ACCOUNT",
       title: "Balance adjustment posted",
-      message: `A ${adjustment.direction.toLowerCase()} adjustment of $${amount.toFixed(2)} was posted to your account.`,
-      metadata: { href: "/transactions", reference },
+      message: `A ${lockedAdjustment.direction.toLowerCase()} adjustment of $${amount.toFixed(2)} was posted to your account.`,
+      metadata: { href: "/auth/transactions", reference },
     });
 
     return serializeAdjustment(updated);

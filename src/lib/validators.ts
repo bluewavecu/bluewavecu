@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { SIGNUP_ACCOUNT_TYPE_VALUES } from "@/data/signupAccountTypes";
 import { US_STATE_CODES } from "@/data/usStates";
+import { USERNAME_PATTERN } from "@/lib/username";
 
 function parseDateOfBirth(value: string) {
   const parsed = new Date(`${value}T00:00:00.000Z`);
@@ -27,6 +29,16 @@ export const registerSchema = z
   .object({
     firstName: z.string().trim().min(1, "First name is required").max(60),
     lastName: z.string().trim().min(1, "Last name is required").max(60),
+    username: z
+      .string()
+      .trim()
+      .min(3, "Username must be at least 3 characters")
+      .max(32, "Username must be 32 characters or fewer")
+      .regex(
+        USERNAME_PATTERN,
+        "Username may only contain letters, numbers, and underscores",
+      )
+      .transform((value) => value.toLowerCase()),
     email: z.string().trim().toLowerCase().email(),
     phone: z.string().trim().min(7, "Phone number is required").max(32),
     dateOfBirth: z
@@ -53,6 +65,12 @@ export const registerSchema = z
       .max(16)
       .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
     password: z.string().min(8, "Password must be at least 8 characters").max(128),
+    accountTypes: z
+      .array(z.enum(SIGNUP_ACCOUNT_TYPE_VALUES))
+      .min(1, "Select at least one account type")
+      .refine((accountTypes) => accountTypes.includes("SAVINGS"), {
+        message: "A savings account is required for membership",
+      }),
   })
   .transform((input) => ({
     ...input,
@@ -62,10 +80,153 @@ export const registerSchema = z
     addressLine2: input.addressLine2?.trim() || undefined,
   }));
 
-export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(1, "Password is required"),
-  portal: z.enum(["member", "admin"]).default("member"),
+export const adminCreateMemberSchema = z
+  .object({
+    firstName: z.string().trim().min(1, "First name is required").max(60),
+    lastName: z.string().trim().min(1, "Last name is required").max(60),
+    username: z
+      .string()
+      .trim()
+      .min(3, "Username must be at least 3 characters")
+      .max(32, "Username must be 32 characters or fewer")
+      .regex(
+        USERNAME_PATTERN,
+        "Username may only contain letters, numbers, and underscores",
+      )
+      .transform((value) => value.toLowerCase()),
+    email: z.string().trim().toLowerCase().email(),
+    phone: z.string().trim().min(7, "Phone number is required").max(32),
+    dateOfBirth: z
+      .string()
+      .trim()
+      .min(1, "Date of birth is required")
+      .refine((value) => parseDateOfBirth(value) !== null, "Enter a valid date of birth")
+      .refine(
+        (value) => {
+          const parsed = parseDateOfBirth(value);
+          return parsed ? isAtLeast18YearsOld(parsed) : false;
+        },
+        "Member must be at least 18 years old",
+      ),
+    occupation: z.string().trim().min(2, "Occupation is required").max(120),
+    addressLine1: z.string().trim().min(3, "Street address is required").max(160),
+    addressLine2: z.string().trim().max(160).optional(),
+    city: z.string().trim().min(2, "City is required").max(80),
+    state: z.enum(US_STATE_CODES, { message: "Select a state" }),
+    postalCode: z
+      .string()
+      .trim()
+      .min(3, "Postal code is required")
+      .max(16)
+      .regex(/^[A-Za-z0-9\s-]+$/, "Enter a valid postal code"),
+    password: z.string().min(8, "Password must be at least 8 characters").max(128),
+    accountTypes: z
+      .array(z.enum(SIGNUP_ACCOUNT_TYPE_VALUES))
+      .min(1, "Select at least one account type")
+      .refine((accountTypes) => accountTypes.includes("SAVINGS"), {
+        message: "A savings account is required for membership",
+      }),
+    status: z.enum(["PENDING", "ACTIVE"]).default("PENDING"),
+    kycStatus: z
+      .enum(["NOT_STARTED", "SUBMITTED", "UNDER_REVIEW", "VERIFIED", "REJECTED"])
+      .default("NOT_STARTED"),
+    markEmailVerified: z.boolean().default(true),
+    statusNote: z.string().trim().max(500).optional(),
+  })
+  .transform((input) => ({
+    ...input,
+    fullName: `${input.firstName} ${input.lastName}`.trim(),
+    country: "US",
+    dateOfBirth: parseDateOfBirth(input.dateOfBirth)!,
+    addressLine2: input.addressLine2?.trim() || undefined,
+  }));
+
+export const loginSchema = z
+  .object({
+    portal: z.enum(["member", "admin"]).default("member"),
+    email: z.string().trim().toLowerCase().email().optional(),
+    username: z
+      .string()
+      .trim()
+      .min(3, "Username is required")
+      .max(32)
+      .regex(USERNAME_PATTERN, "Enter a valid username")
+      .transform((value) => value.toLowerCase())
+      .optional(),
+    password: z.string().min(1, "Password is required").optional(),
+    loginChallengeId: z.string().trim().min(1).optional(),
+    otpCode: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, "Verification code must be 6 digits")
+      .optional(),
+  })
+  .superRefine((input, ctx) => {
+    if (input.portal === "admin") {
+      if (!input.email) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: "Email is required",
+        });
+      }
+
+      if (!input.password) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["password"],
+          message: "Password is required",
+        });
+      }
+
+      return;
+    }
+
+    if (input.loginChallengeId) {
+      if (!input.otpCode) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["otpCode"],
+          message: "Verification code is required",
+        });
+      }
+
+      return;
+    }
+
+    if (!input.username) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["username"],
+        message: "Username is required",
+      });
+    }
+
+    if (!input.password) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["password"],
+        message: "Password is required",
+      });
+    }
+  });
+
+export const verifyEmailSchema = z.object({
+  verificationChallengeId: z.string().trim().min(1, "Verification session expired"),
+  otpCode: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Verification code must be 6 digits"),
+});
+
+export const resendEmailVerificationSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username is required")
+    .max(32)
+    .regex(USERNAME_PATTERN, "Enter a valid username")
+    .transform((value) => value.toLowerCase()),
 });
 
 export const changePasswordSchema = z
@@ -86,7 +247,58 @@ export const changePasswordSchema = z
     path: ["newPassword"],
   });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().trim().min(1).optional(),
+    email: z.string().trim().toLowerCase().email().optional(),
+    code: z.string().regex(/^\d{6}$/, "Verification code must be 6 digits").optional(),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters")
+      .max(128),
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New passwords do not match",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => Boolean(data.token) || (Boolean(data.email) && Boolean(data.code)), {
+    message: "Use the reset link from your email or enter your email and verification code",
+    path: ["code"],
+  });
+
 export const transferSchema = z
+  .object({
+    fromAccountId: z.string().min(1, "Source account is required"),
+    toAccountNumber: z.string().trim().min(4).max(20).optional(),
+    recipientName: z.string().trim().min(2).max(120).optional(),
+    amount: z.coerce.number().positive("Amount must be greater than zero"),
+    memo: z.string().trim().max(180).optional(),
+    otpCode: z.string().regex(/^\d{6}$/, "Verification code must be 6 digits").optional(),
+    transactionPin: z.string().regex(/^\d{6}$/, "Transaction PIN must be 6 digits").optional(),
+    stepOtpCodes: z
+      .record(
+        z.enum([
+          "IDENTITY_CHECK",
+          "AMOUNT_CONFIRMATION",
+          "BENEFICIARY_VERIFICATION",
+          "SECURITY_CLEARANCE",
+          "FINAL_RELEASE",
+        ]),
+        z.string().regex(/^\d{6}$/, "Verification code must be 6 digits"),
+      )
+      .optional(),
+  })
+  .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
+    message: "Recipient account number or name is required",
+    path: ["toAccountNumber"],
+  });
+
+export const transferOtpRequestSchema = z
   .object({
     fromAccountId: z.string().min(1, "Source account is required"),
     toAccountNumber: z.string().trim().min(4).max(20).optional(),
@@ -107,6 +319,36 @@ export const supportTicketSchema = z.object({
     .enum(["ACCOUNT", "TRANSFER", "BILL_PAY", "CARD", "LOAN", "SECURITY", "OTHER"])
     .optional(),
 });
+
+export const cardApplySchema = z.object({
+  accountId: z.string().min(1, "Select an account"),
+  cardType: z.enum(["DEBIT", "CREDIT"]),
+});
+
+export const adminReviewCardApplicationSchema = z.object({
+  applicationId: z.string().min(1, "Application ID is required"),
+  action: z.enum(["APPROVE", "DECLINE"]),
+  reviewNote: z.string().trim().max(500).optional(),
+  spendingLimit: z.coerce.number().positive().optional(),
+});
+
+export const idDocumentTypeSchema = z.enum([
+  "DRIVERS_LICENSE",
+  "PASSPORT",
+  "STATE_ID",
+  "NATIONAL_ID",
+]);
+
+export const adminReviewIdVerificationSchema = z
+  .object({
+    submissionId: z.string().min(1, "Submission ID is required"),
+    action: z.enum(["APPROVE", "REJECT", "DECLINE"]),
+    reviewNote: z.string().trim().max(500).optional(),
+  })
+  .refine((data) => data.action === "APPROVE" || Boolean(data.reviewNote?.trim()), {
+    message: "Review note is required when rejecting or declining ID verification",
+    path: ["reviewNote"],
+  });
 
 export const cardActionSchema = z.object({
   cardId: z.string().min(1),
@@ -130,7 +372,22 @@ export const loanApplySchema = z.object({
 
 export const adminUpdateUserStatusSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  status: z.enum(["PENDING", "ACTIVE", "SUSPENDED"]),
+  status: z.enum(["PENDING", "ACTIVE", "SUSPENDED", "ON_HOLD", "DISABLED"]).optional(),
+  statusNote: z.string().trim().max(500).optional(),
+  transactionsUnrestricted: z.boolean().optional(),
+  action: z
+    .enum(["REINSTATE", "DELETE", "GENERATE_TRANSACTION_PIN", "CLEAR_TRANSACTION_PIN"])
+    .optional(),
+});
+
+export const adminUpdateBankingPolicySchema = z.object({
+  requireTransactionOtp: z.boolean().optional(),
+  requireTransferReview: z.boolean().optional(),
+});
+
+export const adminMarkTransactionDelayedSchema = z.object({
+  transactionId: z.string().min(1, "Transaction ID is required"),
+  reviewNote: z.string().trim().max(500).optional(),
 });
 
 export const adminUpdateTransactionStatusSchema = z.object({
@@ -227,12 +484,59 @@ export const adjustmentCreateSchema = z.object({
   amount: z.coerce.number().positive(),
   direction: z.enum(["DEBIT", "CREDIT"]),
   reason: z.string().trim().min(5).max(500),
+  effectiveAt: z.coerce.date(),
 });
 
 export const adminAdjustmentActionSchema = z.object({
   adjustmentId: z.string().min(1),
   action: z.enum(["APPROVE", "REJECT", "POST"]),
   reviewNote: z.string().trim().max(500).optional(),
+});
+
+export const adminGenerateTransactionsSchema = z
+  .object({
+    userId: z.string().min(1),
+    accountId: z.string().min(1),
+    creditCount: z.coerce.number().int().min(0).max(1000),
+    debitCount: z.coerce.number().int().min(0).max(1000),
+    fromDate: z.coerce.date(),
+    toDate: z.coerce.date(),
+  })
+  .refine((input) => input.creditCount + input.debitCount >= 1, {
+    message: "Enter at least one credit or debit.",
+  })
+  .refine((input) => input.creditCount + input.debitCount <= 1000, {
+    message: "Maximum 1000 transactions per batch.",
+  });
+
+const transferOtpStepKeySchema = z.enum([
+  "IDENTITY_CHECK",
+  "AMOUNT_CONFIRMATION",
+  "BENEFICIARY_VERIFICATION",
+  "SECURITY_CLEARANCE",
+  "FINAL_RELEASE",
+]);
+
+export const adminTransferOtpStepUpdateSchema = z.object({
+  userId: z.string().min(1),
+  stepKey: transferOtpStepKeySchema,
+  enabled: z.boolean(),
+  code: z.string().regex(/^\d{6}$/, "Verification code must be 6 digits").optional(),
+});
+
+export const adminTransferOtpStepsBulkUpdateSchema = z.object({
+  userId: z.string().min(1),
+  enableAll: z.boolean().optional(),
+  disableAll: z.boolean().optional(),
+  updates: z
+    .array(
+      z.object({
+        stepKey: transferOtpStepKeySchema,
+        enabled: z.boolean(),
+        code: z.string().regex(/^\d{6}$/, "Verification code must be 6 digits").optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const profileUpdateSchema = z.object({
@@ -278,9 +582,11 @@ export type BillPaymentUpdateInput = z.infer<typeof billPaymentUpdateSchema>;
 export type AdminBillPaymentReviewInput = z.infer<typeof adminBillPaymentReviewSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TransferInput = z.infer<typeof transferSchema>;
+export type CardApplyInput = z.infer<typeof cardApplySchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
 export type CardActionInput = z.infer<typeof cardActionSchema>;
 export type LoanApplyInput = z.infer<typeof loanApplySchema>;
 export type AdminUpdateUserStatusInput = z.infer<typeof adminUpdateUserStatusSchema>;
+export type AdminCreateMemberInput = z.input<typeof adminCreateMemberSchema>;
 export type AdminUpdateTransactionStatusInput = z.infer<typeof adminUpdateTransactionStatusSchema>;
 export type AdminUpdateSupportTicketStatusInput = z.infer<typeof adminUpdateSupportTicketStatusSchema>;

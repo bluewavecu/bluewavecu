@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
-import { getAuthTokenFromRequest, verifyAuthToken } from "@/lib/auth";
+import { resolveRequestAuth } from "@/lib/requestAuth";
+
 import { getUserKycStatus } from "@/lib/customerProfile";
+import { withPhotoCacheBuster } from "@/lib/memberAvatar";
 import { getPrisma } from "@/lib/prisma";
+import { getAccountDisplayName, maskAccountNumber } from "@/lib/bankingSerialize";
 import type {
-  AccountType,
   DashboardAccount,
   DashboardCard,
   DashboardData,
@@ -16,23 +18,8 @@ import type {
 
 export const runtime = "nodejs";
 
-const accountDisplayNames: Record<AccountType, string> = {
-  CHECKING: "Bluewave Everyday Checking",
-  SAVINGS: "High Tide Savings",
-  CREDIT: "Bluewave Rewards Credit",
-};
-
 function getFirstName(fullName: string) {
   return fullName.trim().split(/\s+/)[0] ?? fullName;
-}
-
-function maskAccountNumber(accountNumber: string) {
-  const last4 = accountNumber.slice(-4);
-
-  return {
-    last4,
-    masked: `**** ${last4}`,
-  };
 }
 
 function countTickets(tickets: { status: SupportTicketStatus; priority: string }[]) {
@@ -48,12 +35,11 @@ function countTickets(tickets: { status: SupportTicketStatus; priority: string }
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getAuthTokenFromRequest(request);
-    const payload = token ? verifyAuthToken(token) : null;
-
-    if (!payload) {
-      return apiError("Unauthorized", 401);
+    const auth = await resolveRequestAuth(request);
+    if (!auth.ok) {
+      return auth.response;
     }
+    const payload = auth.payload;
 
     const prisma = getPrisma();
 
@@ -113,7 +99,7 @@ export async function GET(request: NextRequest) {
       return {
         id: account.id,
         accountType: account.accountType,
-        displayName: accountDisplayNames[account.accountType],
+        displayName: getAccountDisplayName(account.accountType),
         maskedAccountNumber: maskedAccount.masked,
         accountNumberLast4: maskedAccount.last4,
         balance: account.balance.toNumber(),
@@ -179,7 +165,13 @@ export async function GET(request: NextRequest) {
     }));
 
     const ticketCounts = countTickets(serializedTickets);
-    const kycStatus = await getUserKycStatus(user.id);
+    const [kycStatus, customerProfile] = await Promise.all([
+      getUserKycStatus(user.id),
+      prisma.customerProfile.findUnique({
+        where: { userId: user.id },
+        select: { profilePhotoUrl: true, updatedAt: true },
+      }),
+    ]);
 
     const dashboardData: DashboardData = {
       user: {
@@ -190,6 +182,10 @@ export async function GET(request: NextRequest) {
         phone: user.phone,
         role: user.role,
         status: user.status,
+        profilePhotoUrl: withPhotoCacheBuster(
+          customerProfile?.profilePhotoUrl ?? null,
+          customerProfile?.updatedAt.toISOString() ?? null,
+        ),
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },

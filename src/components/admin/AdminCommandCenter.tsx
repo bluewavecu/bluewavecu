@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { AdminMetricCard } from "@/components/admin/AdminMetricCard";
+import { AdminCommandPanel, AdminMetricCard } from "@/components/admin/AdminMetricCard";
 import { AdminOperationalAlerts } from "@/components/admin/AdminOperationalAlerts";
 import { AdminQuickActions } from "@/components/admin/AdminQuickActions";
 import { AdminStatusBadge, formatStatusLabel } from "@/components/admin/AdminStatusBadge";
@@ -54,36 +53,60 @@ export function AdminCommandCenter() {
   return (
     <section className="grid gap-5">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
-        <AdminMetricCard label="Total members" value={metrics.totalMembers} hint={`${metrics.activeMembers} active`} />
+        <AdminMetricCard
+          label="Total members"
+          value={metrics.totalMembers}
+          hint={`${metrics.activeMembers} active`}
+          href="/lex/auth/users"
+        />
         <AdminMetricCard
           label="Pending KYC"
           value={metrics.pendingKyc}
           tone={metrics.pendingKyc > 0 ? "warning" : "default"}
+          href="/lex/auth/compliance"
         />
         <AdminMetricCard
           label="Pending transfers"
           value={metrics.pendingTransfers}
           tone={metrics.pendingTransfers > 0 ? "warning" : "default"}
+          href="/lex/auth/transfer-reviews"
         />
         <AdminMetricCard
           label="Pending bill pay"
           value={metrics.pendingBillPayments}
           tone={metrics.pendingBillPayments > 0 ? "warning" : "default"}
+          href="/lex/auth/bill-pay"
         />
         <AdminMetricCard
           label="High-risk events"
           value={metrics.highRiskEvents}
           tone={metrics.highRiskEvents > 0 ? "danger" : "default"}
+          href="/lex/auth/risk"
         />
-        <AdminMetricCard label="Open disputes" value={metrics.openDisputes} />
-        <AdminMetricCard label="Support tickets" value={metrics.openSupportTickets} />
+        <AdminMetricCard label="Open disputes" value={metrics.openDisputes} href="/lex/auth/disputes" />
+        <AdminMetricCard
+          label="Support tickets"
+          value={metrics.openSupportTickets}
+          href="/lex/auth/support"
+        />
         <AdminMetricCard
           label="Reconciliation mismatches"
           value={metrics.reconciliationMismatches}
           tone={metrics.reconciliationMismatches > 0 ? "warning" : "default"}
+          href="/lex/auth/reconciliation"
         />
-        <AdminMetricCard label="Due jobs" value={metrics.dueJobs} hint={`${metrics.failedJobs} failed`} />
-        <AdminMetricCard label="Accounts" value={metrics.totalAccounts} hint={`${metrics.totalTransactions} transactions`} />
+        <AdminMetricCard
+          label="Due jobs"
+          value={metrics.dueJobs}
+          hint={`${metrics.failedJobs} failed`}
+          href="/lex/auth/jobs"
+        />
+        <AdminMetricCard
+          label="Accounts"
+          value={metrics.totalAccounts}
+          hint={`${metrics.totalTransactions} transactions`}
+          href="/lex/auth/accounts"
+        />
       </div>
 
       <AdminOperationalAlerts alerts={data.alerts} onRefresh={() => void refetch()} />
@@ -97,14 +120,8 @@ export function AdminCommandCenter() {
       ) : null}
 
       <div className="grid gap-5 xl:grid-cols-3">
-        <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent operations activity</h2>
-            <Link href="/admin/audit-logs" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
-              View audit logs
-            </Link>
-          </div>
-          <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
+        <AdminCommandPanel title="Recent operations activity" href="/lex/auth/audit-logs">
+          <div className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
             {data.recentAdminActivity.length > 0 ? (
               data.recentAdminActivity.map((log) => (
                 <div key={log.id} className="py-3 first:pt-0 last:pb-0">
@@ -118,16 +135,10 @@ export function AdminCommandCenter() {
               <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">No operations activity yet.</p>
             )}
           </div>
-        </article>
+        </AdminCommandPanel>
 
-        <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent event logs</h2>
-            <Link href="/admin/event-logs" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
-              View all
-            </Link>
-          </div>
-          <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
+        <AdminCommandPanel title="Recent event logs" href="/lex/auth/event-logs">
+          <div className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
             {data.recentEvents.length > 0 ? (
               data.recentEvents.map((event) => (
                 <div key={event.id} className="py-3 first:pt-0 last:pb-0">
@@ -141,16 +152,10 @@ export function AdminCommandCenter() {
               <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">No events recorded.</p>
             )}
           </div>
-        </article>
+        </AdminCommandPanel>
 
-        <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent members</h2>
-            <Link href="/admin/users" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
-              View all
-            </Link>
-          </div>
-          <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
+        <AdminCommandPanel title="Recent members" href="/lex/auth/users">
+          <div className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
             {data.recentUsers.map((user) => (
               <div key={user.id} className="py-3 first:pt-0 last:pb-0">
                 <p className="font-semibold text-primary-navy dark:text-white">{user.fullName}</p>
@@ -162,20 +167,17 @@ export function AdminCommandCenter() {
               </div>
             ))}
           </div>
-        </article>
+        </AdminCommandPanel>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent transactions</h2>
-            <Link href="/admin/transactions" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
-              View all
-            </Link>
-          </div>
-          <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
+        <AdminCommandPanel title="Recent transactions" href="/lex/auth/transactions">
+          <div className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
             {data.recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <div
+                key={transaction.id}
+                className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
+              >
                 <div>
                   <p className="font-semibold text-primary-navy dark:text-white">
                     {transaction.merchant ?? transaction.description}
@@ -191,16 +193,10 @@ export function AdminCommandCenter() {
               </div>
             ))}
           </div>
-        </article>
+        </AdminCommandPanel>
 
-        <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Recent support tickets</h2>
-            <Link href="/admin/support" className="text-sm font-semibold text-royal-blue dark:text-light-blue">
-              View all
-            </Link>
-          </div>
-          <div className="mt-5 divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
+        <AdminCommandPanel title="Recent support tickets" href="/lex/auth/support">
+          <div className="divide-y divide-primary-navy/[0.08] dark:divide-white/[0.08]">
             {data.recentSupportTickets.map((ticket) => (
               <div key={ticket.id} className="py-3 first:pt-0 last:pb-0">
                 <p className="font-semibold text-primary-navy dark:text-white">{ticket.subject}</p>
@@ -210,7 +206,7 @@ export function AdminCommandCenter() {
               </div>
             ))}
           </div>
-        </article>
+        </AdminCommandPanel>
       </div>
 
       <button type="button" onClick={() => void refetchHealth()} className="sr-only">

@@ -28,7 +28,7 @@ export default function MobileAppPage() {
               card controls, and the same secure transfer workflows you use online.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/auth" size="lg">
+              <ButtonLink href="/auth/login" size="lg">
                 Use Online Banking
                 <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
@@ -88,7 +88,7 @@ export default function MobileAppPage() {
               New members can open an account and opt in for launch updates.
             </p>
             <Link
-              href="/register"
+              href="/auth/register"
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-royal-blue hover:text-ocean-blue"
             >
               Open an account

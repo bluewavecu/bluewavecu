@@ -986,7 +986,7 @@ Status: Completed
 ### Features Added
 
 - Production credit union voice on public and member surfaces
-- Centralized institution contact (Dallas address, `(214) 555-0147`)
+- Centralized institution contact (Dallas address, `(646) 776-4480`)
 - Privacy Policy and Terms of Use with footer links
 - Split auth: members at `/auth`, operations at `/lex/auth`
 - Vercel + Supabase production deploy; fixed migration pooler hang

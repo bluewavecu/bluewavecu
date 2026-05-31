@@ -17,8 +17,8 @@ import { getShareAccountLabel } from "@/lib/institution";
 import type { PageAccount } from "@/types/banking";
 
 const quickActions = [
-  { label: "Transfer funds", href: "/transfers", icon: ArrowLeftRight },
-  { label: "View activity", href: "/transactions", icon: ReceiptText },
+  { label: "Transfer funds", href: "/auth/transfers", icon: ArrowLeftRight },
+  { label: "View activity", href: "/auth/transactions", icon: ReceiptText },
 ];
 
 function getStatusLabel(status: string) {
@@ -170,13 +170,13 @@ export function AccountsClient() {
                 Transfer
               </Link>
               <Link
-                href="/statements"
+                href="/auth/statements"
                 className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
               >
                 Statement
               </Link>
               <Link
-                href="/disputes"
+                href="/auth/disputes"
                 className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.10] px-4 text-sm font-semibold dark:border-white/[0.10]"
               >
                 <Scale size={16} aria-hidden="true" />

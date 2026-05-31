@@ -46,7 +46,7 @@ export function TransactionsClient() {
           {transactionFilters.map((item) => (
             <Link
               key={item}
-              href="/transactions"
+              href="/auth/transactions"
               className="rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] px-4 py-3 text-left text-sm font-semibold text-primary-navy transition hover:border-ocean-blue/[0.40] dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white"
             >
               {item}

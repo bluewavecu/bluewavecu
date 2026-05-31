@@ -20,20 +20,30 @@ export const runtime = "nodejs";
 function serializeUser(user: {
   id: string;
   fullName: string;
+  username: string;
   email: string;
   phone: string;
   role: AdminUserSummary["role"];
   status: AdminUserSummary["status"];
+  transactionsUnrestricted: boolean;
+  transactionPinHash: string | null;
+  statusNote: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): AdminUserSummary {
   return {
     id: user.id,
     fullName: user.fullName,
+    username: user.username,
     email: user.email,
     phone: user.phone,
     role: user.role,
     status: user.status,
+    transactionsUnrestricted: user.transactionsUnrestricted,
+    hasTransactionPin: Boolean(user.transactionPinHash),
+    statusNote: user.statusNote,
+    deletedAt: user.deletedAt?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   };
@@ -85,7 +95,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "warning",
       title: "Pending membership applications",
       message: `${pendingUsers} membership application${pendingUsers === 1 ? "" : "s"} awaiting review.`,
-      href: "/admin/users",
+      href: "/lex/auth/users",
       createdAt: new Date().toISOString(),
     });
   }
@@ -97,7 +107,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "warning",
       title: "Pending KYC reviews",
       message: `${pendingKyc} profile${pendingKyc === 1 ? "" : "s"} awaiting identity verification.`,
-      href: "/admin/compliance",
+      href: "/lex/auth/compliance",
       createdAt: new Date().toISOString(),
     });
   }
@@ -109,7 +119,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "warning",
       title: "Pending transfer reviews",
       message: `${pendingTransfers} transfer request${pendingTransfers === 1 ? "" : "s"} awaiting approval.`,
-      href: "/admin/transfer-reviews",
+      href: "/lex/auth/transfer-reviews",
       createdAt: new Date().toISOString(),
     });
   }
@@ -121,7 +131,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "warning",
       title: "Pending bill pay reviews",
       message: `${pendingBillPayments} bill payment${pendingBillPayments === 1 ? "" : "s"} awaiting approval.`,
-      href: "/admin/bill-pay",
+      href: "/lex/auth/bill-pay",
       createdAt: new Date().toISOString(),
     });
   }
@@ -133,7 +143,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "warning",
       title: "Open disputes",
       message: `${openDisputes} dispute${openDisputes === 1 ? "" : "s"} require review.`,
-      href: "/admin/disputes",
+      href: "/lex/auth/disputes",
       createdAt: new Date().toISOString(),
     });
   }
@@ -145,7 +155,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "info",
       title: "Recent failed transfer reviews",
       message: `${failedTransfers} transfer review${failedTransfers === 1 ? "" : "s"} marked failed in the last 7 days.`,
-      href: "/admin/transactions",
+      href: "/lex/auth/transactions",
       createdAt: new Date().toISOString(),
     });
   }
@@ -157,7 +167,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: urgentSupportTickets > 0 ? "warning" : "info",
       title: "Open support tickets",
       message: `${openSupportTickets} open ticket${openSupportTickets === 1 ? "" : "s"} need attention.`,
-      href: "/admin/support",
+      href: "/lex/auth/support",
       createdAt: new Date().toISOString(),
     });
   }
@@ -169,7 +179,7 @@ async function buildOperationalAlerts(prisma: ReturnType<typeof getPrisma>): Pro
       severity: "info",
       title: "Recent sign-in activity",
       message: `${recentSecurityEvents} security notification${recentSecurityEvents === 1 ? "" : "s"} in the last 24 hours.`,
-      href: "/admin/sessions",
+      href: "/lex/auth/sessions",
       createdAt: new Date().toISOString(),
     });
   }

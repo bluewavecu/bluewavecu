@@ -7,9 +7,13 @@ import { cn } from "@/lib/utils";
 
 type StatementExportCardProps = {
   className?: string;
+  showHeader?: boolean;
 };
 
-export function StatementExportCard({ className }: StatementExportCardProps) {
+const fieldClassName =
+  "mt-1.5 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-3 py-2.5 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white";
+
+export function StatementExportCard({ className, showHeader = true }: StatementExportCardProps) {
   const { data } = useAccounts();
   const now = new Date();
   const [accountId, setAccountId] = useState("");
@@ -68,11 +72,7 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
-      setSuccessMessage(
-        format === "pdf"
-          ? "Statement PDF downloaded successfully."
-          : "Statement CSV downloaded successfully.",
-      );
+      setSuccessMessage(format === "pdf" ? "PDF downloaded." : "CSV downloaded.");
     } catch {
       setError("Unable to export statement.");
     } finally {
@@ -87,28 +87,27 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
-          <FileSpreadsheet size={20} aria-hidden="true" />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
-            Export account statement
-          </h2>
-          <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-            Download CSV or PDF statements with posted transactions and pending activity for the
-            selected period.
-          </p>
+      {showHeader ? (
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ocean-blue/[0.12] text-royal-blue dark:text-light-blue">
+            <FileSpreadsheet size={20} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Statements</h2>
+            <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
+              CSV or PDF for the selected month.
+            </p>
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      <div className="mt-5 grid gap-4 md:grid-cols-3">
+      <div className={cn("grid gap-4 md:grid-cols-3", showHeader ? "mt-5" : "")}>
         <label className="block">
           <span className="text-sm font-semibold text-primary-navy dark:text-white">Account</span>
           <select
             value={accountId}
             onChange={(event) => setAccountId(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            className={fieldClassName}
           >
             <option value="">All accounts</option>
             {data?.accounts.map((account) => (
@@ -124,7 +123,7 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
           <select
             value={month}
             onChange={(event) => setMonth(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            className={fieldClassName}
           >
             {Array.from({ length: 12 }, (_, index) => {
               const value = String(index + 1);
@@ -142,7 +141,7 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
           <select
             value={year}
             onChange={(event) => setYear(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+            className={fieldClassName}
           >
             {[now.getFullYear(), now.getFullYear() - 1].map((value) => (
               <option key={value} value={String(value)}>
@@ -160,25 +159,25 @@ export function StatementExportCard({ className }: StatementExportCardProps) {
         <p className="mt-4 text-sm text-emerald-700 dark:text-emerald-300">{successMessage}</p>
       ) : null}
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2.5">
         <button
           type="button"
           disabled={isExportingCsv || isExportingPdf}
           onClick={() => void handleExport("csv")}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-ocean-blue px-4 text-sm font-semibold text-primary-navy transition hover:bg-light-blue disabled:cursor-not-allowed disabled:opacity-70"
         >
           <Download size={16} aria-hidden="true" />
-          {isExportingCsv ? "Preparing CSV..." : "Download CSV Statement"}
+          {isExportingCsv ? "Preparing..." : "Download CSV"}
         </button>
 
         <button
           type="button"
           disabled={isExportingCsv || isExportingPdf}
           onClick={() => void handleExport("pdf")}
-          className="inline-flex h-11 items-center gap-2 rounded-full border border-primary-navy/[0.12] bg-white px-5 text-sm font-semibold text-primary-navy transition hover:border-ocean-blue hover:text-royal-blue disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-primary-navy/[0.12] bg-white px-4 text-sm font-semibold text-primary-navy transition hover:border-ocean-blue hover:text-royal-blue disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white"
         >
           <FileText size={16} aria-hidden="true" />
-          {isExportingPdf ? "Preparing PDF..." : "Download PDF Statement"}
+          {isExportingPdf ? "Preparing..." : "Download PDF"}
         </button>
       </div>
     </section>
