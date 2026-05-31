@@ -62,6 +62,10 @@ export async function POST(request: NextRequest) {
       return apiError("Your account cannot initiate transactions.", 403);
     }
 
+    if (input.transferMethod === "ACH") {
+      return apiError("ACH is not functional for now. Please try again later.", 503);
+    }
+
     const policy = await getBankingPolicy();
     const requiresOtp = userRequiresTransactionOtp({
       transactionsUnrestricted: user.transactionsUnrestricted,

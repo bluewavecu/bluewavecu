@@ -28,7 +28,7 @@ export function AdminShellLayout({ children, title, subtitle }: AdminShellLayout
       <AdminSidebar />
       <div className="min-h-screen lg:pl-72">
         <AdminHeader title={resolvedTitle} subtitle={resolvedSubtitle} />
-        <main className="px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
+        <main className="px-4 pb-28 pt-2 sm:px-6 lg:px-8 lg:pb-10 lg:pt-3">{children}</main>
       </div>
     </div>
   );

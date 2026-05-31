@@ -347,6 +347,10 @@ export const transferSchema = z
       (value) => (value === "" || value === null || value === undefined ? undefined : value),
       z.string().trim().max(180).optional(),
     ),
+    receiverAddress: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(5).max(240).optional(),
+    ),
     otpCode: z.preprocess(
       (value) => (value === "" || value === null || value === undefined ? undefined : value),
       z
@@ -376,6 +380,14 @@ export const transferSchema = z
   .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
     message: "Recipient account number or name is required",
     path: ["toAccountNumber"],
+  })
+  .refine((data) => data.transferMethod !== "ACH", {
+    message: "ACH is not functional for now. Please try again later.",
+    path: ["transferMethod"],
+  })
+  .refine((data) => data.transferMethod !== "WIRE" || Boolean(data.receiverAddress?.trim()), {
+    message: "Receiver address is required for wire transfers",
+    path: ["receiverAddress"],
   });
 
 export const transferOtpRequestSchema = z
@@ -400,10 +412,22 @@ export const transferOtpRequestSchema = z
       (value) => (value === "" || value === null || value === undefined ? undefined : value),
       z.string().trim().max(180).optional(),
     ),
+    receiverAddress: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
+      z.string().trim().min(5).max(240).optional(),
+    ),
   })
   .refine((data) => Boolean(data.toAccountNumber || data.recipientName), {
     message: "Recipient account number or name is required",
     path: ["toAccountNumber"],
+  })
+  .refine((data) => data.transferMethod !== "ACH", {
+    message: "ACH is not functional for now. Please try again later.",
+    path: ["transferMethod"],
+  })
+  .refine((data) => data.transferMethod !== "WIRE" || Boolean(data.receiverAddress?.trim()), {
+    message: "Receiver address is required for wire transfers",
+    path: ["receiverAddress"],
   });
 
 export const supportTicketSchema = z.object({

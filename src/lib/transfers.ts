@@ -37,6 +37,7 @@ function buildTransferDescription(input: {
   transferMethod: TransferInput["transferMethod"];
   recipientName?: string;
   toAccountNumber?: string;
+  receiverAddress?: string;
   memo?: string;
 }) {
   const methodLabel = getTransferMethodLabel(input.transferMethod);
@@ -46,7 +47,11 @@ function buildTransferDescription(input: {
       ? `Account ending ${input.toAccountNumber.slice(-4)}`
       : "External recipient";
 
-  const base = `${methodLabel} to ${recipientLabel}`;
+  let base = `${methodLabel} to ${recipientLabel}`;
+
+  if (input.transferMethod === "WIRE" && input.receiverAddress) {
+    base = `${base} | ${input.receiverAddress.trim()}`;
+  }
 
   if (input.memo) {
     return `${base}: ${input.memo}`;
@@ -91,6 +96,10 @@ export async function submitMemberTransfer(params: {
 
   if (!canUserTransact({ status: user.status, deletedAt: user.deletedAt })) {
     throw new TransferRequestError("Your account cannot initiate transactions.", 403);
+  }
+
+  if (params.input.transferMethod === "ACH") {
+    throw new TransferRequestError("ACH is not functional for now. Please try again later.", 503);
   }
 
   const policy = await getBankingPolicy();

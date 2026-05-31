@@ -103,7 +103,7 @@ function ScheduledTransferRow({
 
 export function TransfersClient() {
   const [activeTab, setActiveTab] = useState<TransferTab>("transfer");
-  const [transferMethod, setTransferMethod] = useState<TransferMethod>("ACH");
+  const [transferMethod, setTransferMethod] = useState<TransferMethod>("DIRECT_DEPOSIT");
   const { data: accountsData, error: accountsError, isLoading: accountsLoading, refetch } =
     useAccounts();
   const {
@@ -134,6 +134,7 @@ export function TransfersClient() {
   const [fromAccountId, setFromAccountId] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [toAccountNumber, setToAccountNumber] = useState("");
+  const [receiverAddress, setReceiverAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -167,6 +168,27 @@ export function TransfersClient() {
     accountsData.accounts.find((account) => account.id === fromAccountId) ??
     accountsData.accounts[0];
 
+  function clearTransferFormFields() {
+    setRecipientName("");
+    setToAccountNumber("");
+    setReceiverAddress("");
+    setAmount("");
+    setMemo("");
+    setOtpCode("");
+    setStepOtpCodes({});
+    setTransactionPin("");
+    setVerificationSent(false);
+    reset();
+  }
+
+  function handleTransferMethodChange(method: TransferMethod) {
+    if (method === "ACH") {
+      clearTransferFormFields();
+    }
+
+    setTransferMethod(method);
+  }
+
   function buildTransferPayload(): TransferRequestInput | null {
     const parsedAmount = parseAmountInput(amount);
 
@@ -183,6 +205,7 @@ export function TransfersClient() {
     const trimmedRecipient = recipientName.trim();
     const trimmedAccount = toAccountNumber.trim();
     const trimmedMemo = memo.trim();
+    const trimmedReceiverAddress = receiverAddress.trim();
 
     if (trimmedRecipient) {
       payload.recipientName = trimmedRecipient;
@@ -190,6 +213,10 @@ export function TransfersClient() {
 
     if (trimmedAccount) {
       payload.toAccountNumber = trimmedAccount;
+    }
+
+    if (trimmedReceiverAddress) {
+      payload.receiverAddress = trimmedReceiverAddress;
     }
 
     if (trimmedMemo) {
@@ -220,14 +247,7 @@ export function TransfersClient() {
         const success = await submitTransfer(payload);
 
         if (success) {
-          setRecipientName("");
-          setToAccountNumber("");
-          setAmount("");
-          setMemo("");
-          setVerificationSent(false);
-          setOtpCode("");
-          setStepOtpCodes({});
-          setTransactionPin("");
+          clearTransferFormFields();
         }
 
         return;
@@ -267,14 +287,7 @@ export function TransfersClient() {
     const success = await submitTransfer(confirmPayload);
 
     if (success) {
-      setRecipientName("");
-      setToAccountNumber("");
-      setAmount("");
-      setMemo("");
-      setOtpCode("");
-      setStepOtpCodes({});
-      setTransactionPin("");
-      setVerificationSent(false);
+      clearTransferFormFields();
     }
   }
 
@@ -415,7 +428,7 @@ export function TransfersClient() {
                         name="transferMethod"
                         value={option.value}
                         checked={transferMethod === option.value}
-                        onChange={() => setTransferMethod(option.value)}
+                        onChange={() => handleTransferMethodChange(option.value)}
                         className="h-4 w-4 accent-ocean-blue"
                       />
                       <span>{option.label}</span>
@@ -424,6 +437,13 @@ export function TransfersClient() {
                 </div>
               </fieldset>
 
+              {transferMethod === "ACH" ? (
+                <EmptyState
+                  title="ACH unavailable"
+                  message="ACH is not functional for now. Please try again later."
+                />
+              ) : (
+                <>
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
                   Recipient name
@@ -449,6 +469,22 @@ export function TransfersClient() {
                   className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
                 />
               </label>
+
+              {transferMethod === "WIRE" ? (
+                <label className="block">
+                  <span className="text-sm font-semibold text-primary-navy dark:text-white">
+                    Receiver address
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    value={receiverAddress}
+                    onChange={(event) => setReceiverAddress(event.target.value)}
+                    placeholder="house number, city, state zipcode"
+                    className="mt-2 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-4 py-3 text-sm text-primary-navy outline-none placeholder:text-bluewave-gray focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white"
+                  />
+                </label>
+              ) : null}
 
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
@@ -569,6 +605,8 @@ export function TransfersClient() {
                         : "Submit transfer"}
                 <ArrowLeftRight size={17} aria-hidden="true" />
               </button>
+                </>
+              )}
             </form>
           </div>
 

@@ -451,6 +451,7 @@ export type TransferRequestInput = {
   transferMethod: "DIRECT_DEPOSIT" | "ACH" | "WIRE";
   toAccountNumber?: string;
   recipientName?: string;
+  receiverAddress?: string;
   amount: number;
   memo?: string;
   otpCode?: string;
