@@ -14,6 +14,10 @@ export class TransactionGeneratorError extends Error {
 }
 
 function decimal(value: number) {
+  if (!Number.isFinite(value)) {
+    throw new TransactionGeneratorError("Invalid amount calculated for transaction.", "INVALID_AMOUNT");
+  }
+
   return new Prisma.Decimal(value.toFixed(2));
 }
 
@@ -172,7 +176,10 @@ export async function generateAccountTransactions(
     throw new TransactionGeneratorError("From date must be on or before to date.", "INVALID_DATE");
   }
 
-  if (params.toDate > now) {
+  const endOfToday = new Date(now);
+  endOfToday.setHours(23, 59, 59, 999);
+
+  if (params.toDate > endOfToday) {
     throw new TransactionGeneratorError("To date cannot be in the future.", "INVALID_DATE");
   }
 
@@ -207,12 +214,18 @@ export async function generateAccountTransactions(
     where: {
       accountId: account.id,
       status: "COMPLETED",
+      OR: [
+        { postedAt: { lte: params.toDate } },
+        { postedAt: null, createdAt: { lte: params.toDate } },
+      ],
     },
     select: {
       amount: true,
       postedAt: true,
       createdAt: true,
     },
+    orderBy: { createdAt: "asc" },
+    take: 5000,
   });
 
   type TimelineEntry =
@@ -269,8 +282,16 @@ export async function generateAccountTransactions(
       const debitAmount = Math.abs(amount);
 
       if (!canDebit(account.accountType, runningBalance, debitAmount)) {
-        const capped = Math.max(0.01, Math.min(debitAmount, runningBalance - 0.01));
-        amount = -Math.round(capped * 100) / 100;
+        const maxDebit =
+          account.accountType === "CREDIT"
+            ? debitAmount
+            : Math.max(0, Math.min(debitAmount, runningBalance));
+
+        if (maxDebit < 0.01) {
+          continue;
+        }
+
+        amount = -Math.round(maxDebit * 100) / 100;
       }
     }
 
@@ -289,10 +310,18 @@ export async function generateAccountTransactions(
     runningBalance = balanceAfter;
   }
 
+  if (inserts.length === 0) {
+    throw new TransactionGeneratorError(
+      "No transactions could be generated with the current balance and filters.",
+      "INVALID_COUNT",
+    );
+  }
+
   const netAmount = inserts.reduce((sum, item) => sum + item.draft.amount, 0);
   const closingBalance = priorBalance + netAmount;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(
+    async (tx) => {
     for (const item of inserts) {
       const reference = `GEN-${randomUUID()}`;
       const transaction = await tx.transaction.create({
@@ -336,7 +365,12 @@ export async function generateAccountTransactions(
         availableBalance: decimal(closingBalance),
       },
     });
-  });
+    },
+    {
+      maxWait: 15_000,
+      timeout: 120_000,
+    },
+  );
 
   return {
     created: inserts.length,

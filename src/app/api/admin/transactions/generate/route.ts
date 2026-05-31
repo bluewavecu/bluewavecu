@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
+import { ZodError } from "zod";
 import { logAdminAction, requireAdmin } from "@/lib/admin";
-import { apiError, apiSuccess, handleApiError } from "@/lib/api";
+import { apiError, apiSuccess, handleApiError, validationError } from "@/lib/api";
 import { writeAdminEvent } from "@/lib/eventLog";
 import { getPrisma } from "@/lib/prisma";
 import {
@@ -10,6 +11,19 @@ import {
 import { adminGenerateTransactionsSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
+
+function parseAdminDateInput(value: Date, boundary: "start" | "end") {
+  const [year, month, day] = value.toISOString().slice(0, 10).split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (boundary === "end") {
+    date.setHours(23, 59, 59, 999);
+  } else {
+    date.setHours(0, 0, 0, 0);
+  }
+
+  return date;
+}
 
 function handleGeneratorError(error: TransactionGeneratorError) {
   if (error.code === "NOT_FOUND") {
@@ -42,11 +56,8 @@ export async function POST(request: NextRequest) {
       return apiError("Member not found.", 404);
     }
 
-    const fromDate = new Date(input.fromDate);
-    fromDate.setHours(0, 0, 0, 0);
-
-    const toDate = new Date(input.toDate);
-    toDate.setHours(23, 59, 59, 999);
+    const fromDate = parseAdminDateInput(input.fromDate, "start");
+    const toDate = parseAdminDateInput(input.toDate, "end");
 
     const result = await generateAccountTransactions({
       adminId: auth.admin.id,
@@ -58,21 +69,25 @@ export async function POST(request: NextRequest) {
       toDate,
     });
 
-    await logAdminAction({
-      adminId: auth.admin.id,
-      action: "GENERATE_TRANSACTIONS",
-      entityType: "Account",
-      entityId: input.accountId,
-      details: {
-        userId: input.userId,
-        creditCount: input.creditCount,
-        debitCount: input.debitCount,
-        created: result.created,
-        netAmount: result.netAmount,
-        fromDate: result.fromDate,
-        toDate: result.toDate,
-      },
-    });
+    try {
+      await logAdminAction({
+        adminId: auth.admin.id,
+        action: "GENERATE_TRANSACTIONS",
+        entityType: "Account",
+        entityId: input.accountId,
+        details: {
+          userId: input.userId,
+          creditCount: input.creditCount,
+          debitCount: input.debitCount,
+          created: result.created,
+          netAmount: Number(result.netAmount.toFixed(2)),
+          fromDate: result.fromDate,
+          toDate: result.toDate,
+        },
+      });
+    } catch (logError) {
+      console.error("[admin] failed to log transaction generation", logError);
+    }
 
     void writeAdminEvent({
       eventType: "TRANSACTIONS_GENERATED",
@@ -87,6 +102,10 @@ export async function POST(request: NextRequest) {
 
     return apiSuccess({ result }, { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return validationError(error);
+    }
+
     if (error instanceof TransactionGeneratorError) {
       return handleGeneratorError(error);
     }
