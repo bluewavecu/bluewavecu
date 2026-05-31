@@ -19,6 +19,7 @@ import { applyRiskAssessment, scoreTransferRisk, shouldBlockAction } from "@/lib
 import { verifyTransferOtpChallenge, verifyTransactionPin } from "@/lib/transactionOtp";
 import { verifyMemberTransferOtpCodesForUser } from "@/lib/memberTransferOtpSteps";
 import { canUserTransact, getTransactionBlockMessage } from "@/lib/userAccess";
+import { getTransferMethodLabel } from "@/data/transferMethods";
 import type { TransferInput } from "@/lib/validators";
 import type { PageTransaction } from "@/types/banking";
 
@@ -33,21 +34,25 @@ export class TransferRequestError extends Error {
 }
 
 function buildTransferDescription(input: {
+  transferMethod: TransferInput["transferMethod"];
   recipientName?: string;
   toAccountNumber?: string;
   memo?: string;
 }) {
+  const methodLabel = getTransferMethodLabel(input.transferMethod);
   const recipientLabel = input.recipientName
     ? input.recipientName
     : input.toAccountNumber
       ? `Account ending ${input.toAccountNumber.slice(-4)}`
       : "External recipient";
 
+  const base = `${methodLabel} to ${recipientLabel}`;
+
   if (input.memo) {
-    return `Transfer to ${recipientLabel}: ${input.memo}`;
+    return `${base}: ${input.memo}`;
   }
 
-  return `Transfer to ${recipientLabel}`;
+  return base;
 }
 
 export async function submitMemberTransfer(params: {

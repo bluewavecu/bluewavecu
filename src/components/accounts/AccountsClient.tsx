@@ -62,10 +62,6 @@ export function AccountsClient() {
             Total available
           </p>
           <p className="mt-3 text-4xl font-semibold">{formatCurrency(totalAvailable)}</p>
-          <p className="mt-3 text-sm leading-6 text-white/[0.68]">
-            Across {data.accounts.length} Bluewave accounts. Only completed transactions affect
-            available balances.
-          </p>
         </article>
 
         {quickActions.map((action) => {

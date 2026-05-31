@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SIGNUP_ACCOUNT_TYPE_VALUES } from "@/data/signupAccountTypes";
 import { SIGNUP_ANNUAL_INCOME_VALUES } from "@/data/signupAnnualIncome";
+import { TRANSFER_METHOD_VALUES } from "@/data/transferMethods";
 import { US_STATE_CODES } from "@/data/usStates";
 import { verifyMathChallenge } from "@/lib/mathChallenge";
 import {
@@ -326,6 +327,9 @@ export const resetPasswordSchema = z
 export const transferSchema = z
   .object({
     fromAccountId: z.string().min(1, "Source account is required"),
+    transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
+      message: "Select a transfer method",
+    }),
     toAccountNumber: z.string().trim().min(4).max(20).optional(),
     recipientName: z.string().trim().min(2).max(120).optional(),
     amount: z.coerce.number().positive("Amount must be greater than zero"),
@@ -353,6 +357,9 @@ export const transferSchema = z
 export const transferOtpRequestSchema = z
   .object({
     fromAccountId: z.string().min(1, "Source account is required"),
+    transferMethod: z.enum(TRANSFER_METHOD_VALUES, {
+      message: "Select a transfer method",
+    }),
     toAccountNumber: z.string().trim().min(4).max(20).optional(),
     recipientName: z.string().trim().min(2).max(120).optional(),
     amount: z.coerce.number().positive("Amount must be greater than zero"),

@@ -446,6 +446,7 @@ export type CreateSupportTicketInput = {
 
 export type TransferRequestInput = {
   fromAccountId: string;
+  transferMethod: "DIRECT_DEPOSIT" | "ACH" | "WIRE";
   toAccountNumber?: string;
   recipientName?: string;
   amount: number;

@@ -22,7 +22,7 @@ const quickActions = [
   },
   { label: "Dispute Transaction", href: "/auth/disputes", icon: Scale, description: "Report an issue" },
   { label: "Contact Support", href: MEMBER_SUPPORT_PATH, icon: CircleHelp, description: "Open a ticket" },
-  { label: "Move Money", href: "/auth/transfers", icon: ArrowLeftRight, description: "Immediate or scheduled" },
+  { label: "Move Money", href: "/auth/transfers", icon: ArrowLeftRight, description: "Transfer or schedule" },
 ];
 
 export function QuickActions() {

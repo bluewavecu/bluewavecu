@@ -21,9 +21,10 @@ import { useMemberSummary } from "@/hooks/useMemberSummary";
 import { useScheduledTransfers } from "@/hooks/useScheduledTransfers";
 import { useTransfer } from "@/hooks/useTransfer";
 import { cn } from "@/lib/utils";
+import { TRANSFER_METHOD_OPTIONS, type TransferMethod } from "@/data/transferMethods";
 import type { ScheduledTransferRecord } from "@/types/banking";
 
-type TransferTab = "immediate" | "scheduled";
+type TransferTab = "transfer" | "scheduled";
 
 function formatScheduleDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -99,7 +100,8 @@ function ScheduledTransferRow({
 }
 
 export function TransfersClient() {
-  const [activeTab, setActiveTab] = useState<TransferTab>("immediate");
+  const [activeTab, setActiveTab] = useState<TransferTab>("transfer");
+  const [transferMethod, setTransferMethod] = useState<TransferMethod>("ACH");
   const { data: accountsData, error: accountsError, isLoading: accountsLoading, refetch } =
     useAccounts();
   const {
@@ -174,6 +176,7 @@ export function TransfersClient() {
 
     const payload = {
       fromAccountId: fromAccountId || selectedAccount.id,
+      transferMethod,
       recipientName: recipientName.trim() || undefined,
       toAccountNumber: toAccountNumber.trim() || undefined,
       amount: parsedAmount,
@@ -277,7 +280,7 @@ export function TransfersClient() {
 
       <div className="flex flex-wrap gap-2">
         {[
-          { id: "immediate" as const, label: "Immediate Transfer" },
+          { id: "transfer" as const, label: "Transfer" },
           { id: "scheduled" as const, label: "Scheduled Transfers" },
         ].map((tab) => (
           <button
@@ -296,7 +299,7 @@ export function TransfersClient() {
         ))}
       </div>
 
-      {activeTab === "immediate" ? (
+      {activeTab === "transfer" ? (
         <div className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
           <div className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
             <div className="flex items-center gap-3">
@@ -307,9 +310,6 @@ export function TransfersClient() {
                 <h2 className="text-lg font-semibold text-primary-navy dark:text-white">
                   New transfer
                 </h2>
-                <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-                  Funds are held until the transfer clears our review and posting process.
-                </p>
               </div>
             </div>
 
@@ -348,6 +348,35 @@ export function TransfersClient() {
                   ))}
                 </select>
               </label>
+
+              <fieldset className="block">
+                <legend className="text-sm font-semibold text-primary-navy dark:text-white">
+                  Transfer method
+                </legend>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {TRANSFER_METHOD_OPTIONS.map((option) => (
+                    <label
+                      key={option.value}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-3 text-sm font-medium transition",
+                        transferMethod === option.value
+                          ? "border-ocean-blue bg-ocean-blue/[0.08] text-primary-navy dark:text-white"
+                          : "border-primary-navy/[0.10] bg-[#f7fbff] text-primary-navy dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="transferMethod"
+                        value={option.value}
+                        checked={transferMethod === option.value}
+                        onChange={() => setTransferMethod(option.value)}
+                        className="h-4 w-4 accent-ocean-blue"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
 
               <label className="block">
                 <span className="text-sm font-semibold text-primary-navy dark:text-white">
