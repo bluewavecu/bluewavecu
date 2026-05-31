@@ -58,6 +58,63 @@ export function SecurityTrustPage() {
         }}
       />
 
+      <section className="bg-background py-16 sm:py-20">
+        <div className="section-shell">
+          <MotionReveal>
+            <MarketingSectionHeader
+              eyebrow="Verify our website"
+              title="Use only the official Bluewave sign-in address"
+              description="Fraudsters sometimes create look-alike sites to steal sign-in credentials. Always confirm the address bar before you enter your username or password."
+            />
+          </MotionReveal>
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <MotionReveal delay={0.04} className="marketing-card">
+              <h2 className="text-lg font-semibold text-primary-navy">Official URLs</h2>
+              <ul className="mt-4 space-y-2 text-sm leading-6 text-bluewave-gray">
+                <li>
+                  Member sign-in:{" "}
+                  <Link href="/auth/login" className="font-semibold text-royal-blue">
+                    {INSTITUTION.officialDomain}/auth/login
+                  </Link>
+                </li>
+                <li>
+                  Public website:{" "}
+                  <Link href="/" className="font-semibold text-royal-blue">
+                    {INSTITUTION.officialDomain}
+                  </Link>
+                </li>
+                <li>
+                  Member services email:{" "}
+                  <Link href={`mailto:${INSTITUTION.email}`} className="font-semibold text-royal-blue">
+                    {INSTITUTION.email}
+                  </Link>
+                </li>
+              </ul>
+            </MotionReveal>
+            <MotionReveal delay={0.08} className="marketing-card">
+              <h2 className="text-lg font-semibold text-primary-navy">What we never do</h2>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-bluewave-gray">
+                <li>Ask for your password, one-time codes, or full card numbers by email or text</li>
+                <li>Send sign-in links that point to domains other than {INSTITUTION.officialDomain}</li>
+                <li>Pressure you to approve transfers you did not initiate</li>
+              </ul>
+              <p className="mt-4 text-sm leading-6 text-bluewave-gray">
+                Verify {INSTITUTION.legalName} through the{" "}
+                <a
+                  href={INSTITUTION.ncuaCreditUnionLocatorUrl}
+                  className="font-semibold text-royal-blue"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  NCUA Credit Union Locator
+                </a>
+                .
+              </p>
+            </MotionReveal>
+          </div>
+        </div>
+      </section>
+
       <section className="marketing-dark-band py-16 sm:py-20">
         <div className="section-shell grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <MotionReveal>

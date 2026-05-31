@@ -1,0 +1,10 @@
+Contact: mailto:security@bluewavecu.com
+Contact: mailto:support@bluewavecu.com
+Expires: 2027-05-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://bluewavecu.com/.well-known/security.txt
+Policy: https://bluewavecu.com/security
+Acknowledgments: https://bluewavecu.com/security
+
+# Report phishing impersonating Bluewave Credit Union to security@bluewavecu.com.
+# Our only official member sign-in URL is https://bluewavecu.com/auth/login

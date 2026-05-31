@@ -1,9 +1,13 @@
 import type { AccountType } from "@/types/banking";
+import { getOfficialDomain, getSiteUrl } from "@/lib/siteUrl";
 
 export const INSTITUTION = {
   legalName: "Bluewave Credit Union",
   shortName: "Bluewave",
+  website: getSiteUrl(),
+  officialDomain: getOfficialDomain(),
   routingNumber: "311978875",
+  ncuaCreditUnionLocatorUrl: "https://mapping.ncua.gov/ResearchCreditUnion.aspx",
   phone: {
     display: "(646) 776-4480",
     tel: "+16467764480",

@@ -1,14 +1,21 @@
 import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
-import { apiSuccess, handleApiError } from "@/lib/api";
+import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { sendContactConfirmationEmail, sendContactFormAdminEmail } from "@/lib/email";
 import { writeEventLog } from "@/lib/eventLog";
+import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
 import { contactFormSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimit = enforceRateLimit(request, "public-contact", rateLimitPresets.contact);
+
+    if (!rateLimit.allowed) {
+      return apiError(rateLimit.message, 429);
+    }
+
     const input = contactFormSchema.parse(await request.json());
     const reference = `BW-${randomUUID().slice(0, 8).toUpperCase()}`;
 

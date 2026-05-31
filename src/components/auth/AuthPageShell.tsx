@@ -3,6 +3,7 @@
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AuthSiteTrustBar } from "@/components/auth/AuthSiteTrustBar";
 import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { AuthLogo } from "@/components/layout/AuthLogo";
 import { BrandLogo } from "@/components/layout/BrandLogo";
@@ -130,6 +131,7 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
                   wide && "lg:flex-1 lg:overflow-y-auto lg:overscroll-contain",
                 )}
               >
+                <AuthSiteTrustBar />
                 {children}
               </div>
 
