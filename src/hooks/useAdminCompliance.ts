@@ -3,9 +3,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { useUnauthorizedRedirect } from "@/hooks/useUnauthorizedRedirect";
 import { patchJson } from "@/lib/clientApi";
-import type { AdminComplianceData, KycStatus } from "@/types/banking";
+import type { AdminComplianceData, CustomerProfileRecord, KycStatus } from "@/types/banking";
 
-export function useAdminCompliance(status?: KycStatus | "ALL") {
+export type ComplianceStatusFilter = KycStatus | "NEEDS_REVIEW";
+
+export function profileMatchesComplianceFilter(
+  kycStatus: KycStatus,
+  filter: ComplianceStatusFilter,
+) {
+  if (filter === "NEEDS_REVIEW") {
+    return (
+      kycStatus === "NOT_STARTED" ||
+      kycStatus === "SUBMITTED" ||
+      kycStatus === "UNDER_REVIEW"
+    );
+  }
+
+  return kycStatus === filter;
+}
+
+export function useAdminCompliance(status: ComplianceStatusFilter = "NEEDS_REVIEW") {
   const redirectToLogin = useUnauthorizedRedirect();
   const [data, setData] = useState<AdminComplianceData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,10 +35,7 @@ export function useAdminCompliance(status?: KycStatus | "ALL") {
     setError(null);
     setIsForbidden(false);
 
-    const params = new URLSearchParams();
-    if (status && status !== "ALL") {
-      params.set("status", status);
-    }
+    const params = new URLSearchParams({ status });
 
     try {
       const response = await fetch(`/api/admin/compliance?${params.toString()}`, {
@@ -76,7 +90,7 @@ export function useAdminCompliance(status?: KycStatus | "ALL") {
       reviewNote?: string,
     ) => {
       setIsUpdating(true);
-      const result = await patchJson("/api/admin/compliance", {
+      const result = await patchJson<{ profile: CustomerProfileRecord }>("/api/admin/compliance", {
         profileId,
         status: nextStatus,
         reviewNote,
@@ -88,10 +102,31 @@ export function useAdminCompliance(status?: KycStatus | "ALL") {
         return false;
       }
 
-      await fetchCompliance();
+      const updatedProfile = result.data.profile;
+
+      setData((current) => {
+        if (!current) {
+          return current;
+        }
+
+        const stillVisible = profileMatchesComplianceFilter(updatedProfile.kycStatus, status);
+        const profiles = stillVisible
+          ? current.profiles.map((profile) =>
+              profile.id === profileId ? updatedProfile : profile,
+            )
+          : current.profiles.filter((profile) => profile.id !== profileId);
+
+        return {
+          ...current,
+          profiles,
+        };
+      });
+
+      void fetchCompliance();
+
       return true;
     },
-    [fetchCompliance],
+    [fetchCompliance, status],
   );
 
   return {

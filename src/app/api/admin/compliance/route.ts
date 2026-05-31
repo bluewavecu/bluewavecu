@@ -17,11 +17,13 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const status = searchParams.get("status") ?? "NEEDS_REVIEW";
 
-    const where: { kycStatus?: KycStatus } = {};
+    const where: { kycStatus?: KycStatus | { in: KycStatus[] } } = {};
 
-    if (status && status !== "ALL") {
+    if (status === "NEEDS_REVIEW") {
+      where.kycStatus = { in: ["NOT_STARTED", "SUBMITTED", "UNDER_REVIEW"] };
+    } else if (status !== "ALL") {
       where.kycStatus = status as KycStatus;
     }
 
