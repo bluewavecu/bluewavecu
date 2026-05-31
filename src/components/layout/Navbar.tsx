@@ -1,13 +1,13 @@
 "use client";
 
-import { LogIn, Menu, UserPlus, X } from "lucide-react";
+import { Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
 import { useTranslation } from "@/i18n/LocaleProvider";
-import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
+import { MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 import { cn } from "@/lib/utils";
 
 const navLinkKeys = [
@@ -17,13 +17,6 @@ const navLinkKeys = [
   { labelKey: "nav.about", href: "/about" },
   { labelKey: "nav.support", href: "/support" },
 ] as const;
-
-const loginButtonClassName = buttonVariants({
-  variant: "primary",
-  size: "sm",
-  className:
-    "h-9 gap-1.5 px-3.5 text-xs shadow-[0_10px_28px_rgba(0,168,232,0.32)] sm:h-10 sm:gap-2 sm:px-4 sm:text-sm",
-});
 
 const registerButtonClassName = buttonVariants({
   variant: "secondary",
@@ -60,13 +53,8 @@ export function Navbar() {
           <LanguageSelector
             compact
             className="text-white"
-            selectClassName="border-white/[0.16] bg-white/[0.08] text-white"
+            selectClassName="h-9 border-white/[0.16] bg-white/[0.08] text-white sm:h-10"
           />
-
-          <Link href={MEMBER_LOGIN_PATH} className={loginButtonClassName}>
-            <LogIn size={16} aria-hidden="true" />
-            {t("nav.login")}
-          </Link>
 
           <Link href={MEMBER_REGISTER_PATH} className={registerButtonClassName}>
             <UserPlus size={16} aria-hidden="true" />
@@ -103,7 +91,10 @@ export function Navbar() {
             </Link>
           ))}
           <div className="px-3 py-2">
-            <LanguageSelector className="text-white" selectClassName="w-full border-white/[0.16] bg-white/[0.08] text-white" />
+            <LanguageSelector
+              className="text-white"
+              selectClassName="w-full border-white/[0.16] bg-white/[0.08] text-white"
+            />
           </div>
           <Link
             href={MEMBER_REGISTER_PATH}

@@ -271,6 +271,7 @@ export const zh = {
       description: "Bluewave 信用合作社提供账户、转账、卡片和支持。",
       primaryCta: "开户",
       secondaryCta: "登录",
+      loginToOnlineBanking: "登录网上银行",
       learnMore: "了解更多",
       availableBalance: "可用余额",
       cardControls: "卡片控制",

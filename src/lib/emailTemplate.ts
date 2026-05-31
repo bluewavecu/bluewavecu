@@ -111,16 +111,48 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
     <title>${escapeHtml(options.title)}</title>
     <style type="text/css">
       :root { color-scheme: light only; supported-color-schemes: light; }
+      body, .email-shell {
+        background-color: #E8EEF5 !important;
+      }
+      .email-body {
+        background-color: #FFFFFF !important;
+        color: #334155 !important;
+      }
+      .email-body p,
+      .email-body li,
+      .email-body td,
+      .email-body span,
+      .email-body div {
+        color: #334155 !important;
+      }
+      .email-body h1,
+      .email-body strong,
+      .email-body b {
+        color: #0A2A5E !important;
+      }
+      .email-body a {
+        color: #0D47A1 !important;
+      }
       @media (prefers-color-scheme: dark) {
+        body, .email-shell {
+          background-color: #E8EEF5 !important;
+        }
         .email-body,
         .email-body p,
-        .email-body div,
-        .email-body h1 {
+        .email-body li,
+        .email-body td,
+        .email-body span,
+        .email-body div {
           background-color: #FFFFFF !important;
           color: #334155 !important;
         }
-        .email-body h1 {
+        .email-body h1,
+        .email-body strong,
+        .email-body b {
           color: #0A2A5E !important;
+        }
+        .email-body a {
+          color: #0D47A1 !important;
         }
       }
     </style>
@@ -130,7 +162,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
       </style>
     <![endif]-->
   </head>
-  <body style="margin: 0; padding: 0; background-color: #E8EEF5; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  <body class="email-shell" style="margin: 0; padding: 0; background-color: #E8EEF5 !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
     <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent; mso-hide: all;">
       ${escapeHtml(preheader)}
     </div>
@@ -153,7 +185,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
                 <h1 style="margin: 0 0 18px; font-size: 24px; line-height: 1.3; font-weight: 700; color: #0A2A5E !important;">
                   ${escapeHtml(options.title)}
                 </h1>
-                <div style="font-size: 15px; line-height: 1.7; color: #334155 !important;">
+                <div class="email-body-content" style="font-size: 15px; line-height: 1.7; color: #334155 !important; background-color: #FFFFFF !important;">
                   ${options.bodyHtml}
                 </div>
                 ${buildPrimaryActionButton(options.primaryAction, appUrl)}
@@ -161,7 +193,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
               </td>
             </tr>
             <tr>
-              <td style="padding: 28px 32px 32px; background-color: #0A2A5E; border: 1px solid #0A2A5E; border-top: none; border-radius: 0 0 16px 16px; font-family: Arial, Helvetica, sans-serif; color: #FFFFFF;">
+              <td class="email-footer" style="padding: 28px 32px 32px; background-color: #0A2A5E !important; border: 1px solid #0A2A5E; border-top: none; border-radius: 0 0 16px 16px; font-family: Arial, Helvetica, sans-serif; color: #FFFFFF !important;">
                 <p style="margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #FFFFFF;">
                   ${escapeHtml(INSTITUTION.legalName)}
                 </p>

@@ -3,7 +3,10 @@ import { AdminAdjustmentsClient } from "@/components/admin/AdminAdjustmentsClien
 
 export default function AdminAdjustmentsPage() {
   return (
-    <AdminShell title="Adjustments" subtitle="Credit or debit member accounts with a scheduled effective date.">
+    <AdminShell
+      title="Fund User Account"
+      subtitle="Credit or debit member accounts with a scheduled effective date."
+    >
       <AdminAdjustmentsClient />
     </AdminShell>
   );

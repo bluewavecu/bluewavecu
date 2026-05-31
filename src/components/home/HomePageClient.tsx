@@ -2,11 +2,11 @@
 
 import {
   ArrowRight,
-  BadgeCheck,
   BarChart3,
   CheckCircle2,
   Clock3,
   Fingerprint,
+  LogIn,
   ShieldCheck,
   Sparkles,
   WalletCards,
@@ -27,6 +27,7 @@ import {
   stats,
 } from "@/data/home";
 import { useTranslation } from "@/i18n/LocaleProvider";
+import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 
 export function HomePageClient() {
   const { t } = useTranslation();
@@ -107,14 +108,19 @@ export function HomePageClient() {
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/[0.76] sm:text-xl">
               {t("marketing.home.description")}
             </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#open-account" size="lg">
+            <div className="mt-9 flex flex-col gap-3 sm:max-w-sm">
+              <ButtonLink href={MEMBER_LOGIN_PATH} size="lg" className="w-full justify-center">
+                {t("marketing.home.loginToOnlineBanking")}
+                <LogIn size={18} aria-hidden="true" />
+              </ButtonLink>
+              <ButtonLink
+                href={MEMBER_REGISTER_PATH}
+                variant="secondary"
+                size="lg"
+                className="w-full justify-center"
+              >
                 {t("marketing.home.primaryCta")}
                 <ArrowRight size={18} aria-hidden="true" />
-              </ButtonLink>
-              <ButtonLink href="#features" variant="secondary" size="lg">
-                {t("marketing.home.learnMore")}
-                <BadgeCheck size={18} aria-hidden="true" />
               </ButtonLink>
             </div>
           </MotionReveal>

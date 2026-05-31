@@ -377,6 +377,7 @@ export const es = {
         "Bluewave Credit Union ofrece cuentas, transferencias, tarjetas y soporte con transparencia.",
       primaryCta: "Abrir una cuenta",
       secondaryCta: "Iniciar sesión",
+      loginToOnlineBanking: "Iniciar sesión en banca en línea",
       learnMore: "Más información",
       availableBalance: "Saldo disponible",
       cardControls: "Controles de tarjeta",

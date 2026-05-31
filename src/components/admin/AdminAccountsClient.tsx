@@ -176,7 +176,7 @@ export function AdminAccountsClient() {
               </p>
             </div>
             <p className="rounded-lg border border-amber-500/[0.30] bg-amber-500/[0.06] p-3 text-xs">
-              Balances are ledger-controlled. Use Adjustments to post controlled corrections — never edit balances
+              Balances are ledger-controlled. Use Fund User Account to post controlled corrections — never edit balances
               directly.
             </p>
             <Link

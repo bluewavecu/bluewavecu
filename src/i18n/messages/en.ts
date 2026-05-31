@@ -268,7 +268,7 @@ export const en = {
       transferReviews: "Transfer Reviews",
       billPayReviews: "Bill Pay Reviews",
       cardApplications: "Card applications",
-      adjustments: "Adjustments",
+      adjustments: "Fund User Account",
       generateTransactions: "Generate Transactions",
       transferVerification: "Transfer Verification",
       reconciliation: "Reconciliation",
@@ -334,7 +334,7 @@ export const en = {
         subtitle: "Review member Mastercard requests, verify profile details, and approve or decline issuance.",
       },
       adjustments: {
-        title: "Adjustments",
+        title: "Fund User Account",
         subtitle: "Credit or debit member accounts immediately with ledger-backed balances.",
       },
       transactionGenerator: {
@@ -455,6 +455,7 @@ export const en = {
         "Bluewave Credit Union delivers everyday accounts, transfers, cards, and support with the transparency members expect.",
       primaryCta: "Open an account",
       secondaryCta: "Sign in",
+      loginToOnlineBanking: "Login To Online Banking",
       learnMore: "Learn more",
       availableBalance: "Available balance",
       cardControls: "Card controls",
