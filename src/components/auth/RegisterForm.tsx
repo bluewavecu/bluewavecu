@@ -24,6 +24,7 @@ import {
 import { US_STATE_OPTIONS } from "@/data/usStates";
 import { postJson } from "@/lib/clientApi";
 import { MEMBER_VERIFY_EMAIL_PATH } from "@/lib/authRoutes";
+import { formatUsPhoneInput, getUsPhoneValidationError } from "@/lib/phoneNumber";
 import type { RegisterResponse } from "@/types/banking";
 
 function resolveAccountTypes(selected: SignupAccountType): SignupAccountType[] {
@@ -41,10 +42,22 @@ export function RegisterForm() {
   const [selectedAccountType, setSelectedAccountType] = useState<SignupAccountType>(
     DEFAULT_SIGNUP_ACCOUNT_TYPES[0] ?? "SAVINGS",
   );
+  const [phone, setPhone] = useState("");
+
+  function handlePhoneChange(value: string) {
+    setPhone(formatUsPhoneInput(value));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    const phoneError = getUsPhoneValidationError(phone);
+
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get("password") ?? "");
@@ -62,7 +75,7 @@ export function RegisterForm() {
       lastName: String(formData.get("lastName") ?? ""),
       username: String(formData.get("username") ?? ""),
       email: String(formData.get("email") ?? ""),
-      phone: String(formData.get("phone") ?? ""),
+      phone,
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
       occupation: String(formData.get("occupation") ?? ""),
       addressLine1: String(formData.get("addressLine1") ?? ""),
@@ -150,7 +163,11 @@ export function RegisterForm() {
                 type="tel"
                 name="phone"
                 autoComplete="tel"
+                inputMode="numeric"
                 required
+                value={phone}
+                onChange={(event) => handlePhoneChange(event.target.value)}
+                maxLength={14}
                 className={authInputClassName}
               />
             </AuthField>

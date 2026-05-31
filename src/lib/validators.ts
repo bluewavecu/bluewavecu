@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { SIGNUP_ACCOUNT_TYPE_VALUES } from "@/data/signupAccountTypes";
 import { US_STATE_CODES } from "@/data/usStates";
+import {
+  getUsPhoneValidationError,
+  normalizeUsPhone,
+} from "@/lib/phoneNumber";
 import { USERNAME_PATTERN } from "@/lib/username";
 
 function parseDateOfBirth(value: string) {
@@ -25,6 +29,22 @@ function isAtLeast18YearsOld(dateOfBirth: Date) {
   return age >= 18;
 }
 
+const usPhoneSchema = z
+  .string()
+  .trim()
+  .min(1, "Phone number is required")
+  .superRefine((value, context) => {
+    const error = getUsPhoneValidationError(value);
+
+    if (error) {
+      context.addIssue({
+        code: "custom",
+        message: error,
+      });
+    }
+  })
+  .transform((value) => normalizeUsPhone(value));
+
 export const registerSchema = z
   .object({
     firstName: z.string().trim().min(1, "First name is required").max(60),
@@ -40,7 +60,7 @@ export const registerSchema = z
       )
       .transform((value) => value.toLowerCase()),
     email: z.string().trim().toLowerCase().email(),
-    phone: z.string().trim().min(7, "Phone number is required").max(32),
+    phone: usPhoneSchema,
     dateOfBirth: z
       .string()
       .trim()
@@ -95,7 +115,7 @@ export const adminCreateMemberSchema = z
       )
       .transform((value) => value.toLowerCase()),
     email: z.string().trim().toLowerCase().email(),
-    phone: z.string().trim().min(7, "Phone number is required").max(32),
+    phone: usPhoneSchema,
     dateOfBirth: z
       .string()
       .trim()
