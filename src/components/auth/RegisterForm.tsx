@@ -125,8 +125,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-6">
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-primary-navy dark:text-white">Full name</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
             <AuthField label="First name" htmlFor="register-first-name" icon={UserRound}>
               <input
                 id="register-first-name"
@@ -147,7 +146,7 @@ export function RegisterForm() {
                 className={authInputClassName}
               />
             </AuthField>
-          </fieldset>
+          </div>
 
           <AuthField label="Username" htmlFor="register-username" icon={AtSign}>
             <input
