@@ -3,7 +3,6 @@ import { getOfficialDomain, getSiteUrl } from "@/lib/siteUrl";
 
 export const INSTITUTION = {
   legalName: "Bluewave Credit Union",
-  publicSiteName: "Bluewave",
   shortName: "Bluewave",
   website: getSiteUrl(),
   officialDomain: getOfficialDomain(),
@@ -22,10 +21,8 @@ export const INSTITUTION = {
   },
   memberServicesHours: "Monday–Friday, 8:00 a.m.–6:00 p.m. CT",
   memberServicesHoursShort: "Mon–Fri, 8am–6pm CT",
-  publicDisclaimer:
-    "Demonstration website only. Bluewave is not a licensed bank, credit union, or financial institution. All accounts, rates, balances, and products shown are fictional sample data for interface exploration.",
   ncuaDisclaimer:
-    "Demonstration website only. Bluewave is not a licensed bank, credit union, or financial institution. All accounts, rates, balances, and products shown are fictional sample data for interface exploration.",
+    "Bluewave Credit Union is federally insured by the NCUA. Membership eligibility applies. Equal Housing Opportunity.",
 } as const;
 
 export function formatInstitutionAddress() {

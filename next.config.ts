@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { CRAWLER_BLOCK_DIRECTIVE } from "./src/lib/crawlerDefense";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -22,7 +23,7 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=()",
   },
-  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex, max-snippet:0, max-image-preview:none, max-video-preview:0" },
+  { key: "X-Robots-Tag", value: CRAWLER_BLOCK_DIRECTIVE },
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },

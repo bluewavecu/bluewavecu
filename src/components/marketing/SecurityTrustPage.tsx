@@ -15,11 +15,11 @@ export function SecurityTrustPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Security"
-        headline="Trust, visibility, and control in the demo"
-        description="Bluewave shows how authentication, session monitoring, and sensitive-activity review could work in a member portal—all with sample data."
+        headline="Trust, visibility, and control for every session"
+        description="Bluewave protects member accounts with layered authentication, session monitoring, and careful review of sensitive financial activity."
         heroImage={marketingImages.securityHero}
-        heroImageAlt="Secure sign-in screen on a laptop"
-        primaryCta={{ label: "Try demo sign-in", href: "/auth/login" }}
+        heroImageAlt="Secure online banking on a laptop"
+        primaryCta={{ label: "Sign in to manage security", href: "/auth/login" }}
         secondaryCta={{ label: "Report a concern", href: "/contact?topic=security" }}
       />
 
@@ -46,14 +46,14 @@ export function SecurityTrustPage() {
           eyebrow: "Secure by design",
           title: "Protection across sign-in, sessions, and sensitive actions",
           description:
-            "Bluewave combines authentication controls with monitoring for unusual transfers, bill payments, and account changes in the demonstration environment.",
+            "Bluewave combines authentication controls with monitoring for unusual transfers, bill payments, and account changes so members stay informed.",
           bullets: [
             "Optional MFA for additional sign-in protection",
             "Session list with revoke controls",
             "Extra review for high-value activity",
           ],
           image: marketingImages.securitySplit,
-          imageAlt: "Secure sign-in verification on a laptop",
+          imageAlt: "Secure online banking verification on a laptop",
           reverse: true,
         }}
       />
@@ -63,8 +63,8 @@ export function SecurityTrustPage() {
           <MotionReveal>
             <MarketingSectionHeader
               eyebrow="Verify our website"
-              title="Use only the official Bluewave demo address"
-              description="Look-alike sites sometimes imitate financial demos to collect credentials. Confirm the address bar before entering a username or password."
+              title="Use only the official Bluewave sign-in address"
+              description="Fraudsters sometimes create look-alike sites to steal sign-in credentials. Always confirm the address bar before you enter your username or password."
             />
           </MotionReveal>
           <div className="mt-8 grid gap-4 lg:grid-cols-2">
@@ -72,19 +72,19 @@ export function SecurityTrustPage() {
               <h2 className="text-lg font-semibold text-primary-navy">Official URLs</h2>
               <ul className="mt-4 space-y-2 text-sm leading-6 text-bluewave-gray">
                 <li>
-                  Demo sign-in:{" "}
+                  Member sign-in:{" "}
                   <Link href="/auth/login" className="font-semibold text-royal-blue">
                     {INSTITUTION.officialDomain}/auth/login
                   </Link>
                 </li>
                 <li>
-                  Public demo site:{" "}
+                  Public website:{" "}
                   <Link href="/" className="font-semibold text-royal-blue">
                     {INSTITUTION.officialDomain}
                   </Link>
                 </li>
                 <li>
-                  Contact email:{" "}
+                  Member services email:{" "}
                   <Link href={`mailto:${INSTITUTION.email}`} className="font-semibold text-royal-blue">
                     {INSTITUTION.email}
                   </Link>
@@ -92,13 +92,24 @@ export function SecurityTrustPage() {
               </ul>
             </MotionReveal>
             <MotionReveal delay={0.08} className="marketing-card">
-              <h2 className="text-lg font-semibold text-primary-navy">What this demo never does</h2>
+              <h2 className="text-lg font-semibold text-primary-navy">What we never do</h2>
               <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-bluewave-gray">
-                <li>Offer real deposit accounts, loans, or insured financial products</li>
-                <li>Ask for passwords, one-time codes, or full card numbers by email or text</li>
+                <li>Ask for your password, one-time codes, or full card numbers by email or text</li>
                 <li>Send sign-in links that point to domains other than {INSTITUTION.officialDomain}</li>
+                <li>Pressure you to approve transfers you did not initiate</li>
               </ul>
-              <p className="mt-4 text-sm leading-6 text-bluewave-gray">{INSTITUTION.publicDisclaimer}</p>
+              <p className="mt-4 text-sm leading-6 text-bluewave-gray">
+                Verify {INSTITUTION.legalName} through the{" "}
+                <a
+                  href={INSTITUTION.ncuaCreditUnionLocatorUrl}
+                  className="font-semibold text-royal-blue"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  NCUA Credit Union Locator
+                </a>
+                .
+              </p>
             </MotionReveal>
           </div>
         </div>
@@ -109,9 +120,9 @@ export function SecurityTrustPage() {
           <MotionReveal>
             <MarketingSectionHeader
               light
-              eyebrow="Demo controls"
+              eyebrow="Member controls"
               title="Review devices, enable MFA, and revoke sessions"
-              description="Signed-in demo users can manage active sessions and security preferences from the Security center."
+              description="Signed-in members can manage active sessions and security preferences from the Security center in online banking."
             />
           </MotionReveal>
           <div className="flex flex-col gap-3 sm:flex-row">

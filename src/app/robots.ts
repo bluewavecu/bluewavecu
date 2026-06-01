@@ -1,28 +1,14 @@
 import type { MetadataRoute } from "next";
-
-const googleBotAgents = [
-  "Googlebot",
-  "Googlebot-Image",
-  "Googlebot-News",
-  "Googlebot-Video",
-  "Google-Extended",
-  "Google-InspectionTool",
-  "GoogleOther",
-  "GoogleProducer",
-  "Storebot-Google",
-  "AdsBot-Google",
-  "AdsBot-Google-Mobile",
-  "Mediapartners-Google",
-  "APIs-Google",
-  "FeedFetcher-Google",
-  "DuplexWeb-Google",
-] as const;
+import { GOOGLE_CRAWLER_AGENTS } from "@/lib/crawlerDefense";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: "*", disallow: "/" },
-      ...googleBotAgents.map((userAgent) => ({ userAgent, disallow: "/" as const })),
+      ...GOOGLE_CRAWLER_AGENTS.map((userAgent) => ({
+        userAgent,
+        disallow: "/" as const,
+      })),
     ],
   };
 }

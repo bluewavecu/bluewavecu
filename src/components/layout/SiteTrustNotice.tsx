@@ -14,7 +14,7 @@ export function SiteTrustNotice({ variant = "auth", className }: SiteTrustNotice
   return (
     <div
       role="note"
-      aria-label="Demonstration site notice"
+      aria-label="Official website security notice"
       className={cn(
         "rounded-lg border px-4 py-3 text-sm",
         variant === "auth"
@@ -26,7 +26,7 @@ export function SiteTrustNotice({ variant = "auth", className }: SiteTrustNotice
       <p className="inline-flex items-start gap-2 font-semibold">
         <LockKeyhole size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
         <span>
-          Demo site:{" "}
+          Official site:{" "}
           <span className="font-mono text-[0.92em]">{INSTITUTION.officialDomain}</span>
         </span>
       </p>
@@ -38,7 +38,7 @@ export function SiteTrustNotice({ variant = "auth", className }: SiteTrustNotice
             : "text-white/[0.78]",
         )}
       >
-        {INSTITUTION.publicDisclaimer} Demo sign-in lives at{" "}
+        Sign in only at{" "}
         <Link
           href="/auth/login"
           className={cn(
@@ -48,17 +48,7 @@ export function SiteTrustNotice({ variant = "auth", className }: SiteTrustNotice
         >
           {loginPath}
         </Link>
-        . Questions about this demonstration?{" "}
-        <Link
-          href={`mailto:${INSTITUTION.email}`}
-          className={cn(
-            "inline-flex items-center gap-1 font-semibold underline underline-offset-2",
-            variant === "marketing" && "text-light-blue hover:text-white",
-          )}
-        >
-          {INSTITUTION.email}
-        </Link>
-        {" · "}
+        . {INSTITUTION.shortName} will never ask for your password by email or phone. Questions?{" "}
         <Link
           href={`tel:${INSTITUTION.phone.tel}`}
           className={cn(

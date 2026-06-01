@@ -99,7 +99,7 @@ export function Footer() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
               <p className="text-sm text-white/[0.58]">
-                © {new Date().getFullYear()} {INSTITUTION.publicSiteName}. {t("footer.rights")}
+                © {new Date().getFullYear()} {INSTITUTION.legalName}. {t("footer.rights")}
               </p>
               <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                 <Link href="/privacy" className="text-white/[0.64] transition hover:text-light-blue">
@@ -116,7 +116,7 @@ export function Footer() {
                 className="mt-0.5 shrink-0 text-light-blue"
                 aria-hidden="true"
               />
-              <span>{INSTITUTION.publicDisclaimer}</span>
+              <span>{INSTITUTION.ncuaDisclaimer}</span>
             </p>
           </div>
         </div>

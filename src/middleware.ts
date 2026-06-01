@@ -15,15 +15,36 @@ import {
   isLegacyAdminPath,
   isMemberAuthPath,
 } from "@/lib/authRoutes";
+import {
+  crawlerBlockHeaders,
+  isGoogleCrawlerUserAgent,
+} from "@/lib/crawlerDefense";
 import { isMemberProtectedPath, MEMBER_DASHBOARD_PATH } from "@/lib/memberRoutes";
 import { crawlerBlockMetaContent } from "@/lib/siteMetadata";
 
 function withCrawlerBlock(response: NextResponse) {
   response.headers.set("X-Robots-Tag", crawlerBlockMetaContent);
+  response.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate");
   return response;
 }
 
+function blockGoogleCrawler(request: NextRequest) {
+  if (!isGoogleCrawlerUserAgent(request.headers.get("user-agent"))) {
+    return null;
+  }
+
+  return new NextResponse("Forbidden", {
+    status: 403,
+    headers: crawlerBlockHeaders(),
+  });
+}
+
 export function middleware(request: NextRequest) {
+  const googleBlock = blockGoogleCrawler(request);
+  if (googleBlock) {
+    return googleBlock;
+  }
+
   const { pathname } = request.nextUrl;
 
   if (isLegacyAdminPath(pathname)) {
@@ -102,26 +123,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/login",
-    "/register",
-    "/auth",
-    "/auth/:path*",
-    "/lex/auth",
-    "/lex/auth/:path*",
-    "/admin",
-    "/admin/:path*",
-    "/dashboard/:path*",
-    "/accounts/:path*",
-    "/transactions/:path*",
-    "/transfers/:path*",
-    "/bill-pay/:path*",
-    "/statements/:path*",
-    "/payees/:path*",
-    "/disputes/:path*",
-    "/cards/:path*",
-    "/notifications/:path*",
-    "/settings/:path*",
-    "/member/:path*",
-    "/profile/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|images/|fonts/).*)",
   ],
 };

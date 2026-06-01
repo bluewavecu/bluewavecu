@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { CRAWLER_BLOCK_DIRECTIVE } from "@/lib/crawlerDefense";
 
-const crawlerDirective =
-  "noindex, nofollow, noarchive, nosnippet, noimageindex, max-snippet:0, max-image-preview:none, max-video-preview:0";
+export const crawlerBlockMetaContent = CRAWLER_BLOCK_DIRECTIVE;
 
 export const blockSearchIndexing: Metadata = {
   robots: {
@@ -23,10 +23,13 @@ export const blockSearchIndexing: Metadata = {
     },
   },
   other: {
-    googlebot: crawlerDirective,
-    "googlebot-news": crawlerDirective,
-    "googlebot-image": crawlerDirective,
-    "googlebot-video": crawlerDirective,
+    googlebot: crawlerBlockMetaContent,
+    "googlebot-news": crawlerBlockMetaContent,
+    "googlebot-image": crawlerBlockMetaContent,
+    "googlebot-video": crawlerBlockMetaContent,
+    bingbot: crawlerBlockMetaContent,
+    slurp: crawlerBlockMetaContent,
+    duckduckbot: crawlerBlockMetaContent,
   },
 };
 
@@ -36,5 +39,3 @@ export function privatePageMetadata(title: string): Metadata {
     title,
   };
 }
-
-export const crawlerBlockMetaContent = crawlerDirective;
