@@ -43,7 +43,7 @@ export function getEmailLogoUrl(_appUrl = getEmailAppUrl()) {
 
 export function buildEmailLogoHeaderHtml(
   appUrl: string,
-  mode: EmailLogoRenderMode = "inline-cid",
+  mode: EmailLogoRenderMode = "hosted",
 ) {
   const logoSrc = getEmailLogoHtmlSrc(mode);
   const { width: logoWidth, height: logoHeight } = getEmailLogoDisplayDimensions();
@@ -114,7 +114,7 @@ export function buildEmailPlainTextFooter(appUrl = getEmailAppUrl()) {
 
 export function buildEmailLayout(options: EmailLayoutOptions) {
   const appUrl = (options.appUrl ?? getEmailAppUrl()).replace(/\/$/, "");
-  const logoMode = options.logoMode ?? "inline-cid";
+  const logoMode = options.logoMode ?? "hosted";
   const logoHeaderHtml = buildEmailLogoHeaderHtml(appUrl, logoMode);
   const preheader = options.preheader ?? options.title;
   const address = formatInstitutionAddress();

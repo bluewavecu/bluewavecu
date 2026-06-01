@@ -1,5 +1,4 @@
 import { Resend } from "resend";
-import { getEmailLogoInlineAttachment } from "@/lib/emailBranding";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import {
@@ -50,19 +49,28 @@ function extractEmailAddress(fromValue: string) {
   return (match?.[1] ?? fromValue).trim().toLowerCase();
 }
 
-function warnIfEmailFromDomainMismatch(emailFrom: string, isProduction: boolean) {
-  if (!isProduction) {
-    return;
+function resolveEmailFrom(rawFrom: string | undefined, isProduction: boolean) {
+  const fallback = DEFAULT_EMAIL_FROM;
+
+  if (!rawFrom?.trim()) {
+    if (isProduction) {
+      console.error(`[email] EMAIL_FROM is not set — using ${fallback}`);
+    }
+    return fallback;
   }
 
+  const emailFrom = rawFrom.trim();
   const fromDomain = extractEmailAddress(emailFrom).split("@")[1];
   const officialDomain = getOfficialDomain();
 
-  if (fromDomain && fromDomain !== officialDomain) {
+  if (isProduction && fromDomain && fromDomain !== officialDomain) {
     console.error(
-      `[email] EMAIL_FROM uses @${fromDomain} but the app domain is ${officialDomain}. Resend only delivers from verified domains — set EMAIL_FROM to an address on your verified domain.`,
+      `[email] EMAIL_FROM uses @${fromDomain} but the app domain is ${officialDomain}. Using ${fallback}. Verify ${officialDomain} in Resend and update EMAIL_FROM.`,
     );
+    return fallback;
   }
+
+  return emailFrom;
 }
 
 export function getEmailConfig(): EmailConfig {
@@ -72,11 +80,9 @@ export function getEmailConfig(): EmailConfig {
 
   const nodeEnv = readEnv("NODE_ENV") ?? tryGetServerEnv()?.NODE_ENV ?? "development";
   const resendApiKey = readEnv("RESEND_API_KEY");
-  const emailFrom = readEnv("EMAIL_FROM") || DEFAULT_EMAIL_FROM;
-  const adminAlertEmail = readEnv("ADMIN_ALERT_EMAIL")?.toLowerCase() || INSTITUTION.email;
   const isProduction = nodeEnv === "production";
-
-  warnIfEmailFromDomainMismatch(emailFrom, isProduction);
+  const emailFrom = resolveEmailFrom(readEnv("EMAIL_FROM"), isProduction);
+  const adminAlertEmail = readEnv("ADMIN_ALERT_EMAIL")?.toLowerCase() || INSTITUTION.email;
 
   if (isProduction && !resendApiKey) {
     console.error("[email] RESEND_API_KEY is not set — transactional email will not be delivered.");
@@ -130,19 +136,39 @@ function buildTransactionalEmail(options: {
 }
 
 function buildSendAttachments(payload: EmailPayload) {
-  const attachments = [...(payload.attachments ?? [])];
+  return [...(payload.attachments ?? [])];
+}
 
-  try {
-    const logo = getEmailLogoInlineAttachment();
+async function deliverWithResend(
+  config: EmailConfig,
+  payload: EmailPayload,
+  attachments: EmailPayload["attachments"],
+) {
+  const resend = new Resend(config.resendApiKey!);
+  const requestOptions = payload.idempotencyKey
+    ? { idempotencyKey: payload.idempotencyKey }
+    : undefined;
 
-    if (!attachments.some((attachment) => attachment.contentId === logo.contentId)) {
-      attachments.push(logo);
-    }
-  } catch (error) {
-    console.warn("[email] Logo attachment skipped:", error);
-  }
-
-  return attachments;
+  return resend.emails.send(
+    {
+      from: config.emailFrom,
+      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+      ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
+      ...(attachments?.length
+        ? {
+            attachments: attachments.map((attachment) => ({
+              filename: attachment.filename,
+              content: attachment.content,
+              ...(attachment.contentId ? { contentId: attachment.contentId } : {}),
+            })),
+          }
+        : {}),
+    },
+    requestOptions,
+  );
 }
 
 export async function sendEmail(payload: EmailPayload): Promise<EmailSendResult> {
@@ -162,44 +188,52 @@ export async function sendEmail(payload: EmailPayload): Promise<EmailSendResult>
     return { ok: true, mode: "logged" };
   }
 
-  const resend = new Resend(config.resendApiKey);
-  const requestOptions = payload.idempotencyKey
-    ? { idempotencyKey: payload.idempotencyKey }
-    : undefined;
-
   const attachments = buildSendAttachments(payload);
-
-  const { data, error } = await resend.emails.send(
-    {
-      from: config.emailFrom,
-      to: Array.isArray(payload.to) ? payload.to : [payload.to],
-      subject: payload.subject,
-      html: payload.html,
-      text: payload.text,
-      ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
-      ...(attachments.length
-        ? {
-            attachments: attachments.map((attachment) => ({
-              filename: attachment.filename,
-              content: attachment.content,
-              ...(attachment.contentId ? { contentId: attachment.contentId } : {}),
-            })),
-          }
-        : {}),
-    },
-    requestOptions,
-  );
+  let { data, error } = await deliverWithResend(config, payload, attachments);
 
   if (error) {
     console.error("[email] Failed to send:", error.message, {
       subject: payload.subject,
       to: payload.to,
       from: config.emailFrom,
+      attachmentCount: attachments?.length ?? 0,
     });
+
+    if (attachments?.length) {
+      const retry = await deliverWithResend(config, payload, undefined);
+      data = retry.data;
+      error = retry.error;
+
+      if (!error) {
+        console.info("[email] Sent after retrying without attachments", {
+          subject: payload.subject,
+          to: payload.to,
+        });
+      }
+    }
+  }
+
+  if (error) {
     return { ok: false, mode: "rejected", error: error.message };
   }
 
   return { ok: true, mode: "sent", id: data?.id };
+}
+
+export function getEmailDeliveryStatus() {
+  const config = getEmailConfig();
+  const fromAddress = extractEmailAddress(config.emailFrom);
+  const fromDomain = fromAddress.split("@")[1] ?? "";
+  const officialDomain = getOfficialDomain();
+
+  return {
+    configured: Boolean(config.resendApiKey),
+    from: config.emailFrom,
+    fromDomain,
+    officialDomain,
+    fromDomainMatches: fromDomain === officialDomain,
+    appUrl: getEmailAppUrl(),
+  };
 }
 
 export async function safeSendEmail(

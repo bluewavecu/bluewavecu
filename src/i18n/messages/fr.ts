@@ -148,6 +148,8 @@ export const fr = {
       signInToConsole: "Se connecter à la console",
       verifyEmailLink: "Vérifier l'e-mail",
       otpDefaultMessage: "Entrez le code de vérification envoyé à votre e-mail.",
+      resendCode: "Renvoyer le code de vérification",
+      resendingCode: "Envoi du nouveau code...",
       verificationExpired:
         "La vérification a expiré. Recommencez avec identifiant et mot de passe.",
     },

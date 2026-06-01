@@ -153,6 +153,8 @@ export const en = {
       signInToConsole: "Sign in to console",
       verifyEmailLink: "Verify email",
       otpDefaultMessage: "Enter the verification code sent to your email.",
+      resendCode: "Resend verification code",
+      resendingCode: "Sending new code...",
       verificationExpired:
         "Sign-in verification expired. Start again with your username and password.",
     },

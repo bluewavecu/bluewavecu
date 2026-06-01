@@ -147,6 +147,8 @@ export const zh = {
       signInToConsole: "登录控制台",
       verifyEmailLink: "验证邮箱",
       otpDefaultMessage: "请输入发送到您邮箱的验证码。",
+      resendCode: "重新发送验证码",
+      resendingCode: "正在发送新验证码...",
       verificationExpired: "验证已过期，请重新使用用户名和密码登录。",
     },
   },

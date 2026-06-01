@@ -50,6 +50,41 @@ export async function createLoginOtpChallenge(params: {
   };
 }
 
+export async function resendLoginOtpChallenge(challengeId: string) {
+  const prisma = getPrisma();
+  const challenge = await prisma.loginOtp.findFirst({
+    where: {
+      id: challengeId,
+      consumedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    include: { user: true },
+  });
+
+  if (!challenge) {
+    return { ok: false as const, message: "Verification code expired or not found. Sign in again." };
+  }
+
+  const code = generateSixDigitCode();
+  const expiresAt = new Date(Date.now() + LOGIN_OTP_TTL_MS);
+
+  await prisma.loginOtp.update({
+    where: { id: challenge.id },
+    data: {
+      codeHash: hashOtpCode(code),
+      expiresAt,
+    },
+  });
+
+  return {
+    ok: true as const,
+    challengeId: challenge.id,
+    code,
+    deviceName: challenge.deviceName,
+    user: challenge.user,
+  };
+}
+
 export async function verifyLoginOtpChallenge(params: {
   userId: string;
   challengeId: string;

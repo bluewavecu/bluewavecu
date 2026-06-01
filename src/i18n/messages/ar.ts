@@ -147,6 +147,8 @@ export const ar = {
       signInToConsole: "تسجيل الدخول إلى وحدة التحكم",
       verifyEmailLink: "تحقق من البريد",
       otpDefaultMessage: "أدخل رمز التحقق المرسل إلى بريدك.",
+      resendCode: "إعادة إرسال رمز التحقق",
+      resendingCode: "جارٍ إرسال رمز جديد...",
       verificationExpired: "انتهت صلاحية التحقق. ابدأ من جديد باسم المستخدم وكلمة المرور.",
     },
   },

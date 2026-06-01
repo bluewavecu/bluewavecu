@@ -13,11 +13,12 @@ export function apiSuccess<T>(data: T, init?: ResponseInit) {
   );
 }
 
-export function apiError(error: string, status = 400) {
-  return NextResponse.json<ApiResponse<never>>(
+export function apiError(error: string, status = 400, details?: Record<string, unknown>) {
+  return NextResponse.json(
     {
       success: false,
       error,
+      ...(details ? { details } : {}),
     },
     { status },
   );

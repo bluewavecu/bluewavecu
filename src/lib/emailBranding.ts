@@ -4,8 +4,9 @@ import {
   EMAIL_LOGO,
   EMAIL_LOGO_CONTENT_ID,
 } from "@/lib/branding";
+import { getSiteUrl } from "@/lib/siteUrl";
 
-export type EmailLogoRenderMode = "inline-cid" | "preview";
+export type EmailLogoRenderMode = "hosted" | "inline-cid" | "preview";
 
 export function getEmailLogoAssetPath() {
   return join(process.cwd(), "public", EMAIL_LOGO.src.replace(/^\//, ""));
@@ -30,10 +31,18 @@ export function getEmailLogoDataUri() {
   return `data:image/webp;base64,${content.toString("base64")}`;
 }
 
-export function getEmailLogoHtmlSrc(mode: EmailLogoRenderMode = "inline-cid") {
+export function getHostedEmailLogoUrl(appUrl: string) {
+  return `${appUrl.replace(/\/$/, "")}${EMAIL_LOGO.src}`;
+}
+
+export function getEmailLogoHtmlSrc(mode: EmailLogoRenderMode = "hosted", appUrl?: string) {
   if (mode === "preview") {
     return getEmailLogoDataUri();
   }
 
-  return `cid:${EMAIL_LOGO_CONTENT_ID}`;
+  if (mode === "inline-cid") {
+    return `cid:${EMAIL_LOGO_CONTENT_ID}`;
+  }
+
+  return getHostedEmailLogoUrl(appUrl ?? getSiteUrl());
 }

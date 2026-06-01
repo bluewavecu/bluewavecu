@@ -6,6 +6,7 @@ export type ApiResponse<T> =
   | {
       success: false;
       error: string;
+      details?: Record<string, unknown>;
     };
 
 export type UserRole = "USER" | "ADMIN";

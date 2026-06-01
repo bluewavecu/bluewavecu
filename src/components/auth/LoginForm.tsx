@@ -26,6 +26,7 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
   const [loginChallengeId, setLoginChallengeId] = useState<string | null>(null);
   const [otpMessage, setOtpMessage] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState("");
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const sessionExpired = searchParams.get("expired") === "1";
   const passwordReset = searchParams.get("reset") === "1";
   const emailVerified = searchParams.get("verified") === "1";
@@ -57,11 +58,25 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
     setIsSubmitting(false);
 
     if (!result.success) {
-      if (result.error.toLowerCase().includes("verify your email") && !isAdminPortal) {
-        setError(`${result.error} Go to email verification to request a new code.`);
-      } else {
-        setError(result.error);
+      const details = "details" in result ? result.details : undefined;
+
+      if (details?.requiresEmailVerification && !isAdminPortal) {
+        const params = new URLSearchParams({
+          username: String(details.username ?? ""),
+          challenge: String(details.verificationChallengeId ?? ""),
+          email: String(details.maskedEmail ?? ""),
+          message: result.error,
+        });
+
+        if (details.emailSent === false) {
+          params.set("emailWarning", "1");
+        }
+
+        router.push(`${MEMBER_VERIFY_EMAIL_PATH}?${params.toString()}`);
+        return;
       }
+
+      setError(result.error);
       return;
     }
 
@@ -77,6 +92,33 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
       router.push(destination);
       router.refresh();
     }
+  }
+
+  async function handleResendOtp() {
+    if (!loginChallengeId) {
+      setError(t("auth.login.verificationExpired"));
+      return;
+    }
+
+    setError(null);
+    setIsResendingOtp(true);
+
+    const result = await postJson<{
+      loginChallengeId: string;
+      maskedEmail: string;
+      message: string;
+    }>("/api/auth/login/resend-otp", { loginChallengeId });
+
+    setIsResendingOtp(false);
+
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+
+    setLoginChallengeId(result.data.loginChallengeId);
+    setOtpMessage(result.data.message);
+    setOtpCode("");
   }
 
   async function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
@@ -154,6 +196,15 @@ export function LoginForm({ portal = "member" }: LoginFormProps) {
         >
           {isSubmitting ? t("auth.login.verifying") : t("auth.login.verifyAndSignIn")}
           <ArrowRight size={18} aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void handleResendOtp()}
+          disabled={isResendingOtp || isSubmitting}
+          className="w-full text-sm font-semibold text-royal-blue hover:text-ocean-blue disabled:opacity-60 dark:text-light-blue"
+        >
+          {isResendingOtp ? t("auth.login.resendingCode") : t("auth.login.resendCode")}
         </button>
 
         <button

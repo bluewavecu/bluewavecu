@@ -8,10 +8,17 @@ import {
   touchTrustedDevice,
   trustDevice,
 } from "@/lib/deviceTrust";
-import { sendAdminAlertEmail, sendLoginAlertEmail, sendLoginOtpEmail } from "@/lib/email";
+import {
+  sendAdminAlertEmail,
+  sendEmailVerificationOtpEmail,
+  sendLoginAlertEmail,
+  sendLoginOtpEmail,
+} from "@/lib/email";
 import { emailWasDelivered, getMemberEmailDeliveryError } from "@/lib/emailDelivery";
 import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
+import { createEmailVerificationOtpChallenge } from "@/lib/emailVerificationOtp";
 import { createLoginOtpChallenge, verifyLoginOtpChallenge } from "@/lib/loginOtp";
+import { MEMBER_VERIFY_EMAIL_PATH } from "@/lib/authRoutes";
 import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { createSecurityNotification } from "@/lib/notifications";
 import { getPrisma } from "@/lib/prisma";
@@ -295,9 +302,29 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user.emailVerifiedAt) {
+      const verificationChallenge = await createEmailVerificationOtpChallenge(user.id);
+      const verificationEmailResult = await sendEmailVerificationOtpEmail({
+        email: user.email,
+        fullName: user.fullName,
+        code: verificationChallenge.code,
+        challengeId: verificationChallenge.challengeId,
+        expiresMinutes: verificationChallenge.expiresMinutes,
+      });
+      const emailSent = emailWasDelivered(verificationEmailResult);
+
       return apiError(
-        "Verify your email before signing in. Check your inbox for the verification code or request a new one on the verify email page.",
+        emailSent
+          ? `Verify your email before signing in. A new code was sent to ${maskEmailAddress(user.email)}.`
+          : `Verify your email before signing in. ${getMemberEmailDeliveryError(verificationEmailResult)}`,
         403,
+        {
+          requiresEmailVerification: true,
+          verificationChallengeId: verificationChallenge.challengeId,
+          username: user.username,
+          maskedEmail: maskEmailAddress(user.email),
+          emailSent,
+          verifyEmailPath: MEMBER_VERIFY_EMAIL_PATH,
+        },
       );
     }
 

@@ -52,12 +52,13 @@ const checks = [
     pass: adminLogoSrc === memberLogoSrc && adminLogoSrc.length > 0,
   },
   {
-    name: "Sent emails reference cid logo (not broken preview cid)",
+    name: "Sent emails use hosted logo URL for deliverability",
     pass: buildEmailLayout({
       title: "Sent email",
       bodyHtml: "<p>Body</p>",
-      logoMode: "inline-cid",
-    }).includes('src="cid:bluewave-email-logo"'),
+      logoMode: "hosted",
+      appUrl: "https://bluewavecu.com",
+    }).includes('src="https://bluewavecu.com/images/auth_logo.webp"'),
   },
 ];
 
