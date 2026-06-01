@@ -554,6 +554,7 @@ export const billPaymentPayloadSchema = z.object({
   dueDate: z.coerce.date().optional(),
   scheduledFor: z.coerce.date().optional(),
   submitForReview: z.boolean().optional(),
+  postImmediately: z.boolean().optional(),
 });
 
 export const billPaymentCreateSchema = billPaymentPayloadSchema.extend({
@@ -608,6 +609,9 @@ export const adminGenerateTransactionsSchema = z
     debitCount: z.coerce.number().int().min(0).max(1000),
     fromDate: z.coerce.date(),
     toDate: z.coerce.date(),
+    payrollCompanyName: z.string().trim().max(120).optional(),
+    activityCities: z.string().trim().max(500).optional(),
+    includeCardAndUtilityActivity: z.boolean().optional(),
   })
   .refine((input) => input.creditCount + input.debitCount >= 1, {
     message: "Enter at least one credit or debit.",

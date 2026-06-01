@@ -12,6 +12,10 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
 import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
+import {
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE,
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
+} from "@/lib/activityLabels";
 import { getShareAccountLabel } from "@/lib/institution";
 
 const quickActions = [
@@ -169,8 +173,8 @@ export function AccountsClient() {
           <RecentTransactions transactions={recentTransactions} />
         ) : (
           <EmptyState
-            title="No recent transactions"
-            message="Account activity will appear here as transactions post to your accounts."
+            title={RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE}
+            message={RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE}
           />
         )}
         <StatementExportCard />

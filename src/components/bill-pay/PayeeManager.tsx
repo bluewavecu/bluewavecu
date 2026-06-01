@@ -16,14 +16,14 @@ export function PayeeManager() {
     event.preventDefault();
     setSuccessMessage(null);
 
-    const ok = await createPayee({
+    const createdPayee = await createPayee({
       name: name.trim(),
       nickname: nickname.trim() || undefined,
       category: category.trim() || undefined,
       accountNumber: accountNumber.trim() || undefined,
     });
 
-    if (ok) {
+    if (createdPayee) {
       setSuccessMessage("Payee added.");
       setName("");
       setNickname("");

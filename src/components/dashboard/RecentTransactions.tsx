@@ -17,6 +17,12 @@ import {
   getTransactionTitle,
 } from "@/lib/transactionDisplay";
 import { cn } from "@/lib/utils";
+import {
+  RECENT_ACCOUNT_ACTIVITY_DESCRIPTION,
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE,
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
+  RECENT_ACCOUNT_ACTIVITY_TITLE,
+} from "@/lib/activityLabels";
 import type { DashboardTransaction } from "@/types/banking";
 
 const transactionIcons = {
@@ -55,7 +61,7 @@ function toDrawerItem(transaction: DashboardTransaction): TransactionDrawerItem 
 
 export function RecentTransactions({
   transactions,
-  description = "Your most recent account activity.",
+  description = RECENT_ACCOUNT_ACTIVITY_DESCRIPTION,
   showHeader = true,
   viewAllHref,
 }: RecentTransactionsProps) {
@@ -64,8 +70,8 @@ export function RecentTransactions({
   if (!transactions || transactions.length === 0) {
     return (
       <EmptyState
-        title="No recent transactions"
-        message="Account activity will appear here as transactions post to your accounts."
+        title={RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE}
+        message={RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE}
       />
     );
   }
@@ -83,7 +89,7 @@ export function RecentTransactions({
                 id="recent-transactions"
                 className="text-lg font-semibold text-primary-navy dark:text-white"
               >
-                Recent transactions
+                {RECENT_ACCOUNT_ACTIVITY_TITLE}
               </h2>
               <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
                 {description}

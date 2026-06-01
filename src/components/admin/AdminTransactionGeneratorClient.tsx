@@ -40,6 +40,9 @@ export function AdminTransactionGeneratorClient() {
   const [debitCount, setDebitCount] = useState("50");
   const [fromDate, setFromDate] = useState(getDefaultFromDate);
   const [toDate, setToDate] = useState(() => formatDateInputValue(new Date()));
+  const [payrollCompanyName, setPayrollCompanyName] = useState("");
+  const [activityCities, setActivityCities] = useState("Dallas, TX, Plano, TX, Irving, TX");
+  const [includeCardAndUtilityActivity, setIncludeCardAndUtilityActivity] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerateResult | null>(null);
@@ -127,6 +130,9 @@ export function AdminTransactionGeneratorClient() {
       debitCount: Number(debitCount),
       fromDate,
       toDate,
+      payrollCompanyName: payrollCompanyName.trim() || undefined,
+      activityCities: activityCities.trim() || undefined,
+      includeCardAndUtilityActivity,
     });
 
     setIsSubmitting(false);
@@ -240,10 +246,42 @@ export function AdminTransactionGeneratorClient() {
               className={fieldClassName}
             />
           </label>
+
+          <label className="block md:col-span-2">
+            <span className="text-sm font-semibold">Payroll company name</span>
+            <input
+              type="text"
+              value={payrollCompanyName}
+              onChange={(event) => setPayrollCompanyName(event.target.value)}
+              placeholder="e.g. Texas Instruments Payroll"
+              className={fieldClassName}
+            />
+          </label>
+
+          <label className="block md:col-span-2">
+            <span className="text-sm font-semibold">Activity cities (comma-separated)</span>
+            <input
+              type="text"
+              value={activityCities}
+              onChange={(event) => setActivityCities(event.target.value)}
+              placeholder="Dallas, TX, Plano, TX, Fort Worth, TX"
+              className={fieldClassName}
+            />
+          </label>
+
+          <label className="flex items-center gap-2 md:col-span-2">
+            <input
+              type="checkbox"
+              checked={includeCardAndUtilityActivity}
+              onChange={(event) => setIncludeCardAndUtilityActivity(event.target.checked)}
+            />
+            <span className="text-sm font-semibold">Include card purchases and utility-style debits</span>
+          </label>
         </div>
 
         <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Total requested: {totalCount} · Types include deposits, refunds, card, bill pay, transfers, fees, and withdrawals.
+          Total requested: {totalCount} · Payroll credits post every 2 weeks using the company name above.
+          Other activity uses the city list for realistic debits.
           {selectedAccount ? (
             <> Current balance: {formatCurrency(selectedAccount.balance)}.</>
           ) : null}

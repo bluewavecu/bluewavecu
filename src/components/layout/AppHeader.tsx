@@ -70,7 +70,7 @@ export function AppHeader({
         </div>
       </header>
 
-      <div className="px-4 pt-3 sm:px-6 lg:px-8 lg:pt-4">
+      <div className="px-4 pt-14 sm:px-6 sm:pt-16 lg:px-8 lg:pt-4">
         {compactMobile ? (
           <>
             <h1 className="hidden text-xl font-semibold text-primary-navy dark:text-white sm:text-2xl lg:block">

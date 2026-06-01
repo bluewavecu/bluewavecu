@@ -7,7 +7,7 @@ export default function TransactionsPage() {
   return (
     <AppShell
       title="Transactions"
-      subtitle="Your account activity and posted history."
+      subtitle="Recent account activity across your accounts."
       hideHeaderSearch
     >
       <Suspense

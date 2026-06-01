@@ -14,6 +14,7 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
+import { RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE } from "@/lib/activityLabels";
 import { MEMBER_ACCOUNTS_PATH, MEMBER_TRANSFERS_PATH } from "@/lib/memberRoutes";
 
 function getStatusLabel(status: string) {
@@ -100,9 +101,6 @@ export function AccountDetailClient() {
                 {account.displayName}
               </h1>
               <div className="mt-3">
-                <AccountNumberDisplay accountNumber={account.accountNumber} />
-              </div>
-              <div className="mt-3">
                 <StatusBadge label={getStatusLabel(account.status)} tone={statusToTone(account.status)} />
               </div>
             </div>
@@ -119,7 +117,13 @@ export function AccountDetailClient() {
             </div>
           </div>
 
-          <dl className="mt-6 grid gap-3 rounded-lg bg-[#f7fbff] p-4 text-sm sm:grid-cols-2 dark:bg-white/[0.05]">
+          <dl className="mt-6 grid gap-4 rounded-lg bg-[#f7fbff] p-4 text-sm sm:grid-cols-3 dark:bg-white/[0.05]">
+            <div className="flex justify-between gap-3 sm:block">
+              <dt className="text-bluewave-gray dark:text-white/[0.58]">Account number</dt>
+              <dd className="mt-1 font-semibold text-primary-navy dark:text-white">
+                <AccountNumberDisplay accountNumber={account.accountNumber} />
+              </dd>
+            </div>
             <div className="flex justify-between gap-3 sm:block">
               <dt className="text-bluewave-gray dark:text-white/[0.58]">Routing number</dt>
               <dd className="font-semibold text-primary-navy dark:text-white">{account.routingNumber}</dd>
@@ -169,7 +173,7 @@ export function AccountDetailClient() {
         />
       ) : (
         <EmptyState
-          title="No recent transactions"
+          title={RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE}
           message="No transactions on this account yet."
         />
       )}

@@ -67,6 +67,7 @@ export function useBillPay() {
       dueDate?: string;
       scheduledFor?: string;
       submitForReview?: boolean;
+      postImmediately?: boolean;
       transactionPin: string;
     }) => {
       setIsSubmitting(true);

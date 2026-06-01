@@ -67,6 +67,9 @@ export async function POST(request: NextRequest) {
       debitCount: input.debitCount,
       fromDate,
       toDate,
+      payrollCompanyName: input.payrollCompanyName,
+      activityCities: input.activityCities,
+      includeCardAndUtilityActivity: input.includeCardAndUtilityActivity,
     });
 
     try {

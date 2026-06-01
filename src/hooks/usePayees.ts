@@ -74,10 +74,10 @@ export function usePayees() {
       setIsSubmitting(false);
       if (!result.success) {
         setError(result.error);
-        return false;
+        return null;
       }
       await fetchPayees();
-      return true;
+      return result.data.payee;
     },
     [fetchPayees],
   );

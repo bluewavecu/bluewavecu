@@ -3,6 +3,7 @@ import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth, resolveMemberWriteAuth } from "@/lib/requestAuth";
 
 import {
+  createAndPostBillPayment,
   createBillPayment,
   serializeBillPayment,
   submitBillPaymentForReview,
@@ -67,7 +68,19 @@ export async function POST(request: NextRequest) {
       return apiError(pinVerification.message, 400);
     }
 
-    const { transactionPin: _transactionPin, ...billPaymentInput } = input;
+    const { transactionPin: _transactionPin, postImmediately, ...billPaymentInput } = input;
+
+    if (postImmediately) {
+      const billPayment = await createAndPostBillPayment(payload.userId, billPaymentInput);
+      return apiSuccess(
+        {
+          billPayment,
+          message: "Bill payment posted to your account.",
+        },
+        { status: 201 },
+      );
+    }
+
     const billPayment = await createBillPayment(payload.userId, billPaymentInput);
 
     if (billPaymentInput.submitForReview) {

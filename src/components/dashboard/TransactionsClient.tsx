@@ -6,6 +6,7 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { RECENT_ACCOUNT_ACTIVITY_DESCRIPTION } from "@/lib/activityLabels";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const transactionFilters = ["All accounts", "Last 30 days", "Posted activity"];
@@ -62,7 +63,7 @@ export function TransactionsClient() {
       {data.recentTransactions.length > 0 ? (
         <RecentTransactions
           transactions={data.recentTransactions}
-          description="Your most recent account activity."
+          description={RECENT_ACCOUNT_ACTIVITY_DESCRIPTION}
         />
       ) : (
         <EmptyState

@@ -8,6 +8,10 @@ import {
   LifeBuoy,
   Repeat2,
 } from "lucide-react";
+import {
+  RECENT_ACCOUNT_ACTIVITY_LOADING,
+  RECENT_ACCOUNT_ACTIVITY_TITLE,
+} from "@/lib/activityLabels";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccountActivity } from "@/hooks/useNotifications";
@@ -134,16 +138,13 @@ function TimelineEntry({ item }: { item: ActivityTimelineItem }) {
 export function AccountActivityTimeline({
   accountId,
   limit = 12,
-  title = "Recent account activity",
+  title = RECENT_ACCOUNT_ACTIVITY_TITLE,
 }: AccountActivityTimelineProps) {
   const { items, error, isLoading } = useAccountActivity(accountId, limit);
 
   if (isLoading) {
     return (
-      <LoadingState
-        title="Loading activity"
-        message="Loading your recent account activity."
-      />
+      <LoadingState title="Loading activity" message={RECENT_ACCOUNT_ACTIVITY_LOADING} />
     );
   }
 

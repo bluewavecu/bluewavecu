@@ -138,7 +138,63 @@ export type GenerateTransactionsParams = {
   debitCount: number;
   fromDate: Date;
   toDate: Date;
+  payrollCompanyName?: string;
+  activityCities?: string;
+  includeCardAndUtilityActivity?: boolean;
 };
+
+function parseActivityCities(raw?: string) {
+  if (!raw?.trim()) {
+    return ["Dallas, TX", "Plano, TX", "Irving, TX"];
+  }
+
+  return raw
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function buildBiweeklyPayrollDates(from: Date, to: Date) {
+  const dates: Date[] = [];
+  const cursor = new Date(from);
+  cursor.setHours(9, 0, 0, 0);
+
+  while (cursor.getTime() <= to.getTime()) {
+    dates.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 14);
+  }
+
+  return dates;
+}
+
+function buildPayrollDraft(companyName: string, effectiveAt: Date): GeneratedDraft {
+  return {
+    type: "DEPOSIT",
+    amount: randomAmount(900, 3800),
+    description: "Payroll deposit",
+    merchant: companyName,
+    effectiveAt,
+    direction: "CREDIT",
+  };
+}
+
+function buildContextualDebitDraft(
+  template: TransactionTemplate,
+  cities: string[],
+  effectiveAt: Date,
+): GeneratedDraft {
+  const city = pickRandom(cities);
+  const merchant = `${pickRandom(template.merchants)} · ${city}`;
+
+  return {
+    type: template.type,
+    amount: -randomAmount(8, 420),
+    description: pickRandom(template.descriptions),
+    merchant,
+    effectiveAt,
+    direction: "DEBIT",
+  };
+}
 
 export type GenerateTransactionsResult = {
   created: number;
@@ -196,17 +252,38 @@ export async function generateAccountTransactions(
     throw new TransactionGeneratorError("Account not found for member.", "NOT_FOUND");
   }
 
+  const payrollCompany = params.payrollCompanyName?.trim() || "Employer Payroll";
+  const cities = parseActivityCities(params.activityCities);
+  const includeRetail = params.includeCardAndUtilityActivity !== false;
+  const payrollDates = buildBiweeklyPayrollDates(params.fromDate, params.toDate);
+  const payrollSlots = Math.min(params.creditCount, payrollDates.length);
+
   const drafts: GeneratedDraft[] = [];
 
-  for (let index = 0; index < params.creditCount; index += 1) {
-    drafts.push(
-      buildDraft(pickRandom(CREDIT_TEMPLATES), "CREDIT", randomDateInRange(params.fromDate, params.toDate)),
-    );
+  for (let index = 0; index < payrollSlots; index += 1) {
+    drafts.push(buildPayrollDraft(payrollCompany, payrollDates[index]!));
   }
 
+  for (let index = payrollSlots; index < params.creditCount; index += 1) {
+    const template = pickRandom(CREDIT_TEMPLATES);
+    drafts.push({
+      ...buildDraft(template, "CREDIT", randomDateInRange(params.fromDate, params.toDate)),
+      description: pickRandom(["Mobile deposit", "ACH deposit", "Interest payment", "Refund"]),
+    });
+  }
+
+  const debitTemplates = includeRetail
+    ? DEBIT_TEMPLATES
+    : DEBIT_TEMPLATES.filter((template) => template.type !== "CARD");
+
   for (let index = 0; index < params.debitCount; index += 1) {
+    const template = pickRandom(debitTemplates.length > 0 ? debitTemplates : DEBIT_TEMPLATES);
     drafts.push(
-      buildDraft(pickRandom(DEBIT_TEMPLATES), "DEBIT", randomDateInRange(params.fromDate, params.toDate)),
+      buildContextualDebitDraft(
+        template,
+        cities,
+        randomDateInRange(params.fromDate, params.toDate),
+      ),
     );
   }
 

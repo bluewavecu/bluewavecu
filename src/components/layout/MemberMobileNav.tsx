@@ -76,7 +76,7 @@ export function MemberMobileNav() {
         aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-navy/[0.10] bg-white/90 text-primary-navy shadow-sm transition hover:bg-primary-navy/[0.04] dark:border-white/[0.12] dark:bg-white/[0.08] dark:text-white lg:hidden"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary-navy/20 bg-white text-primary-navy shadow-[0_8px_24px_rgba(10,42,94,0.18)] transition hover:border-ocean-blue/50 hover:bg-[#f7fbff] dark:border-white/25 dark:bg-[#0d1f38] dark:text-white dark:shadow-[0_8px_24px_rgba(0,0,0,0.45)] lg:hidden"
       >
         {open ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
       </button>
@@ -86,7 +86,7 @@ export function MemberMobileNav() {
           <button
             type="button"
             aria-label={t("nav.closeMenu")}
-            className="absolute inset-0 bg-primary-navy/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-primary-navy/55 backdrop-blur-md"
             onClick={() => setOpen(false)}
           />
           <aside

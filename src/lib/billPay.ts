@@ -300,6 +300,24 @@ export async function createBillPayment(userId: string, input: BillPaymentPayloa
   return serializeBillPayment(billPayment);
 }
 
+export async function createAndPostBillPayment(userId: string, input: BillPaymentPayloadInput) {
+  const created = await createBillPayment(userId, {
+    ...input,
+    scheduledFor: undefined,
+    submitForReview: false,
+  });
+
+  await submitBillPaymentForReview(userId, created.id);
+
+  const result = await approveBillPaymentReview({
+    billPaymentId: created.id,
+    adminId: userId,
+    reviewNote: "Member bill payment posted immediately.",
+  });
+
+  return result.billPayment;
+}
+
 export async function cancelBillPayment(userId: string, billPaymentId: string) {
   const existing = await getPrisma().billPayment.findFirst({
     where: {

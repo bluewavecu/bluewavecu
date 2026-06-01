@@ -192,7 +192,7 @@ export const en = {
       },
       transactions: {
         title: "Transactions",
-        subtitle: "Your account activity and posted history.",
+        subtitle: "Recent account activity across your accounts.",
       },
       transfers: {
         title: "Transfers",
@@ -200,7 +200,7 @@ export const en = {
       },
       billPay: {
         title: "Bill Pay",
-        subtitle: "Manage payees and schedule bill payments. Payments post after operations review.",
+        subtitle: "Pay bills and manage payees.",
       },
       statements: {
         title: "Statements",
