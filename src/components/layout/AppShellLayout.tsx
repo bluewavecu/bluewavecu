@@ -42,7 +42,7 @@ export function AppShellLayout({
           hideSearch={hideHeaderSearch}
           compactMobile={compactMobileHeader}
         />
-        <main className="px-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pt-3">
+        <main className="px-4 pb-8 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pt-3">
           <AccountReadOnlyBanner />
           {children}
         </main>

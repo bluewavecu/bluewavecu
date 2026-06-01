@@ -8,6 +8,7 @@ type AuthLogoProps = {
   displayHeight?: number;
   className?: string;
   priority?: boolean;
+  onClick?: () => void;
 };
 
 export function AuthLogo({
@@ -15,6 +16,7 @@ export function AuthLogo({
   displayHeight = AUTH_LOGO_HEIGHT,
   className,
   priority = false,
+  onClick,
 }: AuthLogoProps) {
   const width = Math.round((displayHeight * AUTH_LOGO.width) / AUTH_LOGO.height);
 
@@ -42,6 +44,7 @@ export function AuthLogo({
   return (
     <Link
       href={href}
+      onClick={onClick}
       aria-label={`${BRAND_LEGAL_NAME} home`}
       className={cn("inline-flex shrink-0", className)}
     >
