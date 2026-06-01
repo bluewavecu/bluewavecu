@@ -41,6 +41,7 @@ function previewLayout(
     preheader: options?.preheader,
     bodyHtml,
     appUrl,
+    logoMode: "preview",
     primaryAction: options?.primaryAction,
     securityNotice: options?.securityNotice,
   });
@@ -73,6 +74,30 @@ export function getEmailPreviewDefinitions(): EmailPreviewDefinition[] {
       text: buildEmailText(
         "Welcome to Bluewave",
         `Hi ${fullName},\n\nThank you for choosing Bluewave Credit Union. Your membership request has been received and is pending review.`,
+        appUrl,
+      ),
+    },
+    {
+      id: "email-verification",
+      name: "Email verification OTP",
+      subject: "Verify your Bluewave email address",
+      description: "Sent when a new member must confirm their email before sign-in.",
+      html: previewLayout(
+        appUrl,
+        "Verify your email",
+        `<p>Hi ${escapeHtml(fullName)},</p>
+         <p>Enter the verification code below to confirm your email address and finish setting up your membership.</p>
+         <p style="margin: 24px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #0A2A5E;">123456</p>
+         <p>This code expires in 15 minutes. After verification, sign in with your username and password.</p>`,
+        {
+          preheader: "Use this one-time code to verify your Bluewave membership email.",
+          primaryAction: { label: "Verify your email", href: "/auth/verify-email" },
+          securityNotice: "Never share this code with anyone, including Bluewave staff.",
+        },
+      ),
+      text: buildEmailText(
+        "Verify your email",
+        `Hi ${fullName},\n\nYour email verification code is 123456. It expires in 15 minutes.`,
         appUrl,
       ),
     },

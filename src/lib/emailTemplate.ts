@@ -1,8 +1,8 @@
 import {
-  EMAIL_LOGO,
-  EMAIL_LOGO_CONTENT_ID,
-  getEmailLogoDisplayDimensions,
-} from "@/lib/branding";
+  getEmailLogoHtmlSrc,
+  type EmailLogoRenderMode,
+} from "@/lib/emailBranding";
+import { EMAIL_LOGO_CONTENT_ID, getEmailLogoDisplayDimensions } from "@/lib/branding";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import { INSTITUTION, formatInstitutionAddress } from "@/lib/institution";
@@ -12,6 +12,7 @@ export type EmailLayoutOptions = {
   preheader?: string;
   bodyHtml: string;
   appUrl?: string;
+  logoMode?: EmailLogoRenderMode;
   primaryAction?: {
     label: string;
     href: string;
@@ -36,8 +37,26 @@ export function getEmailAppUrl() {
   );
 }
 
-export function getEmailLogoUrl(appUrl = getEmailAppUrl()) {
+export function getEmailLogoUrl(_appUrl = getEmailAppUrl()) {
   return `cid:${EMAIL_LOGO_CONTENT_ID}`;
+}
+
+export function buildEmailLogoHeaderHtml(
+  appUrl: string,
+  mode: EmailLogoRenderMode = "inline-cid",
+) {
+  const logoSrc = getEmailLogoHtmlSrc(mode);
+  const { width: logoWidth, height: logoHeight } = getEmailLogoDisplayDimensions();
+  const safeAppUrl = appUrl.replace(/\/$/, "");
+
+  return `
+            <tr>
+              <td style="padding: 28px 32px 22px; background-color: #FFFFFF; border: 1px solid #D7E2EE; border-bottom: none; border-radius: 16px 16px 0 0; text-align: center;">
+                <a href="${escapeHtml(safeAppUrl)}" style="text-decoration: none;">
+                  <img src="${logoSrc}" width="${logoWidth}" height="${logoHeight}" alt="${escapeHtml(INSTITUTION.legalName)}" style="display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none; max-width: ${logoWidth}px; height: auto;" />
+                </a>
+              </td>
+            </tr>`;
 }
 
 function buildPrimaryActionButton(action: EmailLayoutOptions["primaryAction"], appUrl: string) {
@@ -95,8 +114,8 @@ export function buildEmailPlainTextFooter(appUrl = getEmailAppUrl()) {
 
 export function buildEmailLayout(options: EmailLayoutOptions) {
   const appUrl = (options.appUrl ?? getEmailAppUrl()).replace(/\/$/, "");
-  const logoUrl = getEmailLogoUrl(appUrl);
-  const { width: logoWidth, height: logoHeight } = getEmailLogoDisplayDimensions();
+  const logoMode = options.logoMode ?? "inline-cid";
+  const logoHeaderHtml = buildEmailLogoHeaderHtml(appUrl, logoMode);
   const preheader = options.preheader ?? options.title;
   const address = formatInstitutionAddress();
   const year = new Date().getFullYear();
@@ -170,13 +189,7 @@ export function buildEmailLayout(options: EmailLayoutOptions) {
       <tr>
         <td align="center">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 640px; width: 100%;">
-            <tr>
-              <td style="padding: 28px 32px 22px; background-color: #FFFFFF; border: 1px solid #D7E2EE; border-bottom: none; border-radius: 16px 16px 0 0; text-align: center;">
-                <a href="${escapeHtml(appUrl)}" style="text-decoration: none;">
-                  <img src="${escapeHtml(logoUrl)}" width="${logoWidth}" height="${logoHeight}" alt="${escapeHtml(INSTITUTION.legalName)}" style="display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none; max-width: ${logoWidth}px; height: auto;" />
-                </a>
-              </td>
-            </tr>
+            ${logoHeaderHtml}
             <tr>
               <td style="height: 4px; background: linear-gradient(90deg, #0A2A5E 0%, #0D47A1 45%, #00A8E8 100%); font-size: 0; line-height: 0;">&nbsp;</td>
             </tr>

@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { getEmailLogoInlineAttachment } from "@/lib/emailLogoAttachment";
+import { getEmailLogoInlineAttachment } from "@/lib/emailBranding";
 import { readEnv } from "@/lib/databaseEnv";
 import { tryGetServerEnv } from "@/lib/env";
 import {
@@ -971,20 +971,6 @@ export async function sendContactFormAdminEmail(params: ContactFormEmailInput) {
   const detailsHtml = buildEmailDetailsBlock(detailRows);
   const detailsText = buildEmailDetailsPlainText(detailRows);
 
-  if (!config.adminAlertEmail) {
-    logEmailPayload(
-      {
-        to: "admin-alert-disabled",
-        subject: `Contact form: ${params.topic}`,
-        html: detailsText,
-        text: detailsText,
-        idempotencyKey: `contact-form-admin/${params.reference}`,
-      },
-      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
-    );
-    return { ok: true as const, mode: "logged" as const };
-  }
-
   const content = buildTransactionalEmail({
     title: "New contact form message",
     preheader: `${params.topic} message from ${params.fullName} — reply to ${params.email}.`,
@@ -994,6 +980,20 @@ export async function sendContactFormAdminEmail(params: ContactFormEmailInput) {
     textBody: `New contact form message\n\n${params.fullName} sent a message about ${params.topic}.\n\n${detailsText}\n\nReply to: ${params.email}`,
     primaryAction: { label: "Open operations console", href: "/lex/auth" },
   });
+
+  if (!config.adminAlertEmail) {
+    logEmailPayload(
+      {
+        to: "admin-alert-disabled",
+        subject: `Contact form: ${params.topic}`,
+        html: content.html,
+        text: content.text,
+        idempotencyKey: `contact-form-admin/${params.reference}`,
+      },
+      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
+    );
+    return { ok: true as const, mode: "logged" as const };
+  }
 
   return safeSendEmail(
     {
@@ -1067,20 +1067,6 @@ export async function sendMembershipApplicationAdminEmail(
   const detailsHtml = buildEmailDetailsBlock(detailRows);
   const detailsText = buildEmailDetailsPlainText(detailRows);
 
-  if (!config.adminAlertEmail) {
-    logEmailPayload(
-      {
-        to: "admin-alert-disabled",
-        subject: "New membership application",
-        html: detailsText,
-        text: detailsText,
-        idempotencyKey: `membership-application-admin/${params.userId}`,
-      },
-      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
-    );
-    return { ok: true as const, mode: "logged" as const };
-  }
-
   const content = buildTransactionalEmail({
     title: "New membership application",
     preheader: `${params.fullName} submitted a membership application — pending review.`,
@@ -1090,6 +1076,20 @@ export async function sendMembershipApplicationAdminEmail(
     textBody: `New membership application\n\n${params.fullName} submitted a new membership application.\n\n${detailsText}\n\nSign in to the operations console to review this application.`,
     primaryAction: { label: "Open operations console", href: "/lex/auth" },
   });
+
+  if (!config.adminAlertEmail) {
+    logEmailPayload(
+      {
+        to: "admin-alert-disabled",
+        subject: "New membership application",
+        html: content.html,
+        text: content.text,
+        idempotencyKey: `membership-application-admin/${params.userId}`,
+      },
+      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
+    );
+    return { ok: true as const, mode: "logged" as const };
+  }
 
   return safeSendEmail(
     {
@@ -1110,20 +1110,6 @@ export async function sendAdminAlertEmail(params: {
 }) {
   const config = getEmailConfig();
 
-  if (!config.adminAlertEmail) {
-    logEmailPayload(
-      {
-        to: "admin-alert-disabled",
-        subject: params.subject,
-        html: params.message,
-        text: params.message,
-        idempotencyKey: params.idempotencyKey,
-      },
-      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
-    );
-    return { ok: true as const, mode: "logged" as const };
-  }
-
   const content = buildTransactionalEmail({
     title: params.subject,
     preheader: params.subject,
@@ -1131,6 +1117,20 @@ export async function sendAdminAlertEmail(params: {
     textBody: params.message,
     primaryAction: { label: "Open operations console", href: "/lex/auth" },
   });
+
+  if (!config.adminAlertEmail) {
+    logEmailPayload(
+      {
+        to: "admin-alert-disabled",
+        subject: params.subject,
+        html: content.html,
+        text: content.text,
+        idempotencyKey: params.idempotencyKey,
+      },
+      "ADMIN_ALERT_EMAIL missing — logged instead of sent",
+    );
+    return { ok: true as const, mode: "logged" as const };
+  }
 
   return safeSendEmail(
     {

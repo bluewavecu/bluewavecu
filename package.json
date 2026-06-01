@@ -11,6 +11,7 @@
     "db:seed": "prisma db seed",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "email:previews": "tsx scripts/generate-email-previews.ts",
+    "email:verify": "tsx scripts/verify-email-logo.ts",
     "db:e2e-check": "node --import tsx scripts/e2e-db-check.mjs"
   },
   "prisma": {
