@@ -13,6 +13,7 @@ export const pt = {
     support: "Suporte",
     mobileApp: "App móvel",
     login: "Entrar",
+    join: "Aderir",
     openAccount: "Abrir conta",
     openMenu: "Abrir menu",
     closeMenu: "Fechar menu",

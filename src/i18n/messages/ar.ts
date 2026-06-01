@@ -13,6 +13,7 @@ export const ar = {
     support: "الدعم",
     mobileApp: "تطبيق الجوال",
     login: "تسجيل الدخول",
+    join: "انضم",
     openAccount: "فتح حساب",
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",

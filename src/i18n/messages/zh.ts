@@ -13,6 +13,7 @@ export const zh = {
     support: "支持",
     mobileApp: "手机应用",
     login: "登录",
+    join: "加入",
     openAccount: "开户",
     openMenu: "打开菜单",
     closeMenu: "关闭菜单",

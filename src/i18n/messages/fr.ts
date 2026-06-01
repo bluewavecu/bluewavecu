@@ -13,6 +13,7 @@ export const fr = {
     support: "Assistance",
     mobileApp: "Application mobile",
     login: "Connexion",
+    join: "Adhérer",
     openAccount: "Ouvrir un compte",
     openMenu: "Ouvrir le menu",
     closeMenu: "Fermer le menu",
