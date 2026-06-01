@@ -30,6 +30,14 @@ function buildTransactionsUrl(filters?: TransactionFilters) {
     params.set("limit", String(filters.limit));
   }
 
+  if (filters?.page) {
+    params.set("page", String(filters.page));
+  }
+
+  if (filters?.q?.trim()) {
+    params.set("q", filters.q.trim());
+  }
+
   const query = params.toString();
   return query ? `/api/transactions?${query}` : "/api/transactions";
 }

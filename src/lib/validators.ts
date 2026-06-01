@@ -469,6 +469,7 @@ export const adminUpdateUserStatusSchema = z.object({
   status: z.enum(["PENDING", "ACTIVE", "SUSPENDED", "ON_HOLD", "DISABLED"]).optional(),
   statusNote: z.string().trim().max(500).optional(),
   transactionsUnrestricted: z.boolean().optional(),
+  billPayPaused: z.boolean().optional(),
   action: z
     .enum([
       "REINSTATE",

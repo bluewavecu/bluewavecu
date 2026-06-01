@@ -25,18 +25,35 @@ const transactionTypes: TransactionType[] = [
   "REFUND",
 ];
 
-function parseLimit(value: string | null) {
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 50;
+
+function parsePage(value: string | null) {
   if (!value) {
-    return 100;
+    return 1;
   }
 
   const parsed = Number.parseInt(value, 10);
 
   if (Number.isNaN(parsed) || parsed < 1) {
-    return 100;
+    return 1;
   }
 
-  return Math.min(parsed, 200);
+  return parsed;
+}
+
+function parseLimit(value: string | null) {
+  if (!value) {
+    return DEFAULT_PAGE_SIZE;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed) || parsed < 1) {
+    return DEFAULT_PAGE_SIZE;
+  }
+
+  return Math.min(parsed, MAX_PAGE_SIZE);
 }
 
 export async function GET(request: NextRequest) {
@@ -52,7 +69,9 @@ export async function GET(request: NextRequest) {
     const statusParam = searchParams.get("status");
     const typeParam = searchParams.get("type");
     const cardId = searchParams.get("cardId") ?? undefined;
-    const limit = parseLimit(searchParams.get("limit"));
+    const page = parsePage(searchParams.get("page"));
+    const pageSize = parseLimit(searchParams.get("limit"));
+    const searchQuery = searchParams.get("q")?.trim() ?? "";
 
     const status =
       statusParam && transactionStatuses.includes(statusParam as TransactionStatus)
@@ -63,30 +82,49 @@ export async function GET(request: NextRequest) {
         ? (typeParam as TransactionType)
         : undefined;
 
-    const transactions = await getPrisma().transaction.findMany({
-      where: {
-        userId: payload.userId,
-        ...(accountId ? { accountId } : {}),
-        ...(status ? { status } : {}),
-        ...(type ? { type } : {}),
-        ...(cardId ? { cardId } : {}),
-      },
-      include: {
-        account: {
-          select: {
-            accountType: true,
-            accountNumber: true,
+    const where = {
+      userId: payload.userId,
+      ...(accountId ? { accountId } : {}),
+      ...(status ? { status } : {}),
+      ...(type ? { type } : {}),
+      ...(cardId ? { cardId } : {}),
+      ...(searchQuery
+        ? {
+            OR: [
+              { description: { contains: searchQuery, mode: "insensitive" as const } },
+              { merchant: { contains: searchQuery, mode: "insensitive" as const } },
+              { reference: { contains: searchQuery, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const skip = (page - 1) * pageSize;
+
+    const [transactions, total] = await Promise.all([
+      getPrisma().transaction.findMany({
+        where,
+        include: {
+          account: {
+            select: {
+              accountType: true,
+              accountNumber: true,
+            },
+          },
+          _count: {
+            select: {
+              ledgerEntries: true,
+            },
           },
         },
-        _count: {
-          select: {
-            ledgerEntries: true,
-          },
-        },
-      },
-      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
-      take: limit,
-    });
+        orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+        skip,
+        take: pageSize,
+      }),
+      getPrisma().transaction.count({ where }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
     const serializedTransactions: PageTransaction[] = transactions.map((transaction) => {
       const masked = maskAccountNumber(transaction.account.accountNumber);
@@ -116,7 +154,17 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return apiSuccess({ transactions: serializedTransactions });
+    return apiSuccess({
+      transactions: serializedTransactions,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }

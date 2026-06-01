@@ -18,6 +18,7 @@ type AdminManageUserInput = {
   status?: UserStatus;
   statusNote?: string;
   transactionsUnrestricted?: boolean;
+  billPayPaused?: boolean;
   action?: "REINSTATE" | "DELETE" | "PURGE" | "GENERATE_TRANSACTION_PIN" | "CLEAR_TRANSACTION_PIN";
 };
 

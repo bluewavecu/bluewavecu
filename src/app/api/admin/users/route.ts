@@ -37,6 +37,7 @@ function serializeUser(user: {
   role: UserRole;
   status: UserStatus;
   transactionsUnrestricted: boolean;
+  billPayPaused: boolean;
   transactionPinHash: string | null;
   statusNote: string | null;
   deletedAt: Date | null;
@@ -53,6 +54,7 @@ function serializeUser(user: {
     role: user.role,
     status: user.status,
     transactionsUnrestricted: user.transactionsUnrestricted,
+    billPayPaused: user.billPayPaused,
     hasTransactionPin: Boolean(user.transactionPinHash),
     statusNote: user.statusNote,
     deletedAt: user.deletedAt?.toISOString() ?? null,
@@ -324,6 +326,7 @@ export async function PATCH(request: NextRequest) {
     let nextDeletedAt = existing.deletedAt;
     let nextStatusNote = input.statusNote ?? existing.statusNote;
     let nextUnrestricted = existing.transactionsUnrestricted;
+    let nextBillPayPaused = existing.billPayPaused;
 
     if (input.action === "REINSTATE") {
       nextStatus = "ACTIVE";
@@ -348,6 +351,10 @@ export async function PATCH(request: NextRequest) {
       nextUnrestricted = input.transactionsUnrestricted;
     }
 
+    if (input.billPayPaused !== undefined) {
+      nextBillPayPaused = input.billPayPaused;
+    }
+
     await prisma.user.update({
       where: { id: input.userId },
       data: {
@@ -355,6 +362,7 @@ export async function PATCH(request: NextRequest) {
         deletedAt: nextDeletedAt,
         statusNote: nextStatusNote,
         transactionsUnrestricted: nextUnrestricted,
+        billPayPaused: nextBillPayPaused,
       },
     });
 
@@ -387,26 +395,62 @@ export async function PATCH(request: NextRequest) {
         nextStatus: updated.status,
         email: updated.email,
         transactionsUnrestricted: updated.transactionsUnrestricted,
+        billPayPaused: updated.billPayPaused,
         action: input.action ?? null,
       },
     });
 
-    void createAccountNotification({
-      userId: updated.id,
-      title: "Account status updated",
-      message:
-        input.action === "DELETE"
-          ? "Your Bluewave account has been closed by member services."
-          : input.transactionsUnrestricted !== undefined
-            ? updated.transactionsUnrestricted
-              ? "Your account can now submit transfers without additional verification or review."
-              : "Standard transfer verification and review controls were restored to your account."
-            : `Your Bluewave membership status is now ${updated.status.toLowerCase().replace(/_/g, " ")}.`,
-      metadata: {
-        status: updated.status,
-        href: "/auth/dashboard",
-      },
-    });
+    if (input.billPayPaused !== undefined && existing.billPayPaused !== updated.billPayPaused) {
+      void createAccountNotification({
+        userId: updated.id,
+        title: updated.billPayPaused ? "Bill Pay paused" : "Bill Pay restored",
+        message: updated.billPayPaused
+          ? "Bill Pay has been paused on your account. You cannot send new bill payments until member services turns it back on."
+          : "Bill Pay is available again on your account.",
+        metadata: {
+          href: "/auth/bill-pay",
+          billPayPaused: updated.billPayPaused,
+        },
+      });
+
+      void writeAdminEvent({
+        eventType: updated.billPayPaused ? "BILL_PAY_PAUSED" : "BILL_PAY_RESUMED",
+        actorId: auth.admin.id,
+        entityId: updated.id,
+        message: `${auth.admin.fullName} ${updated.billPayPaused ? "paused" : "resumed"} Bill Pay for ${updated.fullName}.`,
+        metadata: {
+          userId: updated.id,
+          billPayPaused: updated.billPayPaused,
+        },
+      });
+    }
+
+    const billPayPauseToggled =
+      input.billPayPaused !== undefined && existing.billPayPaused !== updated.billPayPaused;
+    const onlyBillPayPauseUpdate =
+      billPayPauseToggled &&
+      !input.action &&
+      !input.status &&
+      input.transactionsUnrestricted === undefined;
+
+    if (!onlyBillPayPauseUpdate) {
+      void createAccountNotification({
+        userId: updated.id,
+        title: "Account status updated",
+        message:
+          input.action === "DELETE"
+            ? "Your Bluewave account has been closed by member services."
+            : input.transactionsUnrestricted !== undefined
+              ? updated.transactionsUnrestricted
+                ? "Your account can now submit transfers without additional verification or review."
+                : "Standard transfer verification and review controls were restored to your account."
+              : `Your Bluewave membership status is now ${updated.status.toLowerCase().replace(/_/g, " ")}.`,
+        metadata: {
+          status: updated.status,
+          href: "/auth/dashboard",
+        },
+      });
+    }
 
     void writeAdminEvent({
       eventType: "USER_STATUS_UPDATED",

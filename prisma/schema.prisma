@@ -221,6 +221,7 @@ model User {
   role                     UserRole        @default(USER)
   status                   UserStatus      @default(PENDING)
   transactionsUnrestricted Boolean         @default(false)
+  billPayPaused            Boolean         @default(false)
   transactionPinHash       String?
   statusNote               String?
   deletedAt                DateTime?
@@ -260,6 +261,7 @@ model User {
   @@index([role])
   @@index([status])
   @@index([deletedAt])
+  @@index([billPayPaused])
 }
 
 model Account {

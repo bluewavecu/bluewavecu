@@ -9,6 +9,7 @@ import {
   type ComplianceStatusFilter,
   useAdminCompliance,
 } from "@/hooks/useAdminCompliance";
+import { IdDocumentPhotoGrid } from "@/components/admin/IdDocumentPhotoPreview";
 import { cn } from "@/lib/utils";
 import type { KycStatus } from "@/types/banking";
 
@@ -152,6 +153,30 @@ export function AdminComplianceClient() {
                   {formatStatusLabel(profile.kycStatus)}
                 </span>
               </div>
+
+              {profile.latestIdVerification ? (
+                <div className="mt-4 rounded-lg border border-primary-navy/[0.08] bg-[#f7fbff] p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                  <p className="text-sm font-semibold text-primary-navy dark:text-white">
+                    Uploaded ID · {profile.latestIdVerification.documentTypeLabel}
+                  </p>
+                  <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.58]">
+                    Submitted{" "}
+                    {new Date(profile.latestIdVerification.submittedAt).toLocaleString()} ·{" "}
+                    {profile.latestIdVerification.status.replaceAll("_", " ").toLowerCase()}
+                  </p>
+                  <div className="mt-4">
+                    <IdDocumentPhotoGrid
+                      frontPhotoUrl={profile.latestIdVerification.frontPhotoUrl}
+                      backPhotoUrl={profile.latestIdVerification.backPhotoUrl}
+                    />
+                  </div>
+                </div>
+              ) : profile.kycStatus !== "NOT_STARTED" ? (
+                <p className="mt-4 rounded-lg border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+                  No ID photos on file for this member. Check ID verifications or ask them to
+                  re-upload from Profile.
+                </p>
+              ) : null}
 
               {isReviewableStatus(profile.kycStatus) ? (
                 <>

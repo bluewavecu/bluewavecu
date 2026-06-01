@@ -26,7 +26,7 @@ const fieldClassName =
 export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentFormProps) {
   const { data: accountsData } = useAccounts();
   const { payees } = usePayees();
-  const { isSubmitting, error, createBillPayment } = useBillPay();
+  const { billPayPaused, isSubmitting, error, createBillPayment } = useBillPay();
   const { hasTransactionPin, isLoadingRequirements } = useTransfer();
   const [fromAccountId, setFromAccountId] = useState("");
   const [payeeId, setPayeeId] = useState("");
@@ -62,6 +62,10 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
   function handleDetailsContinue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (billPayPaused) {
+      return;
+    }
+
     const parsedAmount = parseAmountInput(amount);
     if (parsedAmount === null || !payeeId) {
       return;
@@ -72,6 +76,10 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
   }
 
   async function handlePinAuthorize() {
+    if (billPayPaused) {
+      return;
+    }
+
     const parsedAmount = parseAmountInput(amount);
     if (parsedAmount === null || !payeeId || transactionPin.trim().length !== 6) {
       return;
@@ -233,7 +241,7 @@ export function BillPaymentForm({ defaultSubmitForReview = false }: BillPaymentF
 
             <button
               type="submit"
-              disabled={isLoadingRequirements || !hasTransactionPin}
+              disabled={billPayPaused || isLoadingRequirements || !hasTransactionPin}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Send size={16} aria-hidden="true" />

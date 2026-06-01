@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth, resolveMemberWriteAuth } from "@/lib/requestAuth";
 
+import { BillPayPausedError, isBillPayPausedForUser } from "@/lib/billPayAccess";
 import {
   createAndPostBillPayment,
   createBillPayment,
@@ -33,8 +34,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
+    const billPayPaused = await isBillPayPausedForUser(payload.userId);
+
     const data: BillPaymentsData = {
       billPayments: billPayments.map(serializeBillPayment),
+      billPayPaused,
     };
 
     return apiSuccess(data);
@@ -102,6 +106,10 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof BillPayPausedError) {
+      return apiError(error.message, 403);
+    }
+
     if (error instanceof Error && error.message.includes("blocked due to critical risk")) {
       return apiError(error.message, 403);
     }

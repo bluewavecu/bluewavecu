@@ -33,7 +33,7 @@ function statusClass(status: string) {
 }
 
 export function BillPaymentList() {
-  const { billPayments, isLoading, isSubmitting, updateBillPayment } = useBillPay();
+  const { billPayments, billPayPaused, isLoading, isSubmitting, updateBillPayment } = useBillPay();
 
   if (isLoading) {
     return <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">Loading bill payments...</p>;
@@ -82,7 +82,7 @@ export function BillPaymentList() {
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={isSubmitting || billPayPaused}
                 onClick={() => void updateBillPayment(payment.id, "submit")}
                 className="rounded-full bg-ocean-blue px-3 py-1.5 text-xs font-semibold text-primary-navy"
               >

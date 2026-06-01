@@ -1,8 +1,9 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { apiError, handleApiError } from "@/lib/api";
+import { readIdDocumentPhoto } from "@/lib/idDocumentStorage";
 import { serveUploadFile } from "@/lib/mediaServe";
 import { resolveRequestAuth } from "@/lib/requestAuth";
-import { resolveIdDocumentFilePath } from "@/lib/uploadStorage";
+import { resolveIdDocumentFilePath, shouldPersistIdDocumentsInBlob } from "@/lib/uploadStorage";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,27 @@ export async function GET(
 
     const side = match[1].toLowerCase() as "front" | "back";
     const extension = match[2].toLowerCase();
+
+    const blobResult = await readIdDocumentPhoto({
+      userId,
+      submissionId,
+      side,
+      extension,
+    });
+
+    if (blobResult) {
+      return new NextResponse(blobResult.buffer, {
+        headers: {
+          "Content-Type": blobResult.contentType,
+          "Cache-Control": "private, max-age=3600",
+        },
+      });
+    }
+
+    if (shouldPersistIdDocumentsInBlob()) {
+      return apiError("Document not found.", 404);
+    }
+
     const absolutePath = resolveIdDocumentFilePath(userId, submissionId, side, extension);
 
     return await serveUploadFile(absolutePath);

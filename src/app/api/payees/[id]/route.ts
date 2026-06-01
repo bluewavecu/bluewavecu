@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveMemberWriteAuth } from "@/lib/requestAuth";
 
+import { BillPayPausedError } from "@/lib/billPayAccess";
 import { softDeletePayee, updatePayee } from "@/lib/billPay";
 import { payeeUpdateSchema } from "@/lib/validators";
 
@@ -25,6 +26,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return apiSuccess({ payee });
   } catch (error) {
+    if (error instanceof BillPayPausedError) {
+      return apiError(error.message, 403);
+    }
+
     if (error instanceof Error && error.message === "Payee not found") {
       return apiError("Payee not found", 404);
     }
@@ -50,6 +55,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     return apiSuccess({ deleted: true });
   } catch (error) {
+    if (error instanceof BillPayPausedError) {
+      return apiError(error.message, 403);
+    }
+
     return handleApiError(error);
   }
 }

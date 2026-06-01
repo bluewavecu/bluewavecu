@@ -13,6 +13,7 @@ Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** 
 | `JWT_SECRET` | Yes | `openssl rand -base64 48` |
 | `NEXT_PUBLIC_APP_URL` | Yes | `https://northiumcu.org` |
 | `CRON_SECRET` | Yes | `openssl rand -hex 32` |
+| `BLOB_READ_WRITE_TOKEN` | Yes (Vercel) | Vercel Blob store — persists member ID/KYC uploads (without this, uploads fail on Vercel) |
 | `RESEND_API_KEY` | Yes (production) | Required by `src/lib/env.ts` in production |
 | `EMAIL_FROM` | Recommended | `Northium Credit Union <support@northiumcu.org>` |
 | `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |

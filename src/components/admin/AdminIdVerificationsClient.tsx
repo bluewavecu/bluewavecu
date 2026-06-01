@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatStatusLabel, StatusBadge, statusToTone } from "@/components/ui/StatusBadge";
+import { IdDocumentPhotoGrid } from "@/components/admin/IdDocumentPhotoPreview";
 import { useAdminIdVerifications } from "@/hooks/useAdminIdVerifications";
 import { cn } from "@/lib/utils";
 import type { IdVerificationStatus } from "@/types/banking";
@@ -17,25 +18,6 @@ const statusFilters: Array<IdVerificationStatus | "ALL"> = [
   "REJECTED",
   "DECLINED",
 ];
-
-function IdPhotoPreview({ label, url }: { label: string; url: string }) {
-  return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-bluewave-gray dark:text-white/[0.45]">
-        {label}
-      </p>
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-2 block overflow-hidden rounded-lg border border-primary-navy/[0.08] dark:border-white/[0.08]"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={url} alt={label} className="max-h-56 w-full object-contain bg-[#f7fbff] dark:bg-white/[0.04]" />
-      </a>
-    </div>
-  );
-}
 
 export function AdminIdVerificationsClient() {
   const [statusFilter, setStatusFilter] = useState<IdVerificationStatus | "ALL">("PENDING");
@@ -136,12 +118,10 @@ export function AdminIdVerificationsClient() {
                       </p>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <IdPhotoPreview label="Front" url={submission.frontPhotoUrl} />
-                      {submission.backPhotoUrl ? (
-                        <IdPhotoPreview label="Back" url={submission.backPhotoUrl} />
-                      ) : null}
-                    </div>
+                    <IdDocumentPhotoGrid
+                      frontPhotoUrl={submission.frontPhotoUrl}
+                      backPhotoUrl={submission.backPhotoUrl}
+                    />
                   </div>
 
                   <div className="flex flex-wrap gap-2">
@@ -180,7 +160,9 @@ export function AdminIdVerificationsClient() {
       ) : null}
 
       <div className="grid gap-3">
-        {data.submissions.map((submission) => (
+        {data.submissions
+          .filter((submission) => submission.status !== "PENDING")
+          .map((submission) => (
           <article
             key={submission.id}
             className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.04]"
@@ -197,6 +179,12 @@ export function AdminIdVerificationsClient() {
               <StatusBadge
                 label={formatStatusLabel(submission.status)}
                 tone={statusToTone(submission.status)}
+              />
+            </div>
+            <div className="mt-4">
+              <IdDocumentPhotoGrid
+                frontPhotoUrl={submission.frontPhotoUrl}
+                backPhotoUrl={submission.backPhotoUrl}
               />
             </div>
             {submission.reviewNote ? (

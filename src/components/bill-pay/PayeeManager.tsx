@@ -2,9 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
+import { useBillPay } from "@/hooks/useBillPay";
 import { usePayees } from "@/hooks/usePayees";
 
 export function PayeeManager() {
+  const { billPayPaused } = useBillPay();
   const { payees, error, isLoading, isSubmitting, createPayee, deletePayee } = usePayees();
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
@@ -14,6 +16,11 @@ export function PayeeManager() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (billPayPaused) {
+      return;
+    }
+
     setSuccessMessage(null);
 
     const createdPayee = await createPayee({
@@ -87,7 +94,7 @@ export function PayeeManager() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={billPayPaused || isSubmitting}
           className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:opacity-70"
         >
           <UserPlus size={16} aria-hidden="true" />
@@ -116,7 +123,7 @@ export function PayeeManager() {
                 </div>
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={billPayPaused || isSubmitting}
                   onClick={() => void deletePayee(payee.id)}
                   className="inline-flex h-9 items-center gap-1 rounded-full border border-primary-navy/[0.10] px-3 text-xs font-semibold text-red-700 dark:text-red-300"
                 >

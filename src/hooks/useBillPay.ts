@@ -8,6 +8,7 @@ import type { BillPaymentRecord } from "@/types/banking";
 export function useBillPay() {
   const redirectToLogin = useUnauthorizedRedirect();
   const [billPayments, setBillPayments] = useState<BillPaymentRecord[]>([]);
+  const [billPayPaused, setBillPayPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,17 +30,19 @@ export function useBillPay() {
 
       const payload = (await response.json()) as {
         success: boolean;
-        data?: { billPayments: BillPaymentRecord[] };
+        data?: { billPayments: BillPaymentRecord[]; billPayPaused?: boolean };
         error?: string;
       };
 
       if (!payload.success || !payload.data) {
         setError(payload.error ?? "Unable to load bill payments.");
         setBillPayments([]);
+        setBillPayPaused(false);
         return;
       }
 
       setBillPayments(payload.data.billPayments);
+      setBillPayPaused(Boolean(payload.data.billPayPaused));
     } catch {
       setError("Unable to load bill payments.");
       setBillPayments([]);
@@ -107,6 +110,7 @@ export function useBillPay() {
 
   return {
     billPayments,
+    billPayPaused,
     error,
     isLoading,
     isSubmitting,

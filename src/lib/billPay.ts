@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { assertBillPayAllowed } from "@/lib/billPayAccess";
 import { maskAccountNumber } from "@/lib/bankingSerialize";
 import {
   sendAdminAlertEmail,
@@ -122,6 +123,8 @@ const billPaymentInclude = {
 } as const;
 
 export async function createPayee(userId: string, input: PayeeCreateInput) {
+  await assertBillPayAllowed(userId);
+
   const payee = await getPrisma().payee.create({
     data: {
       userId,
@@ -159,6 +162,8 @@ export async function createPayee(userId: string, input: PayeeCreateInput) {
 }
 
 export async function updatePayee(userId: string, payeeId: string, input: PayeeUpdateInput) {
+  await assertBillPayAllowed(userId);
+
   const existing = await getPrisma().payee.findFirst({
     where: { id: payeeId, userId, status: { not: "DELETED" } },
   });
@@ -187,6 +192,8 @@ export async function updatePayee(userId: string, payeeId: string, input: PayeeU
 }
 
 export async function softDeletePayee(userId: string, payeeId: string) {
+  await assertBillPayAllowed(userId);
+
   const result = await getPrisma().payee.updateMany({
     where: { id: payeeId, userId, status: { not: "DELETED" } },
     data: { status: "DELETED" },
@@ -196,6 +203,8 @@ export async function softDeletePayee(userId: string, payeeId: string) {
 }
 
 export async function createBillPayment(userId: string, input: BillPaymentPayloadInput) {
+  await assertBillPayAllowed(userId);
+
   const prisma = getPrisma();
 
   const [account, payee] = await Promise.all([
@@ -349,6 +358,7 @@ export async function cancelBillPayment(userId: string, billPaymentId: string) {
 }
 
 export async function submitBillPaymentForReview(userId: string, billPaymentId: string) {
+  await assertBillPayAllowed(userId);
   const prisma = getPrisma();
 
   const billPayment = await prisma.billPayment.findFirst({

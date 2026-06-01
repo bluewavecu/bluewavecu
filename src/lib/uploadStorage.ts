@@ -8,6 +8,10 @@ export function usesEphemeralUploadStorage() {
   return Boolean(process.env.VERCEL);
 }
 
+export function shouldPersistIdDocumentsInBlob() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+}
+
 export function getProfilesUploadRoot() {
   return usesEphemeralUploadStorage()
     ? path.join(TMP_UPLOADS_ROOT, "profiles")

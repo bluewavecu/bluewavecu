@@ -18,6 +18,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useAdminMemberDetail } from "@/hooks/useAdminMemberDetail";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
+import { cn } from "@/lib/utils";
 import type { KycStatus, UserRole, UserStatus } from "@/types/banking";
 
 const statusOptions: UserStatus[] = ["PENDING", "ACTIVE", "SUSPENDED", "ON_HOLD", "DISABLED"];
@@ -78,6 +79,7 @@ export function AdminUsersClient() {
     data: memberDetail,
     isLoading: detailLoading,
     error: detailError,
+    refetch: refetchMemberDetail,
   } = useAdminMemberDetail(selectedUserId);
 
   if (isLoading) {
@@ -275,6 +277,9 @@ export function AdminUsersClient() {
               {memberDetail.user.transactionsUnrestricted ? (
                 <AdminStatusBadge status="ACTIVE" label="Friction-free transfers" />
               ) : null}
+              {memberDetail.user.billPayPaused ? (
+                <AdminStatusBadge status="ON_HOLD" label="Bill Pay paused" />
+              ) : null}
               {memberDetail.user.hasTransactionPin ? (
                 <AdminStatusBadge status="ACTIVE" label="Transaction PIN set" />
               ) : null}
@@ -320,6 +325,28 @@ export function AdminUsersClient() {
                 {memberDetail.user.transactionsUnrestricted
                   ? "Require verification"
                   : "Allow friction-free transfers"}
+              </button>
+              <button
+                type="button"
+                disabled={isUpdating || memberDetail.user.role !== "USER"}
+                onClick={() =>
+                  void manageUser({
+                    userId: memberDetail.user.id,
+                    billPayPaused: !memberDetail.user.billPayPaused,
+                  }).then((success) => {
+                    if (success) {
+                      void refetchMemberDetail();
+                    }
+                  })
+                }
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold",
+                  memberDetail.user.billPayPaused
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100",
+                )}
+              >
+                {memberDetail.user.billPayPaused ? "Resume Bill Pay" : "Pause Bill Pay"}
               </button>
               <button
                 type="button"

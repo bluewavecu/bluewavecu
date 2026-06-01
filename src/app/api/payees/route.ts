@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { resolveRequestAuth, resolveMemberWriteAuth } from "@/lib/requestAuth";
 
+import { BillPayPausedError } from "@/lib/billPayAccess";
 import { createPayee, serializePayee } from "@/lib/billPay";
 import { getPrisma } from "@/lib/prisma";
 import { payeeCreateSchema } from "@/lib/validators";
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess(data);
   } catch (error) {
+    if (error instanceof BillPayPausedError) {
+      return apiError(error.message, 403);
+    }
+
     return handleApiError(error);
   }
 }
@@ -48,6 +53,10 @@ export async function POST(request: NextRequest) {
 
     return apiSuccess({ payee }, { status: 201 });
   } catch (error) {
+    if (error instanceof BillPayPausedError) {
+      return apiError(error.message, 403);
+    }
+
     return handleApiError(error);
   }
 }

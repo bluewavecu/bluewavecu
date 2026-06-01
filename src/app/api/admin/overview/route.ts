@@ -21,6 +21,7 @@ function serializeUser(user: {
   role: AdminUserSummary["role"];
   status: AdminUserSummary["status"];
   transactionsUnrestricted: boolean;
+  billPayPaused: boolean;
   transactionPinHash: string | null;
   statusNote: string | null;
   deletedAt: Date | null;
@@ -36,6 +37,7 @@ function serializeUser(user: {
     role: user.role,
     status: user.status,
     transactionsUnrestricted: user.transactionsUnrestricted,
+    billPayPaused: user.billPayPaused,
     hasTransactionPin: Boolean(user.transactionPinHash),
     statusNote: user.statusNote,
     deletedAt: user.deletedAt?.toISOString() ?? null,

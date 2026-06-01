@@ -28,7 +28,12 @@ export const AUTH_LOGO = {
 
 export const AUTH_LOGO_HEIGHT = 52;
 
-export const EMAIL_LOGO = AUTH_LOGO;
+export const EMAIL_LOGO = {
+  src: "/images/email_icon.webp",
+  width: 596,
+  height: 160,
+  alt: BRAND_LEGAL_NAME,
+} as const;
 
 export const EMAIL_LOGO_DISPLAY_WIDTH = 220;
 

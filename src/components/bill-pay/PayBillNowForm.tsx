@@ -22,7 +22,7 @@ const fieldClassName =
 export function PayBillNowForm() {
   const { data: accountsData } = useAccounts();
   const { payees, createPayee } = usePayees();
-  const { isSubmitting, error, createBillPayment } = useBillPay();
+  const { billPayPaused, isSubmitting, error, createBillPayment } = useBillPay();
   const { hasTransactionPin, isLoadingRequirements } = useTransfer();
 
   const [fromAccountId, setFromAccountId] = useState("");
@@ -82,6 +82,10 @@ export function PayBillNowForm() {
 
   function handleDetailsContinue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (billPayPaused) {
+      return;
+    }
 
     const parsedAmount = parseAmountInput(amount);
     if (parsedAmount === null || !payeeId) {
@@ -258,7 +262,12 @@ export function PayBillNowForm() {
 
             <button
               type="submit"
-              disabled={isLoadingRequirements || !hasTransactionPin || (showAddPayee && !payeeId)}
+              disabled={
+                billPayPaused ||
+                isLoadingRequirements ||
+                !hasTransactionPin ||
+                (showAddPayee && !payeeId)
+              }
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Send size={16} aria-hidden="true" />

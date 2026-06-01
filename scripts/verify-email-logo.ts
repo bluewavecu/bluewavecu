@@ -44,7 +44,7 @@ const checks = [
     pass: attachment.contentId === "bluewave-email-logo",
   },
   {
-    name: "Member email header embeds auth logo",
+    name: "Member email header embeds email logo",
     pass: memberLogoSrc === expectedDataUri,
   },
   {
@@ -58,7 +58,7 @@ const checks = [
       bodyHtml: "<p>Body</p>",
       logoMode: "hosted",
       appUrl: "https://bluewavecu.com",
-    }).includes('src="https://bluewavecu.com/images/auth_logo.webp"'),
+    }).includes('src="https://bluewavecu.com/images/email_icon.webp"'),
   },
 ];
 
@@ -86,7 +86,7 @@ writeFileSync(
   </head>
   <body>
     <h1>Email logo parity check</h1>
-    <p>Member and admin transactional emails share <code>/images/auth_logo.webp</code> in the header.</p>
+    <p>Member and admin transactional emails share <code>/images/email_icon.webp</code> in the header.</p>
     <ul>
       ${checks
         .map((check) => `<li class="${check.pass ? "ok" : "fail"}">${check.pass ? "PASS" : "FAIL"} — ${check.name}</li>`)

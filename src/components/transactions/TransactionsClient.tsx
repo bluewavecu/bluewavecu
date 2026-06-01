@@ -50,6 +50,8 @@ const typeFilters: Array<{ label: string; value?: TransactionType }> = [
   { label: "Card", value: "CARD" },
 ];
 
+const TRANSACTIONS_PAGE_SIZE = 50;
+
 const fieldClassName =
   "mt-1.5 w-full rounded-lg border border-primary-navy/[0.10] bg-[#f7fbff] px-3 py-2.5 text-sm text-primary-navy outline-none focus:border-ocean-blue dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white";
 
@@ -251,6 +253,7 @@ export function TransactionsClient() {
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | undefined>();
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDrawerItem | null>(null);
   const activeSearchQuery = searchQuery || urlQuery;
 
@@ -259,28 +262,23 @@ export function TransactionsClient() {
       accountId: selectedAccountId || undefined,
       status: selectedStatus,
       type: selectedType,
-      limit: 100,
+      limit: TRANSACTIONS_PAGE_SIZE,
+      page,
+      q: activeSearchQuery || undefined,
     }),
-    [selectedAccountId, selectedStatus, selectedType],
+    [selectedAccountId, selectedStatus, selectedType, page, activeSearchQuery],
   );
 
   const { data, error, isLoading, refetch } = useTransactions(filters);
 
-  const transactions = useMemo(() => {
-    const rows = data?.transactions ?? [];
-    const query = activeSearchQuery.toLowerCase();
+  const transactions = data?.transactions ?? [];
+  const pagination = data?.pagination;
 
-    if (!query) {
-      return rows;
-    }
-
-    return rows.filter(
-      (transaction) =>
-        transaction.description.toLowerCase().includes(query) ||
-        (transaction.merchant?.toLowerCase().includes(query) ?? false) ||
-        transaction.reference.toLowerCase().includes(query),
-    );
-  }, [data?.transactions, activeSearchQuery]);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setPage(1);
+    });
+  }, [selectedAccountId, selectedStatus, selectedType, activeSearchQuery]);
 
   const activeFilterCount = [selectedAccountId, selectedStatus, selectedType].filter(Boolean).length;
   const hasPendingItems = (data?.transactions ?? []).some(
@@ -343,10 +341,17 @@ export function TransactionsClient() {
         />
       </div>
 
-      <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
-        {transactions.length} {transactions.length === 1 ? "transaction" : "transactions"}, newest first
-        {activeSearchQuery ? ` · matching “${activeSearchQuery}”` : ""}
-      </p>
+      {pagination ? (
+        <p className="text-sm text-bluewave-gray dark:text-white/[0.58]">
+          {pagination.total === 0
+            ? "No transactions"
+            : `${(pagination.page - 1) * pagination.pageSize + 1}–${Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.total,
+              )} of ${pagination.total}`}
+          {activeSearchQuery ? ` · “${activeSearchQuery}”` : ""}
+        </p>
+      ) : null}
 
       {transactions.length > 0 ? (
         <section className="rounded-lg border border-primary-navy/[0.08] bg-white shadow-[0_18px_60px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]">
@@ -415,6 +420,32 @@ export function TransactionsClient() {
               );
             })}
           </div>
+
+          {pagination && pagination.totalPages > 1 ? (
+            <div className="flex flex-col items-center gap-3 border-t border-primary-navy/[0.08] px-4 py-4 dark:border-white/[0.08] sm:flex-row sm:justify-between">
+              <p className="text-sm font-medium text-primary-navy dark:text-white">
+                Page {pagination.page} of {pagination.totalPages}
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  disabled={!pagination.hasPreviousPage || isLoading}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  className="inline-flex h-10 items-center rounded-full border border-primary-navy/[0.12] px-5 text-sm font-semibold text-primary-navy transition hover:border-ocean-blue/[0.35] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.12] dark:text-white"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={!pagination.hasNextPage || isLoading}
+                  onClick={() => setPage((current) => current + 1)}
+                  className="inline-flex h-10 items-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
         </section>
       ) : (
         <EmptyState

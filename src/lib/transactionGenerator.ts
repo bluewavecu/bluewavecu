@@ -90,15 +90,105 @@ function pickRandom<T>(items: T[]) {
   return items[Math.floor(Math.random() * items.length)]!;
 }
 
-function randomDateInRange(from: Date, to: Date) {
-  const start = from.getTime();
-  const end = to.getTime();
+type MixDirection = "CREDIT" | "DEBIT";
 
-  if (end <= start) {
-    return new Date(start);
+const MIX_PATTERNS: MixDirection[][] = [
+  ["CREDIT", "DEBIT"],
+  ["DEBIT", "CREDIT"],
+  ["CREDIT", "CREDIT", "DEBIT"],
+  ["CREDIT", "DEBIT", "DEBIT"],
+  ["CREDIT", "CREDIT", "DEBIT", "DEBIT"],
+  ["CREDIT", "CREDIT", "CREDIT", "DEBIT", "DEBIT"],
+  ["DEBIT", "DEBIT", "CREDIT"],
+  ["CREDIT", "DEBIT", "CREDIT"],
+  ["DEBIT", "CREDIT", "DEBIT"],
+];
+
+function buildMixedDirectionSequence(creditCount: number, debitCount: number) {
+  let creditsLeft = creditCount;
+  let debitsLeft = debitCount;
+  const sequence: MixDirection[] = [];
+
+  while (creditsLeft > 0 || debitsLeft > 0) {
+    const pattern = pickRandom(MIX_PATTERNS);
+    let added = 0;
+
+    for (const direction of pattern) {
+      if (direction === "CREDIT" && creditsLeft > 0) {
+        sequence.push("CREDIT");
+        creditsLeft -= 1;
+        added += 1;
+      } else if (direction === "DEBIT" && debitsLeft > 0) {
+        sequence.push("DEBIT");
+        debitsLeft -= 1;
+        added += 1;
+      }
+    }
+
+    if (added === 0) {
+      if (creditsLeft > 0) {
+        sequence.push("CREDIT");
+        creditsLeft -= 1;
+      } else if (debitsLeft > 0) {
+        sequence.push("DEBIT");
+        debitsLeft -= 1;
+      }
+    }
   }
 
-  return new Date(start + Math.floor(Math.random() * (end - start + 1)));
+  return sequence;
+}
+
+function interleaveDrafts(credits: GeneratedDraft[], debits: GeneratedDraft[]) {
+  const sequence = buildMixedDirectionSequence(credits.length, debits.length);
+  const creditQueue = [...credits];
+  const debitQueue = [...debits];
+  const mixed: GeneratedDraft[] = [];
+
+  for (const direction of sequence) {
+    if (direction === "CREDIT" && creditQueue.length > 0) {
+      mixed.push(creditQueue.shift()!);
+    } else if (direction === "DEBIT" && debitQueue.length > 0) {
+      mixed.push(debitQueue.shift()!);
+    }
+  }
+
+  while (creditQueue.length > 0) {
+    mixed.push(creditQueue.shift()!);
+  }
+
+  while (debitQueue.length > 0) {
+    mixed.push(debitQueue.shift()!);
+  }
+
+  return mixed;
+}
+
+function assignSpreadDates(drafts: GeneratedDraft[], fromDate: Date, toDate: Date) {
+  if (drafts.length === 0) {
+    return;
+  }
+
+  const start = fromDate.getTime();
+  const end = toDate.getTime();
+  const span = Math.max(end - start, 1);
+
+  drafts.forEach((draft, index) => {
+    const ratio = drafts.length === 1 ? 0.5 : index / (drafts.length - 1);
+    const base = start + Math.floor(span * ratio);
+    const jitterMs = Math.floor((Math.random() - 0.5) * 6 * 60 * 60 * 1000);
+    const at = Math.min(end, Math.max(start, base + jitterMs));
+    draft.effectiveAt = new Date(at);
+  });
+
+  for (let index = 1; index < drafts.length; index += 1) {
+    const previous = drafts[index - 1]!;
+    const current = drafts[index]!;
+
+    if (current.effectiveAt.getTime() < previous.effectiveAt.getTime()) {
+      current.effectiveAt = new Date(previous.effectiveAt.getTime() + 60_000);
+    }
+  }
 }
 
 function randomAmount(min: number, max: number) {
@@ -272,16 +362,17 @@ export async function generateAccountTransactions(
   const payrollDates = buildBiweeklyPayrollDates(params.fromDate, params.toDate);
   const payrollSlots = Math.min(params.creditCount, payrollDates.length);
 
-  const drafts: GeneratedDraft[] = [];
+  const creditDrafts: GeneratedDraft[] = [];
+  const debitDrafts: GeneratedDraft[] = [];
 
   for (let index = 0; index < payrollSlots; index += 1) {
-    drafts.push(buildPayrollDraft(payrollCompany, payrollDates[index]!, paycheckRange));
+    creditDrafts.push(buildPayrollDraft(payrollCompany, payrollDates[index]!, paycheckRange));
   }
 
   for (let index = payrollSlots; index < params.creditCount; index += 1) {
     const template = pickRandom(CREDIT_TEMPLATES);
-    drafts.push({
-      ...buildDraft(template, "CREDIT", randomDateInRange(params.fromDate, params.toDate)),
+    creditDrafts.push({
+      ...buildDraft(template, "CREDIT", params.fromDate),
       description: pickRandom(["Mobile deposit", "ACH deposit", "Interest payment", "Refund"]),
     });
   }
@@ -292,14 +383,13 @@ export async function generateAccountTransactions(
 
   for (let index = 0; index < params.debitCount; index += 1) {
     const template = pickRandom(debitTemplates.length > 0 ? debitTemplates : DEBIT_TEMPLATES);
-    drafts.push(
-      buildContextualDebitDraft(
-        template,
-        cities,
-        randomDateInRange(params.fromDate, params.toDate),
-      ),
+    debitDrafts.push(
+      buildContextualDebitDraft(template, cities, params.fromDate),
     );
   }
+
+  const drafts = interleaveDrafts(creditDrafts, debitDrafts);
+  assignSpreadDates(drafts, params.fromDate, params.toDate);
 
   const existingTransactions = await prisma.transaction.findMany({
     where: {

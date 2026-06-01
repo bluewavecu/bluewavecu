@@ -279,8 +279,18 @@ export type PageTransaction = {
   };
 };
 
+export type TransactionPagination = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
 export type TransactionsData = {
   transactions: PageTransaction[];
+  pagination: TransactionPagination;
 };
 
 export type LinkedAccountSummary = {
@@ -498,6 +508,8 @@ export type TransactionFilters = {
   status?: TransactionStatus;
   type?: TransactionType;
   limit?: number;
+  page?: number;
+  q?: string;
 };
 
 export type AdminUserSummary = {
@@ -509,6 +521,7 @@ export type AdminUserSummary = {
   role: UserRole;
   status: UserStatus;
   transactionsUnrestricted: boolean;
+  billPayPaused: boolean;
   hasTransactionPin: boolean;
   statusNote?: string | null;
   deletedAt?: string | null;
@@ -829,6 +842,7 @@ export type BillPaymentRecord = {
 
 export type BillPaymentsData = {
   billPayments: BillPaymentRecord[];
+  billPayPaused: boolean;
 };
 
 export type AdminBillPaymentRecord = BillPaymentRecord & {
@@ -1077,6 +1091,7 @@ export type CustomerProfileRecord = {
   userName?: string;
   userEmail?: string;
   userPhone?: string;
+  latestIdVerification?: IdVerificationRecord | null;
 };
 
 export type ProfileData = {

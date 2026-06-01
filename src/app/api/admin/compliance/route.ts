@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api";
 import { serializeCustomerProfile, updateCustomerKycStatus } from "@/lib/customerProfile";
+import { serializeIdVerificationSubmission } from "@/lib/idVerification";
 import { getPrisma } from "@/lib/prisma";
 import { adminKycUpdateSchema } from "@/lib/validators";
 import type { AdminComplianceData, KycStatus } from "@/types/banking";
@@ -45,8 +46,28 @@ export async function GET(request: NextRequest) {
         getPrisma().customerProfile.count(),
       ]);
 
+    const userIds = profiles.map((profile) => profile.userId);
+    const latestIdVerifications =
+      userIds.length === 0
+        ? []
+        : await getPrisma().idVerificationSubmission.findMany({
+            where: { userId: { in: userIds } },
+            orderBy: { submittedAt: "desc" },
+            distinct: ["userId"],
+          });
+
+    const idVerificationByUserId = new Map(
+      latestIdVerifications.map((submission) => [
+        submission.userId,
+        serializeIdVerificationSubmission(submission),
+      ]),
+    );
+
     const data: AdminComplianceData = {
-      profiles: profiles.map(serializeCustomerProfile),
+      profiles: profiles.map((profile) => ({
+        ...serializeCustomerProfile(profile),
+        latestIdVerification: idVerificationByUserId.get(profile.userId) ?? null,
+      })),
       summary: {
         notStarted,
         submitted,

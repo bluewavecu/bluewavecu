@@ -156,10 +156,6 @@ export function AdminTransactionGeneratorClient() {
         className="max-w-3xl rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]"
       >
         <h2 className="text-lg font-semibold">Generate member transactions</h2>
-        <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Posted credits and debits with ledger-backed balances. Payroll credits follow a fixed 14-day
-          cycle.
-        </p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="block md:col-span-2">
@@ -187,9 +183,6 @@ export function AdminTransactionGeneratorClient() {
               <h3 className="text-sm font-semibold text-primary-navy dark:text-white">
                 Activity profile
               </h3>
-              <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.58]">
-                Answer up to five prompts so generated history matches this member.
-              </p>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <label className="block md:col-span-2">
                   <span className="text-sm font-semibold">Payroll company name</span>
@@ -319,11 +312,8 @@ export function AdminTransactionGeneratorClient() {
         </div>
 
         <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Total requested: {totalCount}. Payroll deposits post every two weeks using the company name
-          above.
-          {selectedAccount ? (
-            <> Current balance: {formatCurrency(selectedAccount.balance)}.</>
-          ) : null}
+          {totalCount} transactions · mixed credits and debits
+          {selectedAccount ? <> · Balance {formatCurrency(selectedAccount.balance)}</> : null}
         </p>
 
         {error ? (
@@ -343,8 +333,7 @@ export function AdminTransactionGeneratorClient() {
 
       {result ? (
         <article className="max-w-3xl rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-5 text-sm dark:text-white">
-          <h3 className="text-base font-semibold text-primary-navy dark:text-white">Batch complete</h3>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+          <dl className="grid gap-2 sm:grid-cols-2">
             <div>
               <dt className="text-bluewave-gray dark:text-white/[0.58]">Created</dt>
               <dd className="font-semibold">{result.created}</dd>

@@ -20,7 +20,7 @@ export function getEmailLogoInlineAttachment() {
   const content = readEmailLogoBuffer();
 
   return {
-    filename: EMAIL_LOGO.src.split("/").pop() ?? "auth_logo.webp",
+    filename: EMAIL_LOGO.src.split("/").pop() ?? "email_icon.webp",
     content,
     contentId: EMAIL_LOGO_CONTENT_ID,
   };

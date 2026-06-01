@@ -6,6 +6,7 @@ import { BillPaymentForm } from "@/components/bill-pay/BillPaymentForm";
 import { BillPaymentList } from "@/components/bill-pay/BillPaymentList";
 import { PayBillNowForm } from "@/components/bill-pay/PayBillNowForm";
 import { PayeeManager } from "@/components/bill-pay/PayeeManager";
+import { useBillPay } from "@/hooks/useBillPay";
 import { cn } from "@/lib/utils";
 
 type BillPayTab = "pay" | "payees" | "payments" | "schedule";
@@ -19,9 +20,17 @@ const tabs = [
 export function BillPayClient() {
   const [activeTab, setActiveTab] = useState<BillPayTab>("pay");
   const [showSchedule, setShowSchedule] = useState(false);
+  const { billPayPaused } = useBillPay();
 
   return (
     <section className="grid gap-5">
+      {billPayPaused ? (
+        <p className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-950 dark:text-amber-100">
+          Bill Pay is paused on your account. You can view history, but new payments and payee changes
+          are disabled until member services restores access.
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -49,6 +58,7 @@ export function BillPayClient() {
         })}
         <button
           type="button"
+          disabled={billPayPaused}
           onClick={() => setShowSchedule(true)}
           className={cn(
             "rounded-full px-4 py-2.5 text-sm font-semibold transition",
