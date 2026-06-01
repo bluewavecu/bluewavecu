@@ -45,12 +45,8 @@ export function AppHeader({
               </div>
             )}
 
-            <div className="lg:hidden">
-              <NotificationsBell />
-            </div>
-
             <div
-              className="hidden items-stretch overflow-hidden rounded-full border border-primary-navy/[0.08] bg-[#f7fbff] shadow-[0_8px_24px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06] lg:flex"
+              className="flex items-stretch overflow-hidden rounded-full border border-primary-navy/[0.08] bg-[#f7fbff] shadow-[0_8px_24px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
               aria-label={t("common.accountTools")}
             >
               <div className="flex items-center pl-2">
@@ -62,10 +58,12 @@ export function AppHeader({
               />
               <NotificationsBell grouped />
               <span
-                className="my-2 w-px shrink-0 bg-primary-navy/[0.10] dark:bg-white/[0.12]"
+                className="my-2 hidden w-px shrink-0 bg-primary-navy/[0.10] dark:bg-white/[0.12] lg:block"
                 aria-hidden="true"
               />
-              <AppUserBadge grouped />
+              <div className="hidden lg:block">
+                <AppUserBadge grouped />
+              </div>
             </div>
           </div>
         </div>
