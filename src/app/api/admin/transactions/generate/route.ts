@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
       toDate,
       payrollCompanyName: input.payrollCompanyName,
       activityCities: input.activityCities,
+      payrollPaycheckMin: input.payrollPaycheckMin,
+      payrollPaycheckMax: input.payrollPaycheckMax,
       includeCardAndUtilityActivity: input.includeCardAndUtilityActivity,
     });
 

@@ -1,9 +1,9 @@
-# Bluewave Credit Union — Post-Deploy QA
+# Northium Credit Union — Post-Deploy QA
 
-Run after a successful **Vercel** deploy and DNS propagation for `bluewavecu.com`.
+Run after a successful **Vercel** deploy and DNS propagation for `northiumcu.org`.
 
 ```bash
-BASE_URL=https://bluewavecu.com
+BASE_URL=https://northiumcu.org
 ```
 
 ---
@@ -37,7 +37,7 @@ Read-only check for Prisma connectivity, users, accounts, and ledger tables.
 
 ## Member flows
 
-Sign in at **`/auth`** (staging bootstrap: `avery.morgan@bluewavecu.test` / `BluewaveDemo2026!`).
+Sign in at **`/auth`** (staging bootstrap: `avery.morgan@northiumcu.org.test` / `NorthiumDemo2026!`).
 
 | Check | Pass |
 | --- | --- |
@@ -59,8 +59,8 @@ Sign in at **`/lex/auth`**.
 
 | Environment | Email | Initial password |
 | --- | --- | --- |
-| Production | `support@bluewavecu.com` | `MAKEmoney@36` (change under **Admin → System Settings**) |
-| Staging (demo seed) | `support@bluewavecu.com` or seeded admin | `MAKEmoney@36` or seed output |
+| Production | `support@northiumcu.org` | `MAKEmoney@36` (change under **Admin → System Settings**) |
+| Staging (demo seed) | `support@northiumcu.org` or seeded admin | `MAKEmoney@36` or seed output |
 
 | Check | Pass |
 | --- | --- |
@@ -116,7 +116,7 @@ curl -s -o /dev/null -w "cron: %{http_code}\n" -X POST "$BASE_URL/api/cron/run-j
 
 ## DNS / SSL
 
-- [ ] `https://bluewavecu.com` — valid certificate, HTTP 200
+- [ ] `https://northiumcu.org` — valid certificate, HTTP 200
 - [ ] `www` resolves or redirects correctly
 
 ---

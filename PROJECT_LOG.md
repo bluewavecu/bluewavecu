@@ -1,6 +1,6 @@
 # Project Log
 
-## Step 1: Initial Bluewave Credit Union Foundation Setup
+## Step 1: Initial Northium Credit Union Foundation Setup
 
 Status: Completed
 
@@ -37,7 +37,7 @@ Status: Completed
 - Added sticky responsive navbar with main logo, desktop links, action buttons, and mobile menu.
 - Added fintech footer with useful links, contact placeholders, copyright, and safety note.
 - Built homepage sections for hero, trusted banking stats, feature cards, banking products, security, CTA, and footer.
-- Configured metadata for Bluewave Credit Union and favicon/app icon from `/public/images/icon.webp`.
+- Configured metadata for Northium Credit Union and favicon/app icon from `/public/images/icon.webp`.
 - Added brand color tokens and responsive glassmorphism styling.
 
 ### What Should Not Be Rebuilt
@@ -114,7 +114,7 @@ Status: Completed
 
 ### Features Added
 
-- Replaced the footer description under the logo with updated Bluewave digital banking copy.
+- Replaced the footer description under the logo with updated Northium digital banking copy.
 - Replaced the footer safety note with the requested NCUA, membership eligibility, and Equal Housing Opportunity copy.
 - Added the Dallas address and phone number to the footer.
 - Updated public navbar login and open-account buttons to route to `/login` and `/register`.
@@ -970,7 +970,7 @@ Status: Completed
 
 ### Files Created Or Updated
 
-- `src/lib/institution.ts` — contact, routing, NCUA disclaimer, share account labels
+- `src/lib/institution.ts` — contact, routing, disclaimer, share account labels
 - `src/lib/authRoutes.ts` — member `/auth`, operations `/lex/auth`, URL builders
 - `src/app/auth/page.tsx`, `src/app/lex/auth/page.tsx`
 - `src/app/privacy/page.tsx`, `src/app/terms/page.tsx`

@@ -1,47 +1,32 @@
 /**
- * Central crawler-blocking policy. Keep Google and other indexers off the site
- * via robots, meta tags, response headers, and middleware user-agent rejection.
+ * Search-engine policy for bluewavecu.com.
+ *
+ * Public marketing pages may be indexed so Google Safe Browsing can verify the site.
+ * Member banking, admin, and API routes stay out of the index.
  */
-export const CRAWLER_BLOCK_DIRECTIVE =
-  "noindex, nofollow, noarchive, nosnippet, noimageindex, max-snippet:0, max-image-preview:none, max-video-preview:0";
 
-export const GOOGLE_CRAWLER_AGENTS = [
-  "Googlebot",
-  "Googlebot-Image",
-  "Googlebot-News",
-  "Googlebot-Video",
-  "Google-Extended",
-  "Google-InspectionTool",
-  "GoogleOther",
-  "GoogleProducer",
-  "Storebot-Google",
-  "AdsBot-Google",
-  "AdsBot-Google-Mobile",
-  "Mediapartners-Google",
-  "APIs-Google",
-  "FeedFetcher-Google",
-  "DuplexWeb-Google",
-  "Google Favicon",
-  "Google-Site-Verification",
-  "Chrome-Lighthouse",
+export const PRIVATE_NOINDEX_DIRECTIVE = "noindex, nofollow, noarchive, nosnippet";
+
+/** Paths that must never appear in search results. */
+export const NOINDEX_PATH_PREFIXES = [
+  "/auth",
+  "/lex",
+  "/api",
+  "/admin",
+  "/dev",
+  "/login",
+  "/register",
 ] as const;
 
-const googleCrawlerPattern = new RegExp(
-  GOOGLE_CRAWLER_AGENTS.map((agent) => agent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"),
-  "i",
-);
-
-export function isGoogleCrawlerUserAgent(userAgent: string | null | undefined) {
-  if (!userAgent?.trim()) {
-    return false;
-  }
-
-  return googleCrawlerPattern.test(userAgent);
+export function isNoindexPath(pathname: string) {
+  return NOINDEX_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
-export function crawlerBlockHeaders(): HeadersInit {
+export function privateNoindexHeaders(): HeadersInit {
   return {
-    "X-Robots-Tag": CRAWLER_BLOCK_DIRECTIVE,
+    "X-Robots-Tag": PRIVATE_NOINDEX_DIRECTIVE,
     "Cache-Control": "private, no-store, no-cache, must-revalidate",
   };
 }

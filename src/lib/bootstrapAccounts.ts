@@ -11,9 +11,9 @@ export const BOOTSTRAP_ADMIN_PASSWORD =
 export const BOOTSTRAP_ADMIN_NAME = "Bluewave Operations";
 
 /** Development member accounts for local/staging QA (seed only). */
-export const DEMO_USER_EMAIL = "avery.morgan@bluewavecu.test";
+export const DEMO_USER_EMAIL = "avery.morgan@bluewavecu.com.test";
 export const DEMO_USER_USERNAME = "averymorgan";
-export const DEMO_PENDING_USER_EMAIL = "casey.reed@bluewavecu.test";
+export const DEMO_PENDING_USER_EMAIL = "casey.reed@bluewavecu.com.test";
 export const DEMO_PENDING_USER_USERNAME = "caseyreed";
 export const DEMO_ADMIN_USERNAME = "bluewave_ops";
 export const DEMO_MEMBER_PASSWORD = "BluewaveDemo2026!";

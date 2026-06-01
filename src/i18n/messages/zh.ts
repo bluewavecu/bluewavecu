@@ -5,9 +5,13 @@ export const zh = {
   nav: {
     personal: "个人",
     business: "企业",
+    savings: "储蓄",
     loans: "贷款",
+    rates: "利率",
     about: "关于",
+    security: "安全",
     support: "支持",
+    mobileApp: "手机应用",
     login: "登录",
     openAccount: "开户",
     openMenu: "打开菜单",

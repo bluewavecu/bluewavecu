@@ -31,17 +31,17 @@ export function AppHeader({
     <>
       <header
         className={cn(
-          "pointer-events-none fixed inset-x-0 top-0 z-40 transition-transform duration-300 ease-out lg:left-72",
+          "fixed inset-x-0 top-0 z-50 border-b border-primary-navy/[0.08] bg-white/96 shadow-[0_10px_40px_rgba(10,42,94,0.08)] backdrop-blur-md transition-transform duration-300 ease-out dark:border-white/[0.08] dark:bg-[#061222]/96 lg:left-72",
           visible ? "translate-y-0" : "-translate-y-full",
         )}
       >
-        <div className="flex items-start justify-between gap-3 px-4 pb-2 pt-3 sm:px-6 lg:px-8">
-          <div className="pointer-events-auto flex min-w-0 items-center gap-2 lg:hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2 lg:hidden">
             <MemberMobileNav />
             <AuthLogo href={MEMBER_DASHBOARD_PATH} displayHeight={32} />
           </div>
 
-          <div className="pointer-events-auto ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
             {hideSearch ? null : (
               <div className="hidden md:block">
                 <AppHeaderSearch />
@@ -49,7 +49,7 @@ export function AppHeader({
             )}
 
             <div
-              className="flex items-stretch overflow-hidden rounded-full border border-primary-navy/[0.08] bg-[#f7fbff]/92 shadow-[0_12px_34px_rgba(10,42,94,0.10)] backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#061222]/92"
+              className="flex items-stretch overflow-hidden rounded-full border border-primary-navy/[0.08] bg-[#f7fbff] shadow-[0_8px_24px_rgba(10,42,94,0.08)] dark:border-white/[0.08] dark:bg-white/[0.06]"
               aria-label={t("common.accountTools")}
             >
               <div className="flex items-center pl-2">
@@ -70,7 +70,7 @@ export function AppHeader({
         </div>
       </header>
 
-      <div className="px-4 pt-14 sm:px-6 sm:pt-16 lg:px-8 lg:pt-4">
+      <div className="px-4 pt-[4.75rem] sm:px-6 sm:pt-20 lg:px-8 lg:pt-4">
         {compactMobile ? (
           <>
             <h1 className="hidden text-xl font-semibold text-primary-navy dark:text-white sm:text-2xl lg:block">

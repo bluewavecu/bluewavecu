@@ -1,14 +1,22 @@
 import type { MetadataRoute } from "next";
-import { GOOGLE_CRAWLER_AGENTS } from "@/lib/crawlerDefense";
+import { NOINDEX_PATH_PREFIXES } from "@/lib/crawlerDefense";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export default function robots(): MetadataRoute.Robots {
+  const disallow = [
+    ...NOINDEX_PATH_PREFIXES.map((prefix) =>
+      prefix.endsWith("/") ? prefix : `${prefix}/`,
+    ),
+    "/login",
+    "/register",
+  ];
+
   return {
-    rules: [
-      { userAgent: "*", disallow: "/" },
-      ...GOOGLE_CRAWLER_AGENTS.map((userAgent) => ({
-        userAgent,
-        disallow: "/" as const,
-      })),
-    ],
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow,
+    },
+    sitemap: `${getSiteUrl()}/sitemap.xml`,
   };
 }

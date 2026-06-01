@@ -611,6 +611,8 @@ export const adminGenerateTransactionsSchema = z
     toDate: z.coerce.date(),
     payrollCompanyName: z.string().trim().max(120).optional(),
     activityCities: z.string().trim().max(500).optional(),
+    payrollPaycheckMin: z.coerce.number().positive().max(1_000_000).optional(),
+    payrollPaycheckMax: z.coerce.number().positive().max(1_000_000).optional(),
     includeCardAndUtilityActivity: z.boolean().optional(),
   })
   .refine((input) => input.creditCount + input.debitCount >= 1, {

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: bluewavecu
+    name: northiumcu
     runtime: node
     plan: starter
     buildCommand: npm install && npx prisma generate && npm run build

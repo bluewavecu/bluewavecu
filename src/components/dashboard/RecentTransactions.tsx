@@ -18,7 +18,6 @@ import {
 } from "@/lib/transactionDisplay";
 import { cn } from "@/lib/utils";
 import {
-  RECENT_ACCOUNT_ACTIVITY_DESCRIPTION,
   RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE,
   RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
   RECENT_ACCOUNT_ACTIVITY_TITLE,
@@ -33,7 +32,6 @@ const transactionIcons = {
 
 type RecentTransactionsProps = {
   transactions?: DashboardTransaction[];
-  description?: string;
   showHeader?: boolean;
   viewAllHref?: string;
 };
@@ -61,7 +59,6 @@ function toDrawerItem(transaction: DashboardTransaction): TransactionDrawerItem 
 
 export function RecentTransactions({
   transactions,
-  description = RECENT_ACCOUNT_ACTIVITY_DESCRIPTION,
   showHeader = true,
   viewAllHref,
 }: RecentTransactionsProps) {
@@ -91,9 +88,6 @@ export function RecentTransactions({
               >
                 {RECENT_ACCOUNT_ACTIVITY_TITLE}
               </h2>
-              <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-                {description}
-              </p>
             </div>
             {viewAllHref ? (
               <Link

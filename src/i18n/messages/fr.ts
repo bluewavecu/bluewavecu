@@ -5,9 +5,13 @@ export const fr = {
   nav: {
     personal: "Particuliers",
     business: "Entreprises",
+    savings: "Épargne",
     loans: "Prêts",
+    rates: "Taux",
     about: "À propos",
+    security: "Sécurité",
     support: "Assistance",
+    mobileApp: "Application mobile",
     login: "Connexion",
     openAccount: "Ouvrir un compte",
     openMenu: "Ouvrir le menu",

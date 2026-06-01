@@ -12,7 +12,7 @@ import { MEMBER_SUPPORT_PATH } from "@/lib/memberRoutes";
 
 const quickActions = [
   { label: "Transfer", href: "/auth/transfers", icon: Send, description: "Move money between accounts" },
-  { label: "Pay Bill", href: "/auth/bill-pay", icon: Receipt, description: "Submit bill payment for review" },
+  { label: "Pay bill", href: "/auth/bill-pay", icon: Receipt, description: "Pay a bill from your account" },
   { label: "Add Payee", href: "/auth/payees", icon: UserPlus, description: "Manage recipients" },
   {
     label: "Download Statement",

@@ -140,6 +140,8 @@ export type GenerateTransactionsParams = {
   toDate: Date;
   payrollCompanyName?: string;
   activityCities?: string;
+  payrollPaycheckMin?: number;
+  payrollPaycheckMax?: number;
   includeCardAndUtilityActivity?: boolean;
 };
 
@@ -167,10 +169,18 @@ function buildBiweeklyPayrollDates(from: Date, to: Date) {
   return dates;
 }
 
-function buildPayrollDraft(companyName: string, effectiveAt: Date): GeneratedDraft {
+function buildPayrollDraft(
+  companyName: string,
+  effectiveAt: Date,
+  paycheckRange?: { min?: number; max?: number },
+): GeneratedDraft {
+  const min = paycheckRange?.min && paycheckRange.min > 0 ? paycheckRange.min : 900;
+  const max =
+    paycheckRange?.max && paycheckRange.max >= min ? paycheckRange.max : Math.max(min + 100, 3800);
+
   return {
     type: "DEPOSIT",
-    amount: randomAmount(900, 3800),
+    amount: randomAmount(min, max),
     description: "Payroll deposit",
     merchant: companyName,
     effectiveAt,
@@ -255,13 +265,17 @@ export async function generateAccountTransactions(
   const payrollCompany = params.payrollCompanyName?.trim() || "Employer Payroll";
   const cities = parseActivityCities(params.activityCities);
   const includeRetail = params.includeCardAndUtilityActivity !== false;
+  const paycheckRange = {
+    min: params.payrollPaycheckMin,
+    max: params.payrollPaycheckMax,
+  };
   const payrollDates = buildBiweeklyPayrollDates(params.fromDate, params.toDate);
   const payrollSlots = Math.min(params.creditCount, payrollDates.length);
 
   const drafts: GeneratedDraft[] = [];
 
   for (let index = 0; index < payrollSlots; index += 1) {
-    drafts.push(buildPayrollDraft(payrollCompany, payrollDates[index]!));
+    drafts.push(buildPayrollDraft(payrollCompany, payrollDates[index]!, paycheckRange));
   }
 
   for (let index = payrollSlots; index < params.creditCount; index += 1) {

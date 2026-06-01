@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { CRAWLER_BLOCK_DIRECTIVE } from "@/lib/crawlerDefense";
+import { PRIVATE_NOINDEX_DIRECTIVE } from "@/lib/crawlerDefense";
+import { BRAND_LEGAL_NAME, BRAND_SHORT_NAME, BRAND_TAGLINE } from "@/lib/branding";
+import { INSTITUTION } from "@/lib/institution";
+import { getSiteUrl } from "@/lib/siteUrl";
 
-export const crawlerBlockMetaContent = CRAWLER_BLOCK_DIRECTIVE;
+export const privateNoindexMetaContent = PRIVATE_NOINDEX_DIRECTIVE;
 
 export const blockSearchIndexing: Metadata = {
   robots: {
@@ -10,26 +13,41 @@ export const blockSearchIndexing: Metadata = {
     nocache: true,
     noarchive: true,
     nosnippet: true,
-    noimageindex: true,
     googleBot: {
       index: false,
       follow: false,
-      noimageindex: true,
       noarchive: true,
       nosnippet: true,
-      "max-snippet": 0,
-      "max-image-preview": "none",
-      "max-video-preview": 0,
     },
   },
+};
+
+export const publicMarketingMetadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${BRAND_SHORT_NAME} Credit Union | ${BRAND_TAGLINE}`,
+    template: `%s | ${BRAND_SHORT_NAME} Credit Union`,
+  },
+  description: BRAND_TAGLINE,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: BRAND_LEGAL_NAME,
+    title: BRAND_LEGAL_NAME,
+    description: BRAND_TAGLINE,
+  },
+  alternates: {
+    canonical: "/",
+  },
   other: {
-    googlebot: crawlerBlockMetaContent,
-    "googlebot-news": crawlerBlockMetaContent,
-    "googlebot-image": crawlerBlockMetaContent,
-    "googlebot-video": crawlerBlockMetaContent,
-    bingbot: crawlerBlockMetaContent,
-    slurp: crawlerBlockMetaContent,
-    duckduckbot: crawlerBlockMetaContent,
+    contact: INSTITUTION.email,
   },
 };
 

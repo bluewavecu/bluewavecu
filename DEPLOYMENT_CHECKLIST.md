@@ -1,6 +1,6 @@
-# Bluewave Credit Union — Deployment Checklist
+# Northium Credit Union — Deployment Checklist
 
-Use this checklist before and after production deploys on **Vercel + Supabase**. Check items manually in staging or at `https://bluewavecu.com`.
+Use this checklist before and after production deploys on **Vercel + Supabase**. Check items manually in staging or at `https://northiumcu.org`.
 
 ## Pre-deploy requirements
 
@@ -128,7 +128,7 @@ Additional public marketing pages:
 ## API security smoke checks
 
 ```bash
-BASE_URL=https://bluewavecu.com
+BASE_URL=https://northiumcu.org
 
 curl -s -o /dev/null -w "dashboard: %{http_code}\n" "$BASE_URL/api/dashboard"
 curl -s -o /dev/null -w "admin_users: %{http_code}\n" "$BASE_URL/api/admin/users"

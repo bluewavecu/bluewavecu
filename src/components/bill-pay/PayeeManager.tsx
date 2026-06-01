@@ -39,7 +39,7 @@ export function PayeeManager() {
       >
         <h2 className="text-lg font-semibold text-primary-navy dark:text-white">Add payee</h2>
         <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Store payee details for recurring and one-time bill payments through online banking.
+          Saved payees for quick bill payments.
         </p>
 
         <div className="mt-5 space-y-4">

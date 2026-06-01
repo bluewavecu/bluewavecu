@@ -36,12 +36,14 @@ export function AdminTransactionGeneratorClient() {
   const [accounts, setAccounts] = useState<AdminAccountRecord[]>([]);
   const [userId, setUserId] = useState("");
   const [accountId, setAccountId] = useState("");
-  const [creditCount, setCreditCount] = useState("50");
-  const [debitCount, setDebitCount] = useState("50");
+  const [creditCount, setCreditCount] = useState("26");
+  const [debitCount, setDebitCount] = useState("40");
   const [fromDate, setFromDate] = useState(getDefaultFromDate);
   const [toDate, setToDate] = useState(() => formatDateInputValue(new Date()));
   const [payrollCompanyName, setPayrollCompanyName] = useState("");
   const [activityCities, setActivityCities] = useState("Dallas, TX, Plano, TX, Irving, TX");
+  const [payrollPaycheckMin, setPayrollPaycheckMin] = useState("1800");
+  const [payrollPaycheckMax, setPayrollPaycheckMax] = useState("3200");
   const [includeCardAndUtilityActivity, setIncludeCardAndUtilityActivity] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +134,8 @@ export function AdminTransactionGeneratorClient() {
       toDate,
       payrollCompanyName: payrollCompanyName.trim() || undefined,
       activityCities: activityCities.trim() || undefined,
+      payrollPaycheckMin: payrollPaycheckMin.trim() ? Number(payrollPaycheckMin) : undefined,
+      payrollPaycheckMax: payrollPaycheckMax.trim() ? Number(payrollPaycheckMax) : undefined,
       includeCardAndUtilityActivity,
     });
 
@@ -153,11 +157,12 @@ export function AdminTransactionGeneratorClient() {
       >
         <h2 className="text-lg font-semibold">Generate member transactions</h2>
         <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Up to 1000 posted credits and debits with ledger-backed balances. Dates can go back 20 years.
+          Posted credits and debits with ledger-backed balances. Payroll credits follow a fixed 14-day
+          cycle.
         </p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="block">
+          <label className="block md:col-span-2">
             <span className="text-sm font-semibold">Member</span>
             <select
               required
@@ -176,6 +181,71 @@ export function AdminTransactionGeneratorClient() {
               ))}
             </select>
           </label>
+
+          {userId ? (
+            <div className="md:col-span-2 rounded-lg border border-ocean-blue/25 bg-ocean-blue/[0.06] p-4 dark:border-ocean-blue/30 dark:bg-ocean-blue/[0.08]">
+              <h3 className="text-sm font-semibold text-primary-navy dark:text-white">
+                Activity profile
+              </h3>
+              <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.58]">
+                Answer up to five prompts so generated history matches this member.
+              </p>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="block md:col-span-2">
+                  <span className="text-sm font-semibold">Payroll company name</span>
+                  <input
+                    type="text"
+                    value={payrollCompanyName}
+                    onChange={(event) => setPayrollCompanyName(event.target.value)}
+                    placeholder="e.g. Texas Instruments Payroll"
+                    className={fieldClassName}
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="text-sm font-semibold">Activity cities (comma-separated)</span>
+                  <input
+                    type="text"
+                    value={activityCities}
+                    onChange={(event) => setActivityCities(event.target.value)}
+                    placeholder="Dallas, TX, Plano, TX, Fort Worth, TX"
+                    className={fieldClassName}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold">Typical paycheck (min)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={payrollPaycheckMin}
+                    onChange={(event) => setPayrollPaycheckMin(event.target.value)}
+                    className={fieldClassName}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold">Typical paycheck (max)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={payrollPaycheckMax}
+                    onChange={(event) => setPayrollPaycheckMax(event.target.value)}
+                    className={fieldClassName}
+                  />
+                </label>
+                <label className="flex items-center gap-2 md:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={includeCardAndUtilityActivity}
+                    onChange={(event) => setIncludeCardAndUtilityActivity(event.target.checked)}
+                  />
+                  <span className="text-sm font-semibold">
+                    Include card purchases and utility-style debits
+                  </span>
+                </label>
+              </div>
+            </div>
+          ) : null}
 
           <label className="block">
             <span className="text-sm font-semibold">Account</span>
@@ -246,42 +316,11 @@ export function AdminTransactionGeneratorClient() {
               className={fieldClassName}
             />
           </label>
-
-          <label className="block md:col-span-2">
-            <span className="text-sm font-semibold">Payroll company name</span>
-            <input
-              type="text"
-              value={payrollCompanyName}
-              onChange={(event) => setPayrollCompanyName(event.target.value)}
-              placeholder="e.g. Texas Instruments Payroll"
-              className={fieldClassName}
-            />
-          </label>
-
-          <label className="block md:col-span-2">
-            <span className="text-sm font-semibold">Activity cities (comma-separated)</span>
-            <input
-              type="text"
-              value={activityCities}
-              onChange={(event) => setActivityCities(event.target.value)}
-              placeholder="Dallas, TX, Plano, TX, Fort Worth, TX"
-              className={fieldClassName}
-            />
-          </label>
-
-          <label className="flex items-center gap-2 md:col-span-2">
-            <input
-              type="checkbox"
-              checked={includeCardAndUtilityActivity}
-              onChange={(event) => setIncludeCardAndUtilityActivity(event.target.checked)}
-            />
-            <span className="text-sm font-semibold">Include card purchases and utility-style debits</span>
-          </label>
         </div>
 
         <p className="mt-4 text-sm text-bluewave-gray dark:text-white/[0.58]">
-          Total requested: {totalCount} · Payroll credits post every 2 weeks using the company name above.
-          Other activity uses the city list for realistic debits.
+          Total requested: {totalCount}. Payroll deposits post every two weeks using the company name
+          above.
           {selectedAccount ? (
             <> Current balance: {formatCurrency(selectedAccount.balance)}.</>
           ) : null}
@@ -295,7 +334,7 @@ export function AdminTransactionGeneratorClient() {
 
         <button
           type="submit"
-          disabled={isSubmitting || totalCount < 1 || totalCount > 1000}
+          disabled={isSubmitting || !userId || totalCount < 1 || totalCount > 1000}
           className="mt-4 inline-flex h-10 items-center rounded-full bg-ocean-blue px-5 text-sm font-semibold text-primary-navy disabled:opacity-70"
         >
           {isSubmitting ? "Generating..." : "Generate transactions"}

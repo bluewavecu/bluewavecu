@@ -1,36 +1,12 @@
-# Block all crawlers — especially Google — from indexing this property.
+# Public marketing pages may be indexed. Banking and API routes are private.
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /auth/
+Disallow: /lex/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dev/
+Disallow: /login
+Disallow: /register
 
-User-agent: Googlebot
-Disallow: /
-
-User-agent: Googlebot-Image
-Disallow: /
-
-User-agent: Googlebot-News
-Disallow: /
-
-User-agent: Googlebot-Video
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-User-agent: Google-InspectionTool
-Disallow: /
-
-User-agent: GoogleOther
-Disallow: /
-
-User-agent: AdsBot-Google
-Disallow: /
-
-User-agent: Mediapartners-Google
-Disallow: /
-
-User-agent: FeedFetcher-Google
-Disallow: /
-
-User-agent: APIs-Google
-Disallow: /
+Sitemap: https://bluewavecu.com/sitemap.xml

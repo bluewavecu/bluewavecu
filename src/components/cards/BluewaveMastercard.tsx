@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { BRAND_SHORT_NAME } from "@/lib/branding";
 import type { CardStatus, CardType } from "@/types/banking";
 
 type BluewaveMastercardProps = {
@@ -49,7 +50,7 @@ export function BluewaveMastercard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/[0.55]">
-              Bluewave
+              {BRAND_SHORT_NAME}
             </p>
             <p className="mt-1 text-xs font-medium text-white/[0.78]">
               {cardType === "CREDIT" ? "Credit Mastercard" : "Debit Mastercard"}

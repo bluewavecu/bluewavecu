@@ -8,7 +8,7 @@ Read these before every change:
 
 ## Product direction
 
-Bluewave is a **production credit union experience** for `bluewavecu.com` — member-owned, NCUA-insured language, real online banking flows, and an internal **operations console** for approvals. It is not a demo app, prototype, or generic fintech landing page.
+Bluewave is a **production credit union experience** for `bluewavecu.com` — member-owned, member-focused language, real online banking flows, and an internal **operations console** for approvals. It is not a demo app, prototype, or generic fintech landing page.
 
 - Use **member / membership / share draft / share savings** language on public and member UI.
 - Reserve backend terms (**ledger**, **operations review**, **API**, **workflow**) for admin console and server code only.
@@ -18,7 +18,7 @@ Bluewave is a **production credit union experience** for `bluewavecu.com` — me
 
 | Concern | Source |
 | --- | --- |
-| Legal name, phone, address, routing, NCUA disclaimer | `src/lib/institution.ts` |
+| Legal name, phone, address, routing, disclaimer | `src/lib/institution.ts` |
 | Logo assets and display heights | `src/lib/branding.ts` |
 | Member vs operations auth paths | `src/lib/authRoutes.ts` |
 | Member nav and protected routes | `src/lib/memberRoutes.ts` |
@@ -77,4 +77,4 @@ Middleware rules:
 
 - `/privacy` — Privacy Policy
 - `/terms` — Terms of Use
-- Footer must link to both; NCUA disclaimer from `INSTITUTION.ncuaDisclaimer`.
+- Footer must link to both; disclaimer from `INSTITUTION.platformDisclaimer`.

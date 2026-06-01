@@ -5,9 +5,13 @@ export const es = {
   nav: {
     personal: "Personal",
     business: "Empresas",
+    savings: "Ahorros",
     loans: "Préstamos",
+    rates: "Tasas",
     about: "Acerca de",
+    security: "Seguridad",
     support: "Soporte",
+    mobileApp: "App móvil",
     login: "Iniciar sesión",
     openAccount: "Abrir cuenta",
     openMenu: "Abrir menú",

@@ -107,19 +107,18 @@ export function HomePageClient() {
 
             <SiteTrustNotice variant="marketing" className="mt-8 max-w-2xl" />
 
-            <div className="mt-8 flex flex-col gap-3 sm:max-w-md sm:flex-row">
-              <ButtonLink href={MEMBER_REGISTER_PATH} size="lg" className="w-full justify-center sm:flex-1">
-                {t("marketing.home.primaryCta")}
-                <ArrowRight size={18} aria-hidden="true" />
-              </ButtonLink>
+            <div className="mt-8 flex max-w-md flex-col gap-3">
               <ButtonLink
                 href={MEMBER_LOGIN_PATH}
-                variant="secondary"
                 size="lg"
-                className="w-full justify-center border-classic-gold/30 bg-black/20 sm:flex-1"
+                className="w-full justify-center border-classic-gold/30 bg-black/20"
               >
                 {t("marketing.home.loginToOnlineBanking")}
                 <LogIn size={18} aria-hidden="true" />
+              </ButtonLink>
+              <ButtonLink href={MEMBER_REGISTER_PATH} variant="secondary" size="lg" className="w-full justify-center">
+                {t("marketing.home.primaryCta")}
+                <ArrowRight size={18} aria-hidden="true" />
               </ButtonLink>
             </div>
           </MotionReveal>

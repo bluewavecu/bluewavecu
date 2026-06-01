@@ -5,9 +5,13 @@ export const ar = {
   nav: {
     personal: "أفراد",
     business: "أعمال",
+    savings: "ادخار",
     loans: "قروض",
+    rates: "الأسعار",
     about: "عنّا",
+    security: "الأمان",
     support: "الدعم",
+    mobileApp: "تطبيق الجوال",
     login: "تسجيل الدخول",
     openAccount: "فتح حساب",
     openMenu: "فتح القائمة",

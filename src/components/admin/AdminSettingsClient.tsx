@@ -65,11 +65,6 @@ export function AdminSettingsClient() {
           value={data.cronConfigured ? "Configured" : "Not configured"}
           tone={data.cronConfigured ? "default" : "warning"}
         />
-        <AdminMetricCard
-          label="Environment data lock"
-          value={data.demoSeedProtected ? "Enabled" : "Disabled"}
-          tone={data.demoSeedProtected ? "default" : "warning"}
-        />
       </div>
 
       <article className="rounded-lg border border-primary-navy/[0.08] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.06]">

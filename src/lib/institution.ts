@@ -22,7 +22,7 @@ export const INSTITUTION = {
   memberServicesHours: "Monday–Friday, 8:00 a.m.–6:00 p.m. CT",
   memberServicesHoursShort: "Mon–Fri, 8am–6pm CT",
   ncuaDisclaimer:
-    "Bluewave Credit Union is federally insured by the NCUA. Membership eligibility applies. Equal Housing Opportunity.",
+    "Member deposits are NCUA-insured. Membership is open to those who meet our eligibility requirements. Equal Housing Opportunity.",
 } as const;
 
 export function formatInstitutionAddress() {

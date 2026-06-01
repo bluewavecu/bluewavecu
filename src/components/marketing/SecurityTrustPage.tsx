@@ -9,6 +9,7 @@ import { marketingImages, securityHighlights } from "@/data/marketingPages";
 import { INSTITUTION } from "@/lib/institution";
 import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
 import { ButtonLink } from "@/components/ui/Button";
+import { SafeExternalLink } from "@/components/ui/SafeExternalLink";
 
 export function SecurityTrustPage() {
   return (
@@ -100,14 +101,12 @@ export function SecurityTrustPage() {
               </ul>
               <p className="mt-4 text-sm leading-6 text-bluewave-gray">
                 Verify {INSTITUTION.legalName} through the{" "}
-                <a
+                <SafeExternalLink
                   href={INSTITUTION.ncuaCreditUnionLocatorUrl}
                   className="font-semibold text-royal-blue"
-                  rel="noopener noreferrer"
-                  target="_blank"
                 >
                   NCUA Credit Union Locator
-                </a>
+                </SafeExternalLink>
                 .
               </p>
             </MotionReveal>

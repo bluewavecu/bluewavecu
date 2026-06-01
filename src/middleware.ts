@@ -15,58 +15,42 @@ import {
   isLegacyAdminPath,
   isMemberAuthPath,
 } from "@/lib/authRoutes";
-import {
-  crawlerBlockHeaders,
-  isGoogleCrawlerUserAgent,
-} from "@/lib/crawlerDefense";
+import { isNoindexPath, privateNoindexHeaders } from "@/lib/crawlerDefense";
 import { isMemberProtectedPath, MEMBER_DASHBOARD_PATH } from "@/lib/memberRoutes";
-import { crawlerBlockMetaContent } from "@/lib/siteMetadata";
 
-function withCrawlerBlock(response: NextResponse) {
-  response.headers.set("X-Robots-Tag", crawlerBlockMetaContent);
-  response.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate");
+function withPathPolicy(response: NextResponse, pathname: string) {
+  if (isNoindexPath(pathname)) {
+    for (const [key, value] of Object.entries(privateNoindexHeaders())) {
+      response.headers.set(key, value);
+    }
+  }
+
   return response;
 }
 
-function blockGoogleCrawler(request: NextRequest) {
-  if (!isGoogleCrawlerUserAgent(request.headers.get("user-agent"))) {
-    return null;
-  }
-
-  return new NextResponse("Forbidden", {
-    status: 403,
-    headers: crawlerBlockHeaders(),
-  });
-}
-
 export function middleware(request: NextRequest) {
-  const googleBlock = blockGoogleCrawler(request);
-  if (googleBlock) {
-    return googleBlock;
-  }
-
   const { pathname } = request.nextUrl;
 
   if (isLegacyAdminPath(pathname)) {
-    return withCrawlerBlock(NextResponse.rewrite(new URL("/404", request.url)));
+    return withPathPolicy(NextResponse.rewrite(new URL("/404", request.url)), pathname);
   }
 
   if (pathname === LEGACY_LOGIN_PATH) {
     const url = request.nextUrl.clone();
     url.pathname = MEMBER_LOGIN_PATH;
-    return withCrawlerBlock(NextResponse.redirect(url));
+    return withPathPolicy(NextResponse.redirect(url), pathname);
   }
 
   if (pathname === LEGACY_REGISTER_PATH) {
     const url = request.nextUrl.clone();
     url.pathname = MEMBER_REGISTER_PATH;
-    return withCrawlerBlock(NextResponse.redirect(url));
+    return withPathPolicy(NextResponse.redirect(url), pathname);
   }
 
   if (pathname === MEMBER_BASE_PATH) {
     const url = request.nextUrl.clone();
     url.pathname = MEMBER_LOGIN_PATH;
-    return withCrawlerBlock(NextResponse.redirect(url));
+    return withPathPolicy(NextResponse.redirect(url), pathname);
   }
 
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
@@ -74,55 +58,62 @@ export function middleware(request: NextRequest) {
 
   if (isMemberAuthPath(pathname)) {
     if (payload?.role === "ADMIN") {
-      return withCrawlerBlock(NextResponse.redirect(new URL(ADMIN_DASHBOARD_PATH, request.url)));
+      return withPathPolicy(
+        NextResponse.redirect(new URL(ADMIN_DASHBOARD_PATH, request.url)),
+        pathname,
+      );
     }
 
     if (payload?.role === "USER") {
-      return withCrawlerBlock(NextResponse.redirect(new URL(MEMBER_DASHBOARD_PATH, request.url)));
+      return withPathPolicy(
+        NextResponse.redirect(new URL(MEMBER_DASHBOARD_PATH, request.url)),
+        pathname,
+      );
     }
 
-    return withCrawlerBlock(NextResponse.next());
+    return withPathPolicy(NextResponse.next(), pathname);
   }
 
   if (isAdminAuthPath(pathname)) {
     if (payload?.role === "ADMIN") {
-      return withCrawlerBlock(NextResponse.redirect(new URL(ADMIN_DASHBOARD_PATH, request.url)));
+      return withPathPolicy(
+        NextResponse.redirect(new URL(ADMIN_DASHBOARD_PATH, request.url)),
+        pathname,
+      );
     }
 
     if (payload?.role === "USER") {
-      return withCrawlerBlock(NextResponse.rewrite(new URL("/404", request.url)));
+      return withPathPolicy(NextResponse.rewrite(new URL("/404", request.url)), pathname);
     }
 
-    return withCrawlerBlock(NextResponse.next());
+    return withPathPolicy(NextResponse.next(), pathname);
   }
 
   if (isAdminPath(pathname)) {
     if (!payload) {
       const loginUrl = new URL(buildAdminAuthUrl({ next: pathname }), request.url);
-      return withCrawlerBlock(NextResponse.redirect(loginUrl));
+      return withPathPolicy(NextResponse.redirect(loginUrl), pathname);
     }
 
     if (payload.role !== "ADMIN") {
-      return withCrawlerBlock(NextResponse.rewrite(new URL("/404", request.url)));
+      return withPathPolicy(NextResponse.rewrite(new URL("/404", request.url)), pathname);
     }
 
-    return withCrawlerBlock(NextResponse.next());
+    return withPathPolicy(NextResponse.next(), pathname);
   }
 
   if (isMemberProtectedPath(pathname)) {
     if (!payload) {
       const loginUrl = new URL(buildMemberAuthUrl({ next: pathname }), request.url);
-      return withCrawlerBlock(NextResponse.redirect(loginUrl));
+      return withPathPolicy(NextResponse.redirect(loginUrl), pathname);
     }
 
-    return withCrawlerBlock(NextResponse.next());
+    return withPathPolicy(NextResponse.next(), pathname);
   }
 
-  return withCrawlerBlock(NextResponse.next());
+  return withPathPolicy(NextResponse.next(), pathname);
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|images/|fonts/).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|images/|fonts/).*)"],
 };

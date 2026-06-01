@@ -11,10 +11,11 @@ import { formatCurrency } from "@/lib/formatCurrency";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
-import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
+import { AccountIdentifiersSummary } from "@/components/shared/AccountIdentifiersSummary";
 import {
   RECENT_ACCOUNT_ACTIVITY_EMPTY_MESSAGE,
   RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
+  RECENT_ACCOUNT_ACTIVITY_LOADING,
 } from "@/lib/activityLabels";
 import { getShareAccountLabel } from "@/lib/institution";
 
@@ -137,9 +138,6 @@ export function AccountsClient() {
             <p className="mt-1 text-sm text-bluewave-gray dark:text-white/[0.58]">
               {getShareAccountLabel(account.accountType)}
             </p>
-            <div className="mt-2">
-              <AccountNumberDisplay accountNumber={account.accountNumber} />
-            </div>
             <div className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]">
               <p className="text-xs font-semibold uppercase text-bluewave-gray dark:text-white/[0.48]">
                 Available balance
@@ -150,9 +148,13 @@ export function AccountsClient() {
               <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.48]">
                 Current balance: {formatCurrency(account.balance)}
               </p>
-              <p className="mt-2 text-xs text-bluewave-gray dark:text-white/[0.48]">
-                Routing {account.routingNumber}
-              </p>
+              <AccountIdentifiersSummary
+                className="mt-4 border-t border-primary-navy/[0.06] pt-4 dark:border-white/[0.08]"
+                compact
+                accountNumber={account.accountNumber}
+                routingNumber={account.routingNumber}
+                currency={account.currency}
+              />
             </div>
             <p className="mt-5 inline-flex items-center gap-1 text-xs font-semibold text-royal-blue dark:text-light-blue">
               View account details
@@ -164,7 +166,7 @@ export function AccountsClient() {
 
       <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
         {transactionsLoading ? (
-          <LoadingState title="Loading transactions" message="Retrieving recent activity." />
+          <LoadingState title="Loading transactions" message={RECENT_ACCOUNT_ACTIVITY_LOADING} />
         ) : transactionsError ? (
           <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-700 dark:text-red-300">
             {transactionsError}

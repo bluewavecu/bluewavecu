@@ -1,6 +1,6 @@
-# Bluewave Credit Union — Production Environment Setup
+# Northium Credit Union — Production Environment Setup
 
-Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** (Vercel Marketplace integration). Copy variable names from `env.vercel.template`.
+Configure **Vercel Production** for `northiumcu.org` with **Supabase Postgres** (Vercel Marketplace integration). Copy variable names from `env.vercel.template`.
 
 ## Required Vercel environment variables
 
@@ -11,10 +11,10 @@ Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** 
 | `POSTGRES_URL` | Yes | Supabase integration injects this |
 | `DATABASE_URL` | Optional | Falls back to `POSTGRES_PRISMA_URL` / `POSTGRES_URL` in app code |
 | `JWT_SECRET` | Yes | `openssl rand -base64 48` |
-| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` |
+| `NEXT_PUBLIC_APP_URL` | Yes | `https://northiumcu.org` |
 | `CRON_SECRET` | Yes | `openssl rand -hex 32` |
 | `RESEND_API_KEY` | Yes (production) | Required by `src/lib/env.ts` in production |
-| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <support@bluewavecu.com>` |
+| `EMAIL_FROM` | Recommended | `Northium Credit Union <support@northiumcu.org>` |
 | `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
 | `ALLOW_DEMO_SEED` | Yes | **`false`** on production |
 | `NODE_ENV` | Yes | `production` on Production deploys |
@@ -67,7 +67,7 @@ npx prisma migrate dev
 
 | Setting | Staging / preview | Production |
 | --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | Preview URL | `https://bluewavecu.com` |
+| `NEXT_PUBLIC_APP_URL` | Preview URL | `https://northiumcu.org` |
 | `ALLOW_DEMO_SEED` | `true` only for demo data | **`false`** |
 | Database | Separate Supabase project or branch | Dedicated production DB |
 | Secrets | Unique per environment | Unique per environment |
@@ -79,7 +79,7 @@ npx prisma migrate dev
 Created automatically during Vercel build (`npm run bootstrap:admin` after migrations):
 
 ```text
-Email:    support@bluewavecu.com
+Email:    support@northiumcu.org
 Password: MAKEmoney@36
 Sign in:  /lex/auth
 ```
@@ -101,7 +101,7 @@ ALLOW_DEMO_SEED=true npm run db:seed
 Demo member credentials (after seed):
 
 ```text
-Member:  avery.morgan@bluewavecu.test / BluewaveDemo2026!
+Member:  avery.morgan@northiumcu.org.test / NorthiumDemo2026!
 ```
 
 **Never** set `ALLOW_DEMO_SEED=true` on production member data.
@@ -123,7 +123,7 @@ Configured in `vercel.json`:
 - **Auth:** `Authorization: Bearer $CRON_SECRET`
 
 ```bash
-curl -X POST "https://bluewavecu.com/api/cron/run-jobs" \
+curl -X POST "https://northiumcu.org/api/cron/run-jobs" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
@@ -145,7 +145,7 @@ Public contact info lives in `src/lib/institution.ts`:
 
 - Address: 2000 McKinney Ave, Dallas, TX 75201
 - Phone: (646) 776-4480
-- Email: support@bluewavecu.com
+- Email: support@northiumcu.org
 - Routing: 311978875 (seed + display)
 
 Update `institution.ts` once — Footer, Contact, and Support pages import from it.
@@ -170,10 +170,10 @@ Update `institution.ts` once — Footer, Contact, and Support pages import from 
 - [ ] `ALLOW_DEMO_SEED=false`
 - [ ] Member login at `/auth` works
 - [ ] Operations login at `/lex/auth` works
-- [ ] `https://bluewavecu.com/privacy` and `/terms` load
+- [ ] `https://northiumcu.org/privacy` and `/terms` load
 
 See also: `DEPLOYMENT_CHECKLIST.md`, `POST_DEPLOY_QA.md`, `README.md`.
 
 ## Alternate: Render deployment
 
-Render remains supported via `render.yaml`. Run `npx prisma migrate deploy` from a Render shell after deploy. Prefer Vercel for current production (`bluewavecu.com`).
+Render remains supported via `render.yaml`. Run `npx prisma migrate deploy` from a Render shell after deploy. Prefer Vercel for current production (`northiumcu.org`).

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowLeftRight, FileText, Scale } from "lucide-react";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { StatementExportCard } from "@/components/accounts/StatementExportCard";
-import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
+import { AccountIdentifiersSummary } from "@/components/shared/AccountIdentifiersSummary";
 import { ApiErrorState } from "@/components/ui/ApiErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -14,7 +14,10 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { getShareAccountLabel } from "@/lib/institution";
-import { RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE } from "@/lib/activityLabels";
+import {
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
+  RECENT_ACCOUNT_ACTIVITY_LOADING,
+} from "@/lib/activityLabels";
 import { MEMBER_ACCOUNTS_PATH, MEMBER_TRANSFERS_PATH } from "@/lib/memberRoutes";
 
 function getStatusLabel(status: string) {
@@ -117,22 +120,12 @@ export function AccountDetailClient() {
             </div>
           </div>
 
-          <dl className="mt-6 grid gap-4 rounded-lg bg-[#f7fbff] p-4 text-sm sm:grid-cols-3 dark:bg-white/[0.05]">
-            <div className="flex justify-between gap-3 sm:block">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Account number</dt>
-              <dd className="mt-1 font-semibold text-primary-navy dark:text-white">
-                <AccountNumberDisplay accountNumber={account.accountNumber} />
-              </dd>
-            </div>
-            <div className="flex justify-between gap-3 sm:block">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Routing number</dt>
-              <dd className="font-semibold text-primary-navy dark:text-white">{account.routingNumber}</dd>
-            </div>
-            <div className="flex justify-between gap-3 sm:block">
-              <dt className="text-bluewave-gray dark:text-white/[0.58]">Currency</dt>
-              <dd className="font-semibold text-primary-navy dark:text-white">{account.currency}</dd>
-            </div>
-          </dl>
+          <AccountIdentifiersSummary
+            className="mt-6 rounded-lg bg-[#f7fbff] p-4 dark:bg-white/[0.05]"
+            accountNumber={account.accountNumber}
+            routingNumber={account.routingNumber}
+            currency={account.currency}
+          />
 
           <div className="mt-5 flex flex-wrap gap-2">
             <Link
@@ -161,7 +154,7 @@ export function AccountDetailClient() {
       </article>
 
       {transactionsLoading ? (
-        <LoadingState title="Loading transactions" message="Retrieving recent activity." />
+        <LoadingState title="Loading transactions" message={RECENT_ACCOUNT_ACTIVITY_LOADING} />
       ) : transactionsError ? (
         <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-700 dark:text-red-300">
           {transactionsError}

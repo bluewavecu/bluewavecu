@@ -1,7 +1,7 @@
 {
-  "name": "bluewavecu",
+  "name": "northiumcu",
   "version": "1.0.0",
-  "description": "Bluewave Credit Union is a modern digital banking website foundation for `bluewavecu.com`, focused on secure finance, seamless online banking, and a premium fintech experience.",
+  "description": "Northium Credit Union is a modern digital banking website foundation for `northiumcu.org`, focused on secure finance, seamless online banking, and a premium fintech experience.",
   "private": true,
   "scripts": {
     "dev": "next dev",

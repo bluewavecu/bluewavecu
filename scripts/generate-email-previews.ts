@@ -19,7 +19,7 @@ writeFileSync(
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Bluewave Email Previews</title>
+    <title>Northium Email Previews</title>
     <style>
       body { font-family: Arial, sans-serif; background: #E8EEF5; color: #0A2A5E; margin: 0; padding: 32px; }
       main { max-width: 960px; margin: 0 auto; }
@@ -34,7 +34,7 @@ writeFileSync(
   </head>
   <body>
     <main>
-      <h1>Bluewave transactional email previews</h1>
+      <h1>Northium transactional email previews</h1>
       <p>Generated locally for review before deploy. Open any template below.</p>
       <ul>
         ${previews

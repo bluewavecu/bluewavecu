@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { BadgeCheck, ChevronRight, Landmark, ShieldCheck } from "lucide-react";
-import { AccountNumberDisplay } from "@/components/shared/AccountNumberDisplay";
+import { AccountIdentifiersSummary } from "@/components/shared/AccountIdentifiersSummary";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { getShareAccountLabel } from "@/lib/institution";
+import { INSTITUTION, getShareAccountLabel } from "@/lib/institution";
 import { sortMemberDisplayAccounts } from "@/lib/sortMemberDisplayAccounts";
 import type { AccountType, DashboardAccount, DashboardLoan } from "@/types/banking";
 
@@ -16,6 +16,8 @@ type DisplayAccount = {
   type: string;
   name: string;
   number: string;
+  routingNumber: string;
+  currency: string;
   available: number;
   status: string;
   accent: string;
@@ -57,6 +59,8 @@ function mapDashboardAccount(account: DashboardAccount): DisplayAccount {
     type: getShareAccountLabel(account.accountType),
     name: account.displayName,
     number: account.accountNumber,
+    routingNumber: INSTITUTION.routingNumber,
+    currency: account.currency,
     available: account.availableBalance,
     status: getStatusLabel(account.status),
     accent: meta.accent,
@@ -102,14 +106,18 @@ export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
                     {account.type}
                   </p>
                   <p className="mt-1 text-xs text-bluewave-gray dark:text-white/[0.54]">{account.name}</p>
-                  <div className="mt-2">
-                    <AccountNumberDisplay accountNumber={account.number} />
-                  </div>
                 </div>
                 <p className="text-sm font-semibold text-primary-navy dark:text-white">
                   {formatCurrency(account.available)}
                 </p>
               </div>
+              <AccountIdentifiersSummary
+                className="mt-4 rounded-lg bg-white/60 p-3 dark:bg-black/15"
+                compact
+                accountNumber={account.number}
+                routingNumber={account.routingNumber}
+                currency={account.currency}
+              />
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-primary-navy/[0.08] dark:bg-white/[0.10]">
                 <div className={`h-full w-2/3 rounded-full bg-gradient-to-r ${account.accent}`} />
               </div>
@@ -156,7 +164,7 @@ export function AccountOverview({ accounts, loans }: AccountOverviewProps) {
             )}
             <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-light-blue">
               <BadgeCheck size={16} aria-hidden="true" />
-              NCUA insured institution
+              Member digital platform
             </span>
           </div>
         </div>

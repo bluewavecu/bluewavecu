@@ -1,5 +1,5 @@
 /**
- * Read-only local database readiness check for Bluewave CU E2E flows.
+ * Read-only local database readiness check for Northium CU E2E flows.
  * Does not mutate balances or post ledger entries.
  *
  * Usage: npm run db:e2e-check
@@ -22,8 +22,8 @@ const RUNTIME_DATABASE_URL_KEYS = [
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const DEMO_MEMBER_EMAIL = "avery.morgan@bluewavecu.test";
-const DEMO_ADMIN_EMAIL = "support@bluewavecu.com";
+const DEMO_MEMBER_EMAIL = "avery.morgan@northiumcu.org.test";
+const DEMO_ADMIN_EMAIL = "support@northiumcu.org";
 
 /** Core ledger / audit tables that must exist after migration */
 const PROTECTED_TABLES = [
@@ -122,7 +122,7 @@ const prisma = new PrismaClient({ adapter });
 let exitCode = 0;
 
 try {
-  console.log("Bluewave CU — database E2E readiness check (read-only)\n");
+  console.log("Northium CU — database E2E readiness check (read-only)\n");
 
   await prisma.$queryRaw`SELECT 1`;
   ok("Prisma connection");

@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { CRAWLER_BLOCK_DIRECTIVE } from "./src/lib/crawlerDefense";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -7,7 +6,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
@@ -23,7 +22,6 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=()",
   },
-  { key: "X-Robots-Tag", value: CRAWLER_BLOCK_DIRECTIVE },
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
@@ -54,12 +52,6 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/webp", "image/avif"],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
   },
   async redirects() {
     return [

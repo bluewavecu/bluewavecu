@@ -4,6 +4,7 @@ import { ArrowRight, Fingerprint } from "lucide-react";
 import { MotionReveal } from "@/components/home/MotionReveal";
 import { ButtonLink } from "@/components/ui/Button";
 import { useTranslation } from "@/i18n/LocaleProvider";
+import { MEMBER_LOGIN_PATH, MEMBER_REGISTER_PATH } from "@/lib/authRoutes";
 
 export function MarketingCtaBand() {
   const { t } = useTranslation();
@@ -26,6 +27,15 @@ export function MarketingCtaBand() {
               </p>
             </div>
             <div className="flex w-full flex-col gap-4 lg:min-w-[300px]">
+              <ButtonLink
+                href={MEMBER_LOGIN_PATH}
+                variant="secondary"
+                size="lg"
+                className="w-full justify-center border-classic-gold/30 bg-white text-primary-navy hover:bg-white/95"
+              >
+                {t("marketing.home.loginToOnlineBanking")}
+                <Fingerprint size={18} aria-hidden="true" />
+              </ButtonLink>
               <div className="rounded-sm border border-classic-gold/30 bg-white p-5 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-classic-gold">
                   {t("nav.openAccount")}
@@ -34,7 +44,7 @@ export function MarketingCtaBand() {
                   {t("marketing.ctaPrimary")}
                 </p>
                 <ButtonLink
-                  href="/auth/register"
+                  href={MEMBER_REGISTER_PATH}
                   variant="primary"
                   size="lg"
                   className="mt-5 w-full justify-center shadow-[0_20px_50px_rgba(0,168,232,0.35)]"
@@ -43,15 +53,6 @@ export function MarketingCtaBand() {
                   <ArrowRight size={18} aria-hidden="true" />
                 </ButtonLink>
               </div>
-              <ButtonLink
-                href="/auth/login"
-                variant="secondary"
-                size="lg"
-                className="w-full justify-center border-classic-gold/30"
-              >
-                {t("marketing.ctaSecondary")}
-                <Fingerprint size={18} aria-hidden="true" />
-              </ButtonLink>
             </div>
           </div>
         </MotionReveal>

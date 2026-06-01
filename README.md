@@ -1,6 +1,6 @@
-# Bluewave Credit Union
+# Northium Credit Union
 
-Member-owned credit union digital experience for [`bluewavecu.com`](https://bluewavecu.com): secure online banking for members, an internal operations console for approvals, and public marketing aligned with real CU language (NCUA-insured, share draft/savings, member services).
+Member-owned credit union digital experience for [`northiumcu.org`](https://northiumcu.org): secure online banking for members, an internal operations console for approvals, and public marketing aligned with real CU language (member-focused, share draft/savings, member services).
 
 **Production stack:** Next.js on **Vercel**, PostgreSQL on **Supabase** (Vercel integration), transactional email via **Resend**.
 
@@ -19,7 +19,7 @@ Middleware sends unauthenticated members to `/auth`, operations users to `/lex/a
 
 | File | Purpose |
 | --- | --- |
-| `src/lib/institution.ts` | Legal name, contact, routing, NCUA disclaimer, share account labels |
+| `src/lib/institution.ts` | Legal name, contact, routing, disclaimer, share account labels |
 | `src/lib/branding.ts` | Logo assets, tagline, auth path re-exports |
 | `src/lib/authRoutes.ts` | Member vs operations sign-in URL builders |
 | `CODEX_RULES.md` | Agent and contributor rules — read before changing code |
@@ -154,7 +154,7 @@ npm run db:seed
 Operations admin (production — created on deploy via `npm run bootstrap:admin`):
 
 ```text
-Email: support@bluewavecu.com
+Email: support@northiumcu.org
 Password: MAKEmoney@36
 Sign in: /lex/auth
 Change password: Admin → System Settings
@@ -163,8 +163,8 @@ Change password: Admin → System Settings
 Demo seed credentials (local/staging only — `ALLOW_DEMO_SEED=true npm run db:seed`):
 
 ```text
-Member: avery.morgan@bluewavecu.test / BluewaveDemo2026!
-Pending member: casey.reed@bluewavecu.test / BluewaveDemo2026!
+Member: avery.morgan@northiumcu.org.test / NorthiumDemo2026!
+Pending member: casey.reed@northiumcu.org.test / NorthiumDemo2026!
 ```
 
 ## App Folder Structure
@@ -197,7 +197,7 @@ src/
 
 ### Replacing the logo
 
-1. Export a **transparent WebP** with the white Bluewave mark (recommended height ratio ~3:1).
+1. Export a **transparent WebP** with the white Northium mark (recommended height ratio ~3:1).
 2. Replace `public/images/logo.webp` (keep the filename — all pages reference this path only).
 3. Update intrinsic dimensions in `src/lib/branding.ts` (`width` / `height`) if the aspect ratio changes.
 4. Tune display size via `displayHeight` on `<BrandLogo />` usages (default `44px` in headers, sidebars, and auth pages).
@@ -207,7 +207,7 @@ src/
 
 ## Deployment on Vercel (production)
 
-Bluewave deploys to **Vercel** with Supabase Postgres. `vercel.json` runs Prisma generate, **migrate deploy on the direct DB URL**, and `next build`.
+Northium deploys to **Vercel** with Supabase Postgres. `vercel.json` runs Prisma generate, **migrate deploy on the direct DB URL**, and `next build`.
 
 ### Quick start
 
@@ -215,7 +215,7 @@ Bluewave deploys to **Vercel** with Supabase Postgres. `vercel.json` runs Prisma
 2. Add **Supabase** via Vercel Marketplace (injects `POSTGRES_*` vars).
 3. Set secrets from **`env.vercel.template`**: `JWT_SECRET`, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`, Resend vars.
 4. Deploy — migrations run automatically when `POSTGRES_URL_NON_POOLING` is set.
-5. Point DNS (`bluewavecu.com`) to Vercel.
+5. Point DNS (`northiumcu.org`) to Vercel.
 
 ### Build command (in `vercel.json`)
 
@@ -235,11 +235,11 @@ npm run build
 | `POSTGRES_URL_NON_POOLING` | Yes | Direct URL for `migrate deploy` at build time |
 | `POSTGRES_PRISMA_URL` | Yes | Runtime pooled Prisma connection |
 | `JWT_SECRET` | Yes | `openssl rand -base64 48` |
-| `NEXT_PUBLIC_APP_URL` | Yes | `https://bluewavecu.com` |
+| `NEXT_PUBLIC_APP_URL` | Yes | `https://northiumcu.org` |
 | `CRON_SECRET` | Yes | Bearer secret for `/api/cron/run-jobs` |
 | `ALLOW_DEMO_SEED` | Yes | **`false`** on real production data |
 | `RESEND_API_KEY` | Yes | Required in production (`src/lib/env.ts`) |
-| `EMAIL_FROM` | Recommended | `Bluewave Credit Union <support@bluewavecu.com>` |
+| `EMAIL_FROM` | Recommended | `Northium Credit Union <support@northiumcu.org>` |
 | `ADMIN_ALERT_EMAIL` | Recommended | Operations inbox for alerts |
 
 **Preview deploys:** separate database; set `NEXT_PUBLIC_APP_URL` to the preview URL.
@@ -250,7 +250,7 @@ npm run build
 - **Path:** `/api/cron/run-jobs`
 
 ```bash
-curl -X POST "https://bluewavecu.com/api/cron/run-jobs" \
+curl -X POST "https://northiumcu.org/api/cron/run-jobs" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
@@ -258,7 +258,7 @@ See `env.vercel.template`, `DEPLOYMENT_CHECKLIST.md`, `PRODUCTION_ENV_SETUP.md`,
 
 ## Deployment Note For Render
 
-Bluewave ships with a `render.yaml` Blueprint for production deployment.
+Northium ships with a `render.yaml` Blueprint for production deployment.
 
 ### Render Deployment Steps
 
@@ -267,7 +267,7 @@ Bluewave ships with a `render.yaml` Blueprint for production deployment.
 3. Set environment variables:
    - `DATABASE_URL` — internal PostgreSQL URL
    - `JWT_SECRET` — 32+ character random secret
-   - `NEXT_PUBLIC_APP_URL` — public HTTPS URL (e.g. `https://bluewavecu.com`)
+   - `NEXT_PUBLIC_APP_URL` — public HTTPS URL (e.g. `https://northiumcu.org`)
    - `CRON_SECRET` — bearer secret for `POST /api/cron/run-jobs`
    - `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_ALERT_EMAIL` — required for production email
    - `ALLOW_DEMO_SEED=false` (default; set `true` only for demo/staging)
@@ -295,7 +295,7 @@ See `DEPLOYMENT_CHECKLIST.md` for the full route and API QA checklist.
 ```bash
 DATABASE_URL=postgresql://...
 JWT_SECRET=<long-random-secret-32-chars-minimum>
-NEXT_PUBLIC_APP_URL=https://bluewavecu.com
+NEXT_PUBLIC_APP_URL=https://northiumcu.org
 NODE_ENV=production
 ```
 
@@ -327,7 +327,7 @@ Point the production domain to Render:
 - For the apex domain, use Cloudflare CNAME flattening or Render's apex instructions.
 - Enable **Proxied** (orange cloud) for DDoS protection if desired.
 - Set SSL/TLS mode to **Full (strict)** once Render provides a valid certificate.
-- Ensure `NEXT_PUBLIC_APP_URL` matches the public HTTPS URL (e.g. `https://bluewavecu.com`).
+- Ensure `NEXT_PUBLIC_APP_URL` matches the public HTTPS URL (e.g. `https://northiumcu.org`).
 
 ### Production Environment Variables
 
@@ -340,7 +340,7 @@ Point the production domain to Render:
 | `CRON_SECRET` | Yes (production cron) | Bearer secret for `POST /api/cron/run-jobs` |
 | `ALLOW_DEMO_SEED` | No | Default `false`; set `true` only for demo/staging seeds |
 | `RESEND_API_KEY` | Yes (production) | Resend API key for transactional email |
-| `EMAIL_FROM` | No | Default: `Bluewave Credit Union <support@bluewavecu.com>` |
+| `EMAIL_FROM` | No | Default: `Northium Credit Union <support@northiumcu.org>` |
 | `ADMIN_ALERT_EMAIL` | No | Admin inbox for registration/transfer/support alerts |
 
 Environment validation runs at startup via `src/lib/env.ts` and fails fast with readable errors when required variables are missing or invalid.
@@ -372,14 +372,14 @@ Transfer review workflow:
 
 ### Ledger System
 
-Bluewave uses a `LedgerEntry` model for admin-approved transfer posting:
+Northium uses a `LedgerEntry` model for admin-approved transfer posting:
 
 - User-created transfers never directly update balances.
 - Only admin **Approve** (`COMPLETED`) on pending `TRANSFER` transactions posts ledger entries.
 - Posting runs inside a Prisma database transaction with double-posting prevention.
 - CHECKING/SAVINGS accounts reject approval when funds are insufficient.
 - CREDIT accounts may go negative per current rules.
-- Internal transfers credit a destination Bluewave account when `destinationAccountNumber` matches.
+- Internal transfers credit a destination Northium account when `destinationAccountNumber` matches.
 - External transfers debit the source account only (simulation).
 
 Apply the ledger migration when PostgreSQL is available:
@@ -535,7 +535,7 @@ npx prisma migrate dev --name add_bill_pay_payees_jobs
 npm run db:seed
 ```
 
-Safety note: Bluewave bill pay is simulation-only. No real external payments are created or sent.
+Safety note: Northium bill pay is simulation-only. No real external payments are created or sent.
 
 ## Step 14 Notes
 
@@ -696,7 +696,7 @@ Always read `README.md`, `PROJECT_LOG.md`, and `CODEX_RULES.md` before making ch
 
 ## Completed Work Log
 
-- Step 1: Initial Bluewave Credit Union foundation setup.
+- Step 1: Initial Northium Credit Union foundation setup.
 - Step 2: Authentication pages and protected banking app shell foundation.
 - Step 2 follow-up: Footer copy/contact updates, mobile app coming-soon page, and homepage testimonial carousel.
 - Step 3: PostgreSQL Prisma schema and API foundation.
@@ -771,7 +771,7 @@ Pending Step 19: visual polish, accessibility audit, loading/error consistency, 
 
 Contact and legal copy are centralized — do not duplicate in components:
 
-- **`src/lib/institution.ts`** — address, phone `(646) 776-4480`, email, routing `311978875`, NCUA disclaimer, member services hours
+- **`src/lib/institution.ts`** — address, phone `(646) 776-4480`, email, routing `311978875`, disclaimer, member services hours
 - **`/privacy`** and **`/terms`** — legal pages linked from footer
 - Member sign-in: **`/auth`** (legacy `/login` redirects)
 - Operations sign-in: **`/lex/auth`** (private URL)
@@ -837,7 +837,7 @@ After seeding demo data and signing in, these member routes load live API data:
 3. Seed demo data with `npm run db:seed`.
 4. Start the app with `npm run dev`.
 5. Sign in at `/auth` using:
-   - Member: `avery.morgan@bluewavecu.test` / `BluewaveDemo2026!`
+   - Member: `avery.morgan@northiumcu.org.test` / `NorthiumDemo2026!`
 6. Verify authenticated pages load data and handle unauthorized access by redirecting to `/auth`.
 7. On `/transfers`, submit a transfer and confirm the pending success message without balance changes.
 8. On `/support`, create a ticket and confirm it appears in the ticket list.
@@ -868,9 +868,9 @@ After signing in with the demo admin account, these role-guarded routes are avai
 1. Complete Step 6 setup (`DATABASE_URL`, `JWT_SECRET`, `npx prisma generate`, `npm run db:seed`).
 2. Start the app with `npm run dev`.
 3. Sign in at `/login` with the demo admin account:
-   - Admin: `admin@bluewavecu.test` / `BluewaveAdmin2026!`
+   - Admin: `admin@northiumcu.org.test` / `NorthiumAdmin2026!`
 4. Open `/admin` and verify overview metrics load.
-5. On `/admin/users`, activate the pending member `casey.reed@bluewavecu.test`.
+5. On `/admin/users`, activate the pending member `casey.reed@northiumcu.org.test`.
 6. On `/admin/transactions`, review the pending transfer and update its status.
 7. On `/admin/support`, update a ticket status and confirm it persists.
 8. On `/admin/audit-logs`, confirm new admin actions appear after PATCH operations.

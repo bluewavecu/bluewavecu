@@ -6,7 +6,10 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { RECENT_ACCOUNT_ACTIVITY_DESCRIPTION } from "@/lib/activityLabels";
+import {
+  RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE,
+  RECENT_ACCOUNT_ACTIVITY_LOADING,
+} from "@/lib/activityLabels";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 const transactionFilters = ["All accounts", "Last 30 days", "Posted activity"];
@@ -18,7 +21,7 @@ export function TransactionsClient() {
     return (
       <LoadingState
         title="Loading transactions"
-        message="Retrieving your recent transaction activity."
+        message={RECENT_ACCOUNT_ACTIVITY_LOADING}
       />
     );
   }
@@ -55,19 +58,15 @@ export function TransactionsClient() {
           ))}
         </div>
         <p className="mt-5 text-sm leading-6 text-bluewave-gray dark:text-white/[0.58]">
-          Showing {data.recentTransactions.length} recent records. Use the Transactions page for
-          search, filters, and statement exports.
+          Open Transactions for search, filters, and exports.
         </p>
       </aside>
 
       {data.recentTransactions.length > 0 ? (
-        <RecentTransactions
-          transactions={data.recentTransactions}
-          description={RECENT_ACCOUNT_ACTIVITY_DESCRIPTION}
-        />
+        <RecentTransactions transactions={data.recentTransactions} />
       ) : (
         <EmptyState
-          title="No transactions found"
+          title={RECENT_ACCOUNT_ACTIVITY_EMPTY_TITLE}
           message="No transactions are available for the selected period."
         />
       )}

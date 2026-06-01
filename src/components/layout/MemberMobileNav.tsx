@@ -56,8 +56,11 @@ export function MemberMobileNav() {
 
   useEffect(() => {
     if (!open) {
+      document.body.style.overflow = "";
       return;
     }
+
+    document.body.style.overflow = "hidden";
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -66,7 +69,10 @@ export function MemberMobileNav() {
     }
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open]);
 
   return (
@@ -76,32 +82,32 @@ export function MemberMobileNav() {
         aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary-navy/20 bg-white text-primary-navy shadow-[0_8px_24px_rgba(10,42,94,0.18)] transition hover:border-ocean-blue/50 hover:bg-[#f7fbff] dark:border-white/25 dark:bg-[#0d1f38] dark:text-white dark:shadow-[0_8px_24px_rgba(0,0,0,0.45)] lg:hidden"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary-navy/25 bg-primary-navy text-white shadow-[0_10px_28px_rgba(10,42,94,0.28)] transition hover:bg-royal-blue lg:hidden"
       >
         {open ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[70] lg:hidden">
+        <div className="fixed inset-0 z-[80] lg:hidden">
           <button
             type="button"
             aria-label={t("nav.closeMenu")}
-            className="absolute inset-0 bg-primary-navy/55 backdrop-blur-md"
+            className="absolute inset-0 bg-primary-navy/70 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
           <aside
             role="dialog"
             aria-modal="true"
             aria-label={t("nav.openMenu")}
-            className="absolute inset-y-0 left-0 flex w-[min(100%,20rem)] flex-col border-r border-primary-navy/[0.08] bg-white shadow-2xl dark:border-white/[0.08] dark:bg-[#071526]"
+            className="absolute inset-y-0 left-0 flex w-[min(100%,21rem)] flex-col bg-white shadow-2xl dark:bg-[#071526]"
           >
-            <div className="flex items-center justify-between border-b border-primary-navy/[0.08] px-4 py-4 dark:border-white/[0.08]">
-              <p className="text-sm font-semibold text-primary-navy dark:text-white">Menu</p>
+            <div className="flex items-center justify-between border-b border-primary-navy/[0.10] bg-brand-navy px-4 py-4 text-white dark:border-white/[0.10]">
+              <p className="text-sm font-semibold">Bluewave banking</p>
               <button
                 type="button"
                 aria-label={t("nav.closeMenu")}
                 onClick={() => setOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary-navy transition hover:bg-primary-navy/[0.06] dark:text-white dark:hover:bg-white/[0.08]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
               >
                 <X size={18} aria-hidden="true" />
               </button>
@@ -124,10 +130,10 @@ export function MemberMobileNav() {
                           href={item.href}
                           onClick={() => setOpen(false)}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
+                            "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition",
                             active
                               ? "bg-ocean-blue text-primary-navy shadow-[0_14px_34px_rgba(0,168,232,0.24)]"
-                              : "text-primary-navy/[0.72] hover:bg-primary-navy/[0.06] hover:text-primary-navy dark:text-white/[0.70] dark:hover:bg-white/[0.08] dark:hover:text-white",
+                              : "text-primary-navy hover:bg-primary-navy/[0.06] dark:text-white/[0.88] dark:hover:bg-white/[0.08]",
                           )}
                         >
                           <Icon size={18} aria-hidden="true" />
@@ -140,11 +146,11 @@ export function MemberMobileNav() {
               ))}
             </nav>
 
-            <div className="border-t border-primary-navy/[0.08] p-4 dark:border-white/[0.08]">
+            <div className="border-t border-primary-navy/[0.08] bg-[#f7fbff] p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
-                className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary-navy/[0.72] transition hover:bg-primary-navy/[0.06] dark:text-white/[0.70] dark:hover:bg-white/[0.08]"
+                className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary-navy transition hover:bg-primary-navy/[0.06] dark:text-white dark:hover:bg-white/[0.08]"
               >
                 <LogOut size={16} aria-hidden="true" />
                 {t("common.exitWebsite")}
