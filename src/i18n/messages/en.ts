@@ -14,6 +14,7 @@ export const en = {
     support: "Support",
     mobileApp: "Mobile app",
     login: "Sign in",
+    join: "Join",
     openAccount: "Apply for membership",
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -70,8 +71,7 @@ export const en = {
     memberLogin: {
       eyebrow: "Online banking",
       title: "Member sign in",
-      description:
-        "Enter your username and password to access accounts, transfers, and account services.",
+      description: "",
       marketingBadge: "Secure online banking",
       marketingHeadline: "Sign in to manage your accounts.",
       marketingBody:
@@ -95,7 +95,8 @@ export const en = {
     register: {
       eyebrow: "Membership",
       title: "Open your membership",
-      description: "Create your Bluewave online banking profile in a few steps.",
+      description:
+        "Tell us about yourself to start your Bluewave membership. We will email a verification code before you can sign in.",
       marketingBadge: "Member-owned banking",
       marketingHeadline: "Join Bluewave Credit Union.",
       marketingBody:

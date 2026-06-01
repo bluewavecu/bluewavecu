@@ -73,7 +73,7 @@ export function RegisterForm() {
     }
 
     if (transactionPin.length !== 6) {
-      setError("Choose a 6-digit transaction PIN.");
+      setError("Choose a 6-digit PIN.");
       return;
     }
 
@@ -125,7 +125,8 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-primary-navy dark:text-white">Full name</legend>
             <AuthField label="First name" htmlFor="register-first-name" icon={UserRound}>
               <input
                 id="register-first-name"
@@ -146,7 +147,7 @@ export function RegisterForm() {
                 className={authInputClassName}
               />
             </AuthField>
-          </div>
+          </fieldset>
 
           <AuthField label="Username" htmlFor="register-username" icon={AtSign}>
             <input
@@ -263,22 +264,6 @@ export function RegisterForm() {
               />
             </AuthField>
 
-            <div className="mt-4">
-              <AuthField
-                label="Apt, suite, or unit (optional)"
-                htmlFor="register-address-2"
-                icon={MapPin}
-              >
-                <input
-                  id="register-address-2"
-                  type="text"
-                  name="addressLine2"
-                  autoComplete="address-line2"
-                  className={authInputClassName}
-                />
-              </AuthField>
-            </div>
-
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <AuthField label="City" htmlFor="register-city" icon={MapPin} className="sm:col-span-1">
                 <input
@@ -347,7 +332,7 @@ export function RegisterForm() {
             </AuthField>
           </div>
 
-          <AuthField label="Transaction PIN" htmlFor="register-transaction-pin" icon={LockKeyhole}>
+          <AuthField label="PIN" htmlFor="register-transaction-pin" icon={LockKeyhole}>
             <PasswordInput
               id="register-transaction-pin"
               name="transactionPin"

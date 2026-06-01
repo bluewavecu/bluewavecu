@@ -120,9 +120,11 @@ export function AuthPageShell({ variant, wide = false, children }: AuthPageShell
                   {t(`${prefix}.title`)}
                 </h2>
                 <div className="gold-rule mt-4 max-w-[8rem]" aria-hidden="true" />
-                <p className="mt-1 text-sm leading-5 text-bluewave-gray dark:text-white/[0.62] sm:mt-2 sm:leading-6">
-                  {t(`${prefix}.description`)}
-                </p>
+                {t(`${prefix}.description`) ? (
+                  <p className="mt-1 text-sm leading-5 text-bluewave-gray dark:text-white/[0.62] sm:mt-2 sm:leading-6">
+                    {t(`${prefix}.description`)}
+                  </p>
+                ) : null}
               </div>
 
               <div
