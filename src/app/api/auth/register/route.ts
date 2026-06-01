@@ -7,6 +7,8 @@ import {
   sendEmailVerificationOtpEmail,
   sendMembershipApplicationAdminEmail,
 } from "@/lib/email";
+import { emailWasDelivered } from "@/lib/emailDelivery";
+import { INSTITUTION } from "@/lib/institution";
 import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
 import { describeRequestedAccounts } from "@/lib/memberAccounts";
 import { getPrisma } from "@/lib/prisma";
@@ -88,12 +90,15 @@ export async function POST(request: NextRequest) {
 
     const challenge = await createEmailVerificationOtpChallenge(user.id);
 
-    void sendEmailVerificationOtpEmail({
+    const verificationEmailResult = await sendEmailVerificationOtpEmail({
       email: user.email,
       fullName: user.fullName,
       code: challenge.code,
+      challengeId: challenge.challengeId,
       expiresMinutes: challenge.expiresMinutes,
     });
+
+    const emailSent = emailWasDelivered(verificationEmailResult);
 
     const formattedDob = input.dateOfBirth.toISOString().slice(0, 10);
     const formattedAddress = formatAddress(input);
@@ -132,11 +137,21 @@ export async function POST(request: NextRequest) {
     });
 
     void writeSecurityEvent({
-      eventType: "EMAIL_VERIFICATION_SENT",
+      eventType: emailSent ? "EMAIL_VERIFICATION_SENT" : "EMAIL_VERIFICATION_FAILED",
       actorId: user.id,
       entityId: challenge.challengeId,
-      message: `Email verification code sent to ${maskEmailAddress(user.email)}.`,
-      severity: "INFO",
+      message: emailSent
+        ? `Email verification code sent to ${maskEmailAddress(user.email)}.`
+        : `Failed to send email verification code to ${maskEmailAddress(user.email)}.`,
+      severity: emailSent ? "INFO" : "ERROR",
+      metadata: emailSent
+        ? undefined
+        : {
+            error:
+              verificationEmailResult.ok === false
+                ? verificationEmailResult.error
+                : "Email not delivered",
+          },
     });
 
     return apiSuccess(
@@ -145,7 +160,10 @@ export async function POST(request: NextRequest) {
         verificationChallengeId: challenge.challengeId,
         username: user.username,
         maskedEmail: maskEmailAddress(user.email),
-        message: `Enter the 6-digit code sent to ${maskEmailAddress(user.email)}.`,
+        emailSent,
+        message: emailSent
+          ? `Enter the 6-digit code sent to ${maskEmailAddress(user.email)}.`
+          : `Your application was received, but we could not email a verification code. Use Resend code below or contact ${INSTITUTION.email}.`,
       },
       { status: 201 },
     );

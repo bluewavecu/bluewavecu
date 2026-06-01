@@ -9,6 +9,7 @@ import {
   trustDevice,
 } from "@/lib/deviceTrust";
 import { sendAdminAlertEmail, sendLoginAlertEmail, sendLoginOtpEmail } from "@/lib/email";
+import { emailWasDelivered, getMemberEmailDeliveryError } from "@/lib/emailDelivery";
 import { writeAdminEvent, writeSecurityEvent } from "@/lib/eventLog";
 import { createLoginOtpChallenge, verifyLoginOtpChallenge } from "@/lib/loginOtp";
 import { MEMBER_SECURITY_PATH } from "@/lib/memberRoutes";
@@ -320,12 +321,25 @@ export async function POST(request: NextRequest) {
       request,
     });
 
-    void sendLoginOtpEmail({
+    const otpEmailResult = await sendLoginOtpEmail({
       email: user.email,
       fullName: user.fullName,
       code: challenge.code,
+      challengeId: challenge.challengeId,
       deviceName: challenge.deviceName,
     });
+
+    if (!emailWasDelivered(otpEmailResult)) {
+      void writeSecurityEvent({
+        eventType: "LOGIN_OTP_FAILED",
+        actorId: user.id,
+        entityId: challenge.challengeId,
+        message: `Failed to send sign-in verification code to ${maskEmailAddress(user.email)}.`,
+        severity: "ERROR",
+      });
+
+      return apiError(getMemberEmailDeliveryError(otpEmailResult), 503);
+    }
 
     void writeSecurityEvent({
       eventType: "LOGIN_OTP_SENT",

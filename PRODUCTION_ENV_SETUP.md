@@ -1,6 +1,6 @@
-# Northium Credit Union — Production Environment Setup
+# Bluewave Credit Union — Production Environment Setup
 
-Configure **Vercel Production** for `northiumcu.org` with **Supabase Postgres** (Vercel Marketplace integration). Copy variable names from `env.vercel.template`.
+Configure **Vercel Production** for `bluewavecu.com` with **Supabase Postgres** (Vercel Marketplace integration). Copy variable names from `env.vercel.template`.
 
 ## Required Vercel environment variables
 

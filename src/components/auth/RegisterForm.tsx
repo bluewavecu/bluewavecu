@@ -117,6 +117,11 @@ export function RegisterForm() {
         email: result.data.maskedEmail,
         message: result.data.message,
       });
+
+      if (!result.data.emailSent) {
+        params.set("emailWarning", "1");
+      }
+
       router.push(`${MEMBER_VERIFY_EMAIL_PATH}?${params.toString()}`);
       router.refresh();
     }

@@ -4,6 +4,7 @@ import {
   createEmailVerificationOtpChallenge,
 } from "@/lib/emailVerificationOtp";
 import { sendEmailVerificationOtpEmail } from "@/lib/email";
+import { emailWasDelivered, getMemberEmailDeliveryError } from "@/lib/emailDelivery";
 import { writeSecurityEvent } from "@/lib/eventLog";
 import { getPrisma } from "@/lib/prisma";
 import { enforceRateLimit, rateLimitPresets } from "@/lib/rateLimit";
@@ -38,12 +39,28 @@ export async function POST(request: NextRequest) {
 
     const challenge = await createEmailVerificationOtpChallenge(user.id);
 
-    void sendEmailVerificationOtpEmail({
+    const emailResult = await sendEmailVerificationOtpEmail({
       email: user.email,
       fullName: user.fullName,
       code: challenge.code,
+      challengeId: challenge.challengeId,
       expiresMinutes: challenge.expiresMinutes,
     });
+
+    if (!emailWasDelivered(emailResult)) {
+      void writeSecurityEvent({
+        eventType: "EMAIL_VERIFICATION_FAILED",
+        actorId: user.id,
+        entityId: challenge.challengeId,
+        message: `Failed to resend email verification code to ${maskEmailAddress(user.email)}.`,
+        severity: "ERROR",
+        metadata: {
+          error: getMemberEmailDeliveryError(emailResult),
+        },
+      });
+
+      return apiError(getMemberEmailDeliveryError(emailResult), 503);
+    }
 
     void writeSecurityEvent({
       eventType: "EMAIL_VERIFICATION_SENT",

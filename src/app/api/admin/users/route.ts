@@ -137,10 +137,11 @@ export async function POST(request: NextRequest) {
       });
     } else {
       const challenge = await createEmailVerificationOtpChallenge(user.id);
-      void sendEmailVerificationOtpEmail({
+      await sendEmailVerificationOtpEmail({
         email: user.email,
         fullName: user.fullName,
         code: challenge.code,
+        challengeId: challenge.challengeId,
         expiresMinutes: challenge.expiresMinutes,
       });
     }

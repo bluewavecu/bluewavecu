@@ -33,6 +33,7 @@ export function VerifyEmailForm({
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [emailDeliveryWarning, setEmailDeliveryWarning] = useState(false);
 
   useEffect(() => {
     if (initialUsername) {
@@ -43,6 +44,7 @@ export function VerifyEmailForm({
     const queryChallengeId = searchParams.get("challenge") ?? "";
     const queryMessage = searchParams.get("message") ?? "";
     const queryMaskedEmail = searchParams.get("email") ?? "";
+    const queryEmailWarning = searchParams.get("emailWarning") === "1";
 
     if (queryUsername) {
       queueMicrotask(() => setUsername(queryUsername));
@@ -58,6 +60,10 @@ export function VerifyEmailForm({
 
     if (queryMaskedEmail) {
       queueMicrotask(() => setMaskedEmail(queryMaskedEmail));
+    }
+
+    if (queryEmailWarning) {
+      queueMicrotask(() => setEmailDeliveryWarning(true));
     }
   }, [initialUsername, searchParams]);
 
@@ -118,11 +124,22 @@ export function VerifyEmailForm({
     setMaskedEmail(result.data.maskedEmail);
     setOtpMessage(result.data.message);
     setOtpCode("");
+    setEmailDeliveryWarning(false);
     setSuccess("A new verification code was sent.");
   }
 
   return (
     <div className="space-y-5">
+      {emailDeliveryWarning ? (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-primary-navy dark:text-white">
+          <p className="font-semibold">Verification email not delivered</p>
+          <p className="mt-1 text-bluewave-gray dark:text-white/70">
+            Tap <strong>Resend verification code</strong> below. Check spam and confirm your inbox
+            address, then contact member services if it still does not arrive.
+          </p>
+        </div>
+      ) : null}
+
       <div className="rounded-lg border border-ocean-blue/20 bg-ocean-blue/10 px-4 py-3 text-sm text-primary-navy dark:text-white">
         <p className="inline-flex items-start gap-2 font-medium">
           <ShieldCheck size={18} className="mt-0.5 shrink-0" aria-hidden="true" />

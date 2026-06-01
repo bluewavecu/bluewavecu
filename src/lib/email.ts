@@ -13,8 +13,14 @@ import {
   type EmailDetailRow,
 } from "@/lib/emailTemplate";
 import { INSTITUTION } from "@/lib/institution";
+import { getOfficialDomain } from "@/lib/siteUrl";
 
 const DEFAULT_EMAIL_FROM = `${INSTITUTION.legalName} <${INSTITUTION.email}>`;
+
+export type EmailSendResult =
+  | { ok: true; mode: "sent"; id?: string }
+  | { ok: true; mode: "logged" }
+  | { ok: false; mode: "not_configured" | "rejected" | "error"; error: string };
 
 export type EmailPayload = {
   to: string | string[];
@@ -39,6 +45,26 @@ export type EmailConfig = {
 
 let cachedEmailConfig: EmailConfig | null = null;
 
+function extractEmailAddress(fromValue: string) {
+  const match = fromValue.match(/<([^>]+)>/);
+  return (match?.[1] ?? fromValue).trim().toLowerCase();
+}
+
+function warnIfEmailFromDomainMismatch(emailFrom: string, isProduction: boolean) {
+  if (!isProduction) {
+    return;
+  }
+
+  const fromDomain = extractEmailAddress(emailFrom).split("@")[1];
+  const officialDomain = getOfficialDomain();
+
+  if (fromDomain && fromDomain !== officialDomain) {
+    console.error(
+      `[email] EMAIL_FROM uses @${fromDomain} but the app domain is ${officialDomain}. Resend only delivers from verified domains — set EMAIL_FROM to an address on your verified domain.`,
+    );
+  }
+}
+
 export function getEmailConfig(): EmailConfig {
   if (cachedEmailConfig) {
     return cachedEmailConfig;
@@ -50,6 +76,12 @@ export function getEmailConfig(): EmailConfig {
   const adminAlertEmail = readEnv("ADMIN_ALERT_EMAIL")?.toLowerCase() || INSTITUTION.email;
   const isProduction = nodeEnv === "production";
 
+  warnIfEmailFromDomainMismatch(emailFrom, isProduction);
+
+  if (isProduction && !resendApiKey) {
+    console.error("[email] RESEND_API_KEY is not set — transactional email will not be delivered.");
+  }
+
   cachedEmailConfig = {
     resendApiKey: resendApiKey ?? null,
     emailFrom,
@@ -58,6 +90,10 @@ export function getEmailConfig(): EmailConfig {
   };
 
   return cachedEmailConfig;
+}
+
+export function isEmailDeliveryConfigured() {
+  return Boolean(getEmailConfig().resendApiKey);
 }
 
 function logEmailPayload(payload: EmailPayload, reason: string) {
@@ -94,22 +130,36 @@ function buildTransactionalEmail(options: {
 }
 
 function buildSendAttachments(payload: EmailPayload) {
-  const logo = getEmailLogoInlineAttachment();
-  const attachments = payload.attachments ?? [];
+  const attachments = [...(payload.attachments ?? [])];
 
-  if (attachments.some((attachment) => attachment.contentId === logo.contentId)) {
-    return attachments;
+  try {
+    const logo = getEmailLogoInlineAttachment();
+
+    if (!attachments.some((attachment) => attachment.contentId === logo.contentId)) {
+      attachments.push(logo);
+    }
+  } catch (error) {
+    console.warn("[email] Logo attachment skipped:", error);
   }
 
-  return [...attachments, logo];
+  return attachments;
 }
 
-export async function sendEmail(payload: EmailPayload) {
+export async function sendEmail(payload: EmailPayload): Promise<EmailSendResult> {
   const config = getEmailConfig();
 
   if (!config.resendApiKey) {
     logEmailPayload(payload, "RESEND_API_KEY missing — logged instead of sent");
-    return { ok: true as const, mode: "logged" as const };
+
+    if (config.isProduction) {
+      return {
+        ok: false,
+        mode: "not_configured",
+        error: "RESEND_API_KEY is not configured",
+      };
+    }
+
+    return { ok: true, mode: "logged" };
   }
 
   const resend = new Resend(config.resendApiKey);
@@ -144,19 +194,24 @@ export async function sendEmail(payload: EmailPayload) {
     console.error("[email] Failed to send:", error.message, {
       subject: payload.subject,
       to: payload.to,
+      from: config.emailFrom,
     });
-    return { ok: false as const, mode: "sent" as const, error: error.message };
+    return { ok: false, mode: "rejected", error: error.message };
   }
 
-  return { ok: true as const, mode: "sent" as const, id: data?.id };
+  return { ok: true, mode: "sent", id: data?.id };
 }
 
-export async function safeSendEmail(payload: EmailPayload, context: string) {
+export async function safeSendEmail(
+  payload: EmailPayload,
+  context: string,
+): Promise<EmailSendResult> {
   try {
     return await sendEmail(payload);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Email delivery failed";
     console.error(`[email] ${context} failed:`, error);
-    return { ok: false as const, mode: "error" as const };
+    return { ok: false, mode: "error", error: message };
   }
 }
 
@@ -191,6 +246,7 @@ export async function sendEmailVerificationOtpEmail(params: {
   email: string;
   fullName: string;
   code: string;
+  challengeId: string;
   expiresMinutes?: number;
 }) {
   const expiresMinutes = params.expiresMinutes ?? 15;
@@ -212,7 +268,7 @@ export async function sendEmailVerificationOtpEmail(params: {
       subject: "Verify your Bluewave email address",
       text: content.text,
       html: content.html,
-      idempotencyKey: `email-verification-otp/${params.email}/${params.code}`,
+      idempotencyKey: `email-verification-otp/${params.challengeId}`,
     },
     "sendEmailVerificationOtpEmail",
   );
@@ -381,6 +437,7 @@ export async function sendLoginOtpEmail(params: {
   email: string;
   fullName: string;
   code: string;
+  challengeId: string;
   deviceName: string;
   expiresMinutes?: number;
 }) {
@@ -403,7 +460,7 @@ export async function sendLoginOtpEmail(params: {
       subject: "Your Bluewave sign-in verification code",
       text: content.text,
       html: content.html,
-      idempotencyKey: `login-otp/${params.email}/${params.code}`,
+      idempotencyKey: `login-otp/${params.challengeId}`,
     },
     "sendLoginOtpEmail",
   );

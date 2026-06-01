@@ -98,6 +98,7 @@ export type RegisterResponse =
       username: string;
       maskedEmail: string;
       message: string;
+      emailSent: boolean;
     };
 
 export type VerifyEmailResponse = {
